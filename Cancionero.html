@@ -1,0 +1,1126 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Cancionero</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0D0D0D;--surface:#161616;--surface2:#1E1E1E;
+  --accent:#F5A623;--text:#F0EDE8;--muted:#6B6560;--border:#2A2A2A;
+  --green:#4CAF7D;--red:#E05252;
+}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;-webkit-text-size-adjust:100%}
+.app{max-width:1100px;margin:0 auto;padding:0 16px 120px}
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:80vh;gap:16px;color:var(--muted)}
+.spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* HEADER */
+.header{padding:32px 0 0;user-select:none;-webkit-user-select:none}
+.header-label{font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.header-title{font-family:'Playfair Display',serif;font-size:clamp(28px,6vw,52px);font-weight:900;line-height:1;cursor:default}
+.header-sub{margin-top:8px;color:var(--muted);font-size:13px}
+.header-sub b{color:var(--accent);font-weight:500}
+.db-tag{font-size:11px;opacity:.5;margin-left:8px}
+
+/* TABS */
+.tabs{display:flex;border-bottom:1px solid var(--border);margin:20px 0 0}
+.tab{padding:12px 20px;font-size:13px;font-family:'DM Sans',sans-serif;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:color .15s,border-color .15s}
+.tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.badge{display:none;background:var(--accent);color:#000;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:4px;vertical-align:middle}
+
+/* VIEWS */
+.view{display:none;padding-top:24px}
+.view.active{display:block}
+
+/* SEARCH */
+.controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+.search-wrap{flex:1;min-width:180px;position:relative}
+.si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-style:normal;font-size:15px;pointer-events:none}
+.search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 12px 13px 38px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .15s}
+.search-input::placeholder{color:var(--muted)}
+.search-input:focus{border-color:var(--accent)}
+.btn-sel{padding:12px 16px;font-size:13px;font-family:'DM Sans',sans-serif;border:1px solid var(--border);border-radius:10px;cursor:pointer;background:transparent;color:var(--muted);white-space:nowrap;transition:all .15s}
+.btn-sel.active{background:var(--accent);color:#000;font-weight:500;border-color:var(--accent)}
+.rinfo{font-size:13px;color:var(--muted);margin-bottom:12px}
+.rinfo b{color:var(--accent);font-weight:500}
+
+/* SONG ROWS */
+.song-list{display:flex;flex-direction:column;gap:1px}
+.song-row{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent;-webkit-tap-highlight-color:rgba(245,166,35,.1);transition:background .1s}
+.song-row:active,.song-row.active{background:var(--surface2);border-color:var(--border)}
+.song-row.selected{background:rgba(245,166,35,.07);border-color:rgba(245,166,35,.2)}
+.snum{font-size:11px;color:var(--muted);min-width:26px;text-align:right;flex-shrink:0}
+.sinfo{flex:1;min-width:0}
+.stitle{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stitle mark{background:rgba(245,166,35,.3);color:var(--text);border-radius:2px}
+.sartist{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ssnip{font-size:12px;color:var(--muted);margin-top:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ssnip mark{background:rgba(245,166,35,.2);color:#d4c8b8;border-radius:2px}
+.sarrow{color:var(--muted);font-size:18px;flex-shrink:0}
+.schk{width:20px;height:20px;border-radius:6px;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:12px;transition:all .15s}
+.song-row.selected .schk{background:var(--accent);border-color:var(--accent);color:#000}
+.lm-wrap{text-align:center;padding:20px 0}
+.lm-btn{background:transparent;border:1px solid var(--border);border-radius:8px;padding:11px 28px;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer}
+.empty{text-align:center;padding:60px 20px;color:var(--muted)}
+.empty-icon{font-size:36px;margin-bottom:10px}
+.empty-sub{font-size:13px;margin-top:6px}
+
+/* DESKTOP */
+@media(min-width:720px){
+  .split{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
+  .detail-ov{position:sticky;top:16px;inset:auto;background:transparent;display:block;z-index:1;height:fit-content}
+  .detail-ov.open{display:block}
+  .dsheet{border-radius:16px;max-height:calc(100vh - 32px);border:1px solid var(--border)}
+  .dhandle{display:none}
+}
+
+/* DETAIL */
+.detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:none;align-items:flex-end}
+.detail-ov.open{display:flex}
+.dsheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:88vh;display:flex;flex-direction:column;border-top:1px solid var(--border)}
+.dhandle{width:40px;height:4px;background:var(--border);border-radius:2px;margin:12px auto 0}
+.dheader{padding:16px 18px 14px;border-bottom:1px solid var(--border);display:flex;align-items:flex-start;gap:12px}
+.dtitles{flex:1;min-width:0}
+.dtitle{font-family:'Playfair Display',serif;font-size:18px;font-weight:700;line-height:1.2}
+.dartist{font-size:12px;color:var(--accent);font-weight:500;margin-top:3px}
+.dclose{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0;line-height:1;flex-shrink:0}
+.dbody{overflow-y:auto;padding:18px;flex:1;-webkit-overflow-scrolling:touch}
+.lyric-block{margin-bottom:18px}
+.lyric-desc{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.lyric-text{font-size:14px;line-height:1.9;white-space:pre-wrap;text-transform:uppercase}
+.lyric-text mark{background:rgba(245,166,35,.3);color:var(--text);border-radius:2px}
+.lyric-div{border:none;border-top:1px solid var(--border);margin:14px 0}
+
+/* FLOAT BAR */
+.fbar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--surface2);border:1px solid rgba(245,166,35,.3);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:10px;z-index:40;box-shadow:0 8px 32px rgba(0,0,0,.7);transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;flex-wrap:wrap;justify-content:center}
+.fbar.visible{transform:translateX(-50%) translateY(0)}
+.fbar-count{font-size:13px;color:var(--muted)}
+.fbar-count b{color:var(--accent);font-weight:600}
+.fbtn{padding:9px 16px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.fbtn.pri{background:var(--accent);color:#000}
+.fbtn.sec{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.fbtn:hover{opacity:.8}
+
+/* LISTS */
+.lists-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.lists-hdr-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700}
+.btn-newlist{background:var(--accent);color:#000;border:none;border-radius:9px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer}
+.lcard{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden;margin-bottom:10px;transition:border-color .15s}
+.lcard.expanded{border-color:rgba(245,166,35,.3)}
+.lcard-hdr{display:flex;align-items:center;gap:12px;padding:16px;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.lcard-chev{color:var(--muted);font-size:14px;transition:transform .2s;flex-shrink:0}
+.lcard.expanded .lcard-chev{transform:rotate(90deg)}
+.lcard-name{font-weight:500;font-size:15px;flex:1}
+.lcard-cnt{font-size:12px;color:var(--muted);flex-shrink:0}
+.lcard-acts{display:flex;gap:6px;flex-shrink:0}
+.lca{background:transparent;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+.lca:hover{border-color:var(--accent);color:var(--accent)}
+.lca.danger:hover{border-color:var(--red);color:var(--red)}
+.lcard-body{display:none;border-top:1px solid var(--border)}
+.lcard.expanded .lcard-body{display:block}
+.lcard-songs{padding:8px}
+.lcsr{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer}
+.lcsr:hover{background:var(--surface2)}
+.lcsn{font-size:11px;color:var(--muted);min-width:22px;text-align:right;flex-shrink:0}
+.lcsi{flex:1;min-width:0}
+.lcst{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lcsa{font-size:12px;color:var(--muted);margin-top:1px}
+.lcs-rm{background:none;border:none;color:var(--muted);font-size:18px;cursor:pointer;padding:0 4px;flex-shrink:0;transition:color .1s}
+.lcs-rm:hover{color:var(--red)}
+.lcard-export{display:flex;gap:8px;padding:12px;border-top:1px solid var(--border);flex-wrap:wrap}
+.exp-btn{flex:1;min-width:120px;padding:10px 14px;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;border:none}
+.exp-btn.html{background:rgba(245,166,35,.15);color:var(--accent);border:1px solid rgba(245,166,35,.3)}
+.exp-btn.pdf{background:var(--accent);color:#000}
+.exp-btn:hover{opacity:.8}
+
+/* MODALS */
+.mov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
+.mov.open{display:flex}
+.modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:400px}
+.modal.wide{max-width:680px;max-height:90vh;display:flex;flex-direction:column}
+.modal-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;margin-bottom:6px}
+.modal-sub{font-size:13px;color:var(--muted);margin-bottom:22px}
+.mclose{float:right;background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;margin-top:-4px}
+.minput{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:13px 14px;font-family:'DM Sans',sans-serif;font-size:15px;color:var(--text);outline:none;margin-bottom:16px;-webkit-appearance:none;transition:border-color .15s}
+.minput:focus{border-color:var(--accent)}
+.mactions{display:flex;gap:10px;flex-wrap:wrap}
+.mbtn{flex:1;padding:12px 16px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;min-width:100px}
+.mbtn.pri{background:var(--accent);color:#000}
+.mbtn.sec{background:transparent;border:1px solid var(--border);color:var(--muted)}
+.mbtn.danger{background:rgba(224,82,82,.12);color:var(--red);border:1px solid rgba(224,82,82,.25)}
+.mstatus{font-size:13px;padding:10px 14px;border-radius:8px;margin-bottom:16px;display:none}
+.mstatus.ok{background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.3);display:block}
+.mstatus.err{background:rgba(224,82,82,.15);color:var(--red);border:1px solid rgba(224,82,82,.3);display:block}
+.upload-zone{border:1.5px dashed var(--border);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:16px}
+.upload-zone:hover{border-color:var(--accent);background:rgba(245,166,35,.04)}
+
+/* ATL */
+.atl-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:220px;overflow-y:auto}
+.atl-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
+.atl-item:hover{border-color:var(--accent)}
+.atl-name{flex:1;font-size:14px;font-weight:500}
+.atl-cnt{font-size:12px;color:var(--muted)}
+
+/* ADMIN DB EDITOR */
+.admin-tabs{display:flex;gap:0;border-bottom:1px solid var(--border);margin-bottom:20px}
+.admin-tab{padding:10px 16px;font-size:13px;font-family:'DM Sans',sans-serif;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:color .15s}
+.admin-tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
+.admin-panel{display:none}
+.admin-panel.active{display:block}
+.admin-search{width:100%;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:11px 14px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;margin-bottom:12px;-webkit-appearance:none}
+.admin-search:focus{border-color:var(--accent)}
+.admin-song-list{flex:1;overflow-y:auto;display:flex;flex-direction:column;gap:1px;margin-bottom:12px;max-height:340px}
+.admin-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:background .1s}
+.admin-row:hover{background:var(--surface2)}
+.admin-row.marked{background:rgba(224,82,82,.08);border-color:rgba(224,82,82,.2)}
+.admin-chk{width:18px;height:18px;border-radius:5px;border:1.5px solid var(--border);flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;transition:all .15s}
+.admin-row.marked .admin-chk{background:var(--red);border-color:var(--red);color:#fff}
+.admin-info{flex:1;min-width:0}
+.admin-st{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.admin-sa{font-size:11px;color:var(--muted)}
+.admin-footer{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding-top:12px;border-top:1px solid var(--border)}
+.admin-sel-count{font-size:13px;color:var(--muted);flex:1}
+.admin-sel-count b{color:var(--red);font-weight:600}
+
+/* DETAIL FOOTER */
+.dfooter{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
+.dfbtn{flex:1;padding:10px 12px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s}
+.dfbtn.edit{background:rgba(245,166,35,.12);color:var(--accent);border:1px solid rgba(245,166,35,.25)}
+.dfbtn.del{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2)}
+.dfbtn:hover{opacity:.75}
+
+/* EDIT MODAL */
+.paras-list{max-height:280px;overflow-y:auto;margin-bottom:10px}
+.para-item{background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:12px 12px 8px;margin-bottom:8px;position:relative}
+.para-label-input{width:100%;background:transparent;border:none;border-bottom:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);outline:none;margin-bottom:8px;padding:0 28px 6px 0;-webkit-appearance:none}
+.para-textarea{width:100%;background:transparent;border:none;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);outline:none;resize:vertical;min-height:80px;line-height:1.7;-webkit-appearance:none}
+.para-rm{position:absolute;top:10px;right:10px;background:none;border:none;color:var(--muted);cursor:pointer;font-size:18px;padding:0;line-height:1;transition:color .1s}
+.para-rm:hover{color:var(--red)}
+
+/* LONG PRESS feedback */
+.song-row{transition:background .1s,transform .1s}
+.song-row.pressing{background:rgba(245,166,35,.08)!important;transform:scale(.985)}
+
+/* GEAR BTN */
+#btn-settings{position:fixed;top:14px;right:14px;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
+#btn-settings:hover{border-color:var(--accent);transform:rotate(60deg)}
+
+/* COLOR PICKER */
+.color-pick-wrap{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:transparent;cursor:pointer;transition:border-color .15s}
+.color-pick-wrap:hover{border-color:var(--accent)}
+.color-pick-label{font-size:12px;color:var(--muted);white-space:nowrap}
+.list-color-pick{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;padding:0;background:none}
+
+/* STYLE PICKER */
+.style-pick{display:flex;gap:4px;flex-wrap:wrap}
+.spbtn{padding:6px 11px;border-radius:7px;border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
+.spbtn.active{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.4);color:var(--accent)}
+</style>
+</head>
+<body>
+
+<div id="loading" class="loading"><div class="spinner"></div><span>Cargando canciones…</span></div>
+
+<button id="btn-settings" title="Configuración">⚙️</button>
+
+<div id="app" class="app" style="display:none">
+  <div class="header">
+    <div class="header-label">Cancionero</div>
+    <h1 class="header-title" id="header-tap">Buscador<br>de Canciones</h1>
+    <p class="header-sub"><b id="total-count"></b> canciones<span class="db-tag" id="db-tag"></span></p>
+  </div>
+
+  <div class="tabs">
+    <button class="tab active" data-view="search">Canciones</button>
+    <button class="tab" data-view="lists">Mis Listas <span class="badge" id="lists-badge"></span></button>
+  </div>
+
+  <!-- SEARCH VIEW -->
+  <div class="view active" id="view-search">
+    <div class="split">
+      <div>
+        <div class="controls">
+          <div class="search-wrap">
+            <i class="si">🔍</i>
+            <input class="search-input" id="search" placeholder="Buscar por título o letra…" type="search" autocomplete="off" autocorrect="off" spellcheck="false">
+          </div>
+          <button class="btn-sel" id="btn-sel">☰ Seleccionar</button>
+        </div>
+        <div class="rinfo" id="rinfo"></div>
+        <div class="song-list" id="song-list"></div>
+        <div class="lm-wrap" id="lm-wrap" style="display:none">
+          <button class="lm-btn" id="lm-btn">Cargar más</button>
+        </div>
+      </div>
+      <div class="detail-ov" id="detail-ov">
+        <div class="dsheet">
+          <div class="dhandle"></div>
+          <div class="dheader">
+            <div class="dtitles">
+              <div class="dtitle" id="d-title"></div>
+              <div class="dartist" id="d-artist"></div>
+            </div>
+            <button class="dclose" id="d-close">×</button>
+          </div>
+          <div class="dbody" id="d-body"></div>
+          <div class="dfooter">
+            <button class="dfbtn edit" id="d-edit">✏️ Editar</button>
+            <button class="dfbtn del" id="d-delete">🗑 Eliminar</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LISTS VIEW -->
+  <div class="view" id="view-lists">
+    <div class="lists-hdr">
+      <span class="lists-hdr-title">Mis Listas</span>
+      <button class="btn-newlist" id="btn-newlist">+ Nueva lista</button>
+    </div>
+    <div id="lists-con"></div>
+  </div>
+</div>
+
+<!-- FLOAT BAR -->
+<div class="fbar" id="fbar">
+  <span class="fbar-count"><b id="sel-count">0</b> seleccionadas</span>
+  <button class="fbtn sec" id="fbar-clear">Limpiar</button>
+  <button class="fbtn pri" id="fbar-add">Agregar a lista →</button>
+</div>
+
+<!-- MODAL: Add to list -->
+<div class="mov" id="mov-atl">
+  <div class="modal">
+    <button class="mclose" id="atl-close">×</button>
+    <div class="modal-title">Agregar a lista</div>
+    <div class="modal-sub" id="atl-sub"></div>
+    <div class="atl-list" id="atl-list"></div>
+    <div class="mactions">
+      <button class="mbtn sec" id="atl-cancel">Cancelar</button>
+      <button class="mbtn pri" id="atl-new">+ Nueva lista</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Name -->
+<div class="mov" id="mov-name">
+  <div class="modal">
+    <button class="mclose" id="name-close">×</button>
+    <div class="modal-title" id="name-modal-title">Nueva lista</div>
+    <div class="modal-sub">Poné un nombre para esta lista</div>
+    <input class="minput" id="name-input" placeholder="Ej: Lista del domingo…" maxlength="60" type="text">
+    <div class="mactions">
+      <button class="mbtn sec" id="name-cancel">Cancelar</button>
+      <button class="mbtn pri" id="name-ok">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Edit Song -->
+<div class="mov" id="mov-edit">
+  <div class="modal wide">
+    <button class="mclose" id="edit-close">×</button>
+    <div class="modal-title">Editar canción</div>
+    <div class="modal-sub">Modificá título, artista y letra</div>
+    <input class="minput" id="edit-title" placeholder="Título" maxlength="200" type="text">
+    <input class="minput" id="edit-artist" placeholder="Artista (opcional)" maxlength="200" type="text">
+    <div style="font-size:11px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">Estrofas</div>
+    <div class="paras-list" id="edit-paras"></div>
+    <button class="mbtn sec" id="edit-addpara" style="width:100%;margin-bottom:14px">+ Agregar estrofa</button>
+    <div class="mstatus" id="edit-status"></div>
+    <div class="mactions">
+      <button class="mbtn sec" id="edit-cancel">Cancelar</button>
+      <button class="mbtn pri" id="edit-save">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL: Admin -->
+<div class="mov" id="mov-admin">
+  <div class="modal wide">
+    <div style="flex-shrink:0">
+      <button class="mclose" id="admin-close">×</button>
+      <div class="modal-title">Administrar base de datos</div>
+      <div class="modal-sub" style="margin-bottom:16px">Acceso oculto · Tap × para cerrar</div>
+      <div class="admin-tabs">
+        <button class="admin-tab active" data-apanel="update">Actualizar DB</button>
+        <button class="admin-tab" data-apanel="delete">Eliminar canciones</button>
+        <button class="admin-tab" data-apanel="export">Exportar DB</button>
+      </div>
+    </div>
+
+    <!-- UPDATE PANEL -->
+    <div class="admin-panel active" id="ap-update" style="overflow-y:auto;flex:1">
+      <div class="upload-zone" id="admin-zone">
+        <div style="font-size:26px;margin-bottom:8px">📂</div>
+        <div style="font-size:13px;color:var(--muted)"><b style="color:var(--text)">Tocar para seleccionar</b><br>Holyrics_Backup.json</div>
+        <input type="file" accept=".json" id="admin-file" style="display:none">
+      </div>
+      <div class="mstatus" id="admin-status"></div>
+      <div class="mactions">
+        <button class="mbtn danger" id="btn-reset-db">↺ Restaurar original</button>
+      </div>
+    </div>
+
+    <!-- DELETE PANEL -->
+    <div class="admin-panel" id="ap-delete" style="display:flex;flex-direction:column;flex:1;overflow:hidden;min-height:0">
+      <input class="admin-search" id="del-search" placeholder="Buscar canción…" type="search" autocomplete="off" autocorrect="off" spellcheck="false">
+      <div class="admin-song-list" id="del-list"></div>
+      <div class="admin-footer">
+        <span class="admin-sel-count"><b id="del-count">0</b> marcadas para eliminar</span>
+        <button class="mbtn sec" id="del-clear" style="flex:0">Limpiar</button>
+        <button class="mbtn danger" id="del-confirm" style="flex:0">Eliminar seleccionadas</button>
+      </div>
+      <div class="mstatus" id="del-status" style="margin-top:12px;margin-bottom:0"></div>
+    </div>
+
+    <!-- EXPORT PANEL -->
+    <div class="admin-panel" id="ap-export" style="overflow-y:auto;flex:1">
+      <p style="font-size:14px;color:var(--muted);margin-bottom:20px;line-height:1.6">Exporta la base de datos actual (con las eliminaciones aplicadas) en el mismo formato JSON que Holyrics utiliza para importar/exportar.</p>
+      <button class="mbtn pri" id="btn-export-db" style="width:100%;padding:14px">⬇ Exportar Holyrics_Backup.json</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&','<':'<','>':'>','"':'&quot;'}[c]));}
+function hlHtml(text,q){
+  if(!q||q.length<2)return esc(text);
+  const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi");
+  return esc(text).replace(re,m=>`<mark>${m}</mark>`);
+}
+function snip(text,q){
+  if(!q||q.length<2||!text)return null;
+  const i=text.toLowerCase().indexOf(q.toLowerCase());
+  if(i===-1)return null;
+  const s=Math.max(0,i-25),e=Math.min(text.length,i+q.length+45);
+  return(s>0?"…":"")+text.slice(s,e)+(e<text.length?"…":"");
+}
+function slimSong(s){
+  return{id:s.id,t:s.title||s.t||"",a:s.artist||s.a||"",
+    l:s.lyrics?.full_text||s.l||"",
+    p:s.lyrics?.paragraphs?.map(p=>({d:p.description||p.d||"",x:p.text||p.x||""}))||s.p||[]};
+}
+function toHolyricsFormat(s){
+  return{id:s.id,title:s.t,artist:s.a,author:"",note:"",copyright:"",language:"",key:"",bpm:0.0,time_sig:"",midi:null,order:"",arrangements:[],
+    lyrics:{full_text:s.l,full_text_with_comment:null,
+      paragraphs:s.p.map((par,i)=>({number:i+1,description:par.d,text:par.x,text_with_comment:null,translations:null}))},
+    streaming:null,extras:null};
+}
+function uid(){return Date.now()+"_"+Math.random().toString(36).slice(2,7);}
+
+/* STATE */
+let SONGS=[],filtered=[],query="",page=1,selectMode=false,selected=new Set();
+let LISTS=[];
+const PAGE=60;
+let deleteMarked=new Set();
+
+/* PERSIST */
+function saveDB(){localStorage.setItem("holyrics_db",JSON.stringify(SONGS));}
+function saveLists(){localStorage.setItem("holyrics_lists",JSON.stringify(LISTS));}
+function loadLists(){try{const s=localStorage.getItem("holyrics_lists");if(s)LISTS=JSON.parse(s);}catch{}if(!Array.isArray(LISTS))LISTS=[];}
+
+/* FILTER & RENDER */
+function applyFilter(){
+  const q=query.trim().toLowerCase();
+  filtered=!q?SONGS:SONGS.filter(s=>
+    (s.t||"").toLowerCase().includes(q)||(s.l||"").toLowerCase().includes(q)
+  );
+}
+function renderInfo(){
+  const t=filtered.length,sh=Math.min(page*PAGE,t);
+  const el=document.getElementById("rinfo");
+  el.innerHTML=query.trim().length>=2
+    ?`<b>${t}</b> resultado${t!==1?"s":""} para "${esc(query.trim())}"`
+    :`<b>${sh}</b> de <b>${t}</b> canciones`;
+}
+function renderSongList(){
+  const q=query.trim(),items=filtered.slice(0,page*PAGE),el=document.getElementById("song-list");
+  el.innerHTML=!items.length
+    ?`<div class="empty"><div class="empty-icon">🎶</div><div>Sin resultados</div></div>`
+    :items.map((s,i)=>{
+      const idx=SONGS.indexOf(s),sn=snip(s.l,q),isSel=selected.has(s.id);
+      return`<div class="song-row${isSel?" selected":""}" data-idx="${idx}">
+        ${selectMode?`<div class="schk">${isSel?"✓":""}</div>`:`<span class="snum">${i+1}</span>`}
+        <div class="sinfo">
+          <div class="stitle">${hlHtml(s.t||"Sin título",q)}</div>
+          ${s.a?`<div class="sartist">${esc(s.a)}</div>`:""}
+          ${sn?`<div class="ssnip">${hlHtml(sn,q)}</div>`:""}
+        </div>
+        ${!selectMode?`<span class="sarrow">›</span>`:""}
+      </div>`;
+    }).join("");
+  document.getElementById("lm-wrap").style.display=filtered.length>page*PAGE?"":"none";
+  document.getElementById("lm-btn").textContent=`Cargar más (${filtered.length-page*PAGE} restantes)`;
+  renderInfo();updateFbar();
+}
+function updateFbar(){
+  document.getElementById("sel-count").textContent=selected.size;
+  document.getElementById("fbar").classList.toggle("visible",selectMode&&selected.size>0);
+}
+function updateCount(){document.getElementById("total-count").textContent=SONGS.length.toLocaleString();}
+function updateBadge(){
+  const b=document.getElementById("lists-badge");
+  b.textContent=LISTS.length;b.style.display=LISTS.length?"":"none";
+}
+
+/* DETAIL */
+let _detailSong=null;
+function showDetail(song){
+  _detailSong=song;
+  const q=query.trim();
+  document.getElementById("d-title").textContent=song.t||"";
+  document.getElementById("d-artist").textContent=song.a||"";
+  document.getElementById("d-artist").style.display=song.a?"":"none";
+  document.getElementById("d-body").innerHTML=song.p?.length
+    ?song.p.map((par,i)=>`<div class="lyric-block">${par.d?`<div class="lyric-desc">${esc(par.d)}</div>`:""}<div class="lyric-text">${hlHtml(par.x||"",q)}</div>${i<song.p.length-1?'<hr class="lyric-div">':""}</div>`).join("")
+    :`<div style="color:var(--muted);font-size:14px">Sin letra</div>`;
+  document.getElementById("detail-ov").classList.add("open");
+}
+
+/* LISTS */
+function renderLists(){
+  updateBadge();
+  const c=document.getElementById("lists-con");
+  if(!LISTS.length){
+    c.innerHTML=`<div class="empty"><div class="empty-icon">🗂️</div><div>Todavía no tenés listas</div><div class="empty-sub">Seleccioná canciones y guardalas en una lista</div></div>`;
+    return;
+  }
+  c.innerHTML=LISTS.map(lst=>{
+    const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
+    return`<div class="lcard" id="lc-${lst.id}">
+      <div class="lcard-hdr" data-lid="${lst.id}">
+        <span class="lcard-chev">›</span>
+        <span class="lcard-name">${esc(lst.name)}</span>
+        <span class="lcard-cnt">${songs.length} canc.</span>
+        <div class="lcard-acts" onclick="event.stopPropagation()">
+          <button class="lca" onclick="renameList('${lst.id}')">✏️</button>
+          <button class="lca danger" onclick="deleteList('${lst.id}')">🗑️</button>
+        </div>
+      </div>
+      <div class="lcard-body">
+        <div class="lcard-songs">
+          ${songs.length?songs.map((s,i)=>`
+            <div class="lcsr" data-sid="${s.id}" data-lid="${lst.id}">
+              <span class="lcsn">${i+1}</span>
+              <div class="lcsi"><div class="lcst">${esc(s.t||"Sin título")}</div>${s.a?`<div class="lcsa">${esc(s.a)}</div>`:""}</div>
+              <button class="lcs-rm" onclick="rmFromList('${lst.id}',${s.id},event)">×</button>
+            </div>`).join("")
+          :`<div style="padding:16px;color:var(--muted);font-size:13px;text-align:center">Lista vacía</div>`}
+        </div>
+        <div class="lcard-export">
+          <div class="style-pick" onclick="event.stopPropagation()">
+            <button class="spbtn${(lst.style||'aesthetic')==='minimal'?' active':''}" data-lid="${lst.id}" data-style="minimal">Minimalista</button>
+            <button class="spbtn${(lst.style||'aesthetic')==='aesthetic'?' active':''}" data-lid="${lst.id}" data-style="aesthetic">Aesthetic</button>
+            <button class="spbtn${(lst.style||'aesthetic')==='glass'?' active':''}" data-lid="${lst.id}" data-style="glass">Glass</button>
+          </div>
+          <label class="color-pick-wrap" onclick="event.stopPropagation()">
+            <span class="color-pick-label">Color:</span>
+            <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||'#E55A00'}">
+          </label>
+          <button class="exp-btn html" onclick="exportList('${lst.id}','html')">⬇ HTML</button>
+          <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 Imprimir</button>
+        </div>
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll(".lcard-hdr").forEach(h=>{
+    h.addEventListener("click",()=>document.getElementById("lc-"+h.dataset.lid).classList.toggle("expanded"));
+  });
+  document.querySelectorAll(".lcsr").forEach(row=>{
+    row.addEventListener("click",e=>{
+      if(e.target.closest(".lcs-rm"))return;
+      const song=SONGS.find(s=>s.id===Number(row.dataset.sid));
+      if(song)showDetail(song);
+    });
+  });
+  document.querySelectorAll(".list-color-pick").forEach(inp=>{
+    inp.addEventListener("change",()=>{
+      const l=LISTS.find(x=>x.id===inp.dataset.lid);
+      if(l){l.color=inp.value;saveLists();}
+    });
+  });
+  document.querySelectorAll(".spbtn").forEach(btn=>{
+    btn.addEventListener("click",e=>{
+      e.stopPropagation();
+      const l=LISTS.find(x=>x.id===btn.dataset.lid);
+      if(!l)return;
+      l.style=btn.dataset.style;saveLists();
+      btn.closest(".style-pick").querySelectorAll(".spbtn").forEach(b=>b.classList.toggle("active",b===btn));
+    });
+  });
+}
+function addToList(listId,ids){
+  const l=LISTS.find(x=>x.id===listId);if(!l)return;
+  ids.forEach(id=>{if(!l.songIds.includes(id))l.songIds.push(id);});
+  saveLists();renderLists();
+}
+function rmFromList(lid,sid,e){
+  e.stopPropagation();
+  const l=LISTS.find(x=>x.id===lid);if(!l)return;
+  l.songIds=l.songIds.filter(id=>id!==sid);saveLists();renderLists();
+}
+function deleteList(lid){
+  if(!confirm("¿Eliminar esta lista?"))return;
+  LISTS=LISTS.filter(l=>l.id!==lid);saveLists();renderLists();
+}
+function renameList(lid){
+  const l=LISTS.find(x=>x.id===lid);if(!l)return;
+  openNameModal(l.name,n=>{l.name=n;saveLists();renderLists();});
+}
+
+/* EXPORT LIST */
+function buildExportHTML(lst){
+  const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
+  const songsData=JSON.stringify(songs.map(s=>({
+    title:s.t||"Sin título",
+    letra:(s.p?.length?s.p.map(p=>p.x||"").join("\n\n"):s.l||""),
+    stanzas:(s.p||[]).map(p=>({d:p.d||"",x:p.x||""}))
+  })));
+  const hex=lst.color||"#E55A00";
+  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
+  const c1=`rgba(${Math.max(0,r-50)},${Math.max(0,g-40)},${b},0.6)`;
+  const c2=`rgba(${r},${g},${b},0.3)`;
+  const style=lst.style||"aesthetic";
+
+  // ─── SHARED accordion script (injected into all templates) ──────────────────
+  const acScript=`<script>
+    const songs=${songsData};
+    document.addEventListener('DOMContentLoaded',()=>{
+      const list=document.getElementById('song-list');
+      songs.forEach((s,i)=>{
+        const wrap=document.createElement('div');
+        wrap.className='ac-item';
+        const stanzasHTML=s.stanzas&&s.stanzas.length
+          ?s.stanzas.map(p=>\`<div class="stanza">\${p.d?\`<div class="stanza-label">\${p.d}<\/div>\`:''}
+            <div class="stanza-text">\${p.x}<\/div><\/div>\`).join('')
+          :\`<div class="stanza"><div class="stanza-text">\${s.letra}<\/div><\/div>\`;
+        wrap.innerHTML=\`<div class="ac-hdr">
+          <span class="ac-num">\${String(i+1).padStart(2,'0')}<\/span>
+          <span class="ac-title">\${s.title}<\/span>
+          <span class="ac-icon">+<\/span>
+        <\/div>
+        <div class="ac-body"><div class="ac-inner">\${stanzasHTML}<\/div><\/div>\`;
+        wrap.querySelector('.ac-hdr').addEventListener('click',()=>{
+          const open=wrap.classList.contains('open');
+          document.querySelectorAll('.ac-item.open').forEach(x=>x.classList.remove('open'));
+          if(!open)wrap.classList.add('open');
+        });
+        list.appendChild(wrap);
+      });
+    });
+  <\/script>`;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 1 — MINIMALISTA
+  // ─────────────────────────────────────────────────────────────────────────────
+  if(style==="minimal") return`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${lst.name}</title>
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--a:${hex};--bg:#080808;--tx:#DEDAD4;--mu:#444;--br:#1C1C1C}
+    html{scroll-behavior:smooth}
+    body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+
+    /* HEADER */
+    header{padding:72px 28px 56px;max-width:680px;margin:0 auto}
+    .hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--a);margin-bottom:18px}
+    h1{font-size:clamp(36px,9vw,72px);font-weight:700;line-height:1.0;letter-spacing:-1px}
+    h1 span{color:var(--a)}
+    .hc{margin-top:14px;font-size:13px;color:var(--mu)}
+
+    /* ACCORDION */
+    main{max-width:680px;margin:0 auto;padding:0 28px 100px}
+    .ac-item{border-top:1px solid var(--br)}
+    .ac-item:last-child{border-bottom:1px solid var(--br)}
+    .ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
+    .ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
+    .ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s}
+    .ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
+    .ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
+    .ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
+    .ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+    .ac-item.open .ac-body{max-height:3000px}
+    .ac-inner{padding:0 0 32px 40px}
+    .stanza{margin-bottom:22px}
+    .stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+    .stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#888}
+
+    footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="hl">Lista de canciones</div>
+    <h1>${lst.name.toUpperCase().split(" ").map((w,i)=>i===0?`<span>${w}</span>`:w).join(" ")}</h1>
+    <div class="hc">${songs.length} canciones</div>
+  </header>
+  <main id="song-list"></main>
+  <footer>Jóvenes de la IEMA · Rosario</footer>
+  ${acScript}
+</body>
+</html>`;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 2 — AESTHETIC (editorial / cálido)
+  // ─────────────────────────────────────────────────────────────────────────────
+  if(style==="aesthetic") return`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${lst.name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--a:${hex};--bg:#0C0A08;--tx:#EDE8E0;--mu:#5C5650;--br:#231F1B;--sur:#141210}
+    body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh}
+
+    /* HERO */
+    .hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:40px 24px}
+    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 80%,${c1},transparent 70%)}
+    .hero-tag{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--a);margin-bottom:28px;opacity:.8}
+    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,14vw,120px);font-weight:600;line-height:.95;text-align:center;letter-spacing:-2px}
+    .hero-title em{color:var(--a);font-style:italic}
+    .hero-sub{margin-top:32px;font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase}
+    .hero-line{width:1px;height:64px;background:linear-gradient(var(--a),transparent);margin:40px auto 0;opacity:.5}
+
+    /* BODY */
+    .wrap{max-width:720px;margin:0 auto;padding:80px 28px 100px}
+    .sec-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mu);margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid var(--br)}
+
+    /* ACCORDION */
+    .ac-item{border-bottom:1px solid var(--br)}
+    .ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:26px 0;cursor:pointer;user-select:none}
+    .ac-num{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--mu);font-style:italic}
+    .ac-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;transition:color .25s}
+    .ac-item.open .ac-title,.ac-item:hover .ac-title{color:var(--a)}
+    .ac-icon{width:24px;height:24px;border-radius:50%;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mu);transition:all .3s;flex-shrink:0;justify-self:end}
+    .ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg)}
+    .ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+    .ac-item.open .ac-body{max-height:3000px}
+    .ac-inner{padding:8px 0 36px 52px}
+    .stanza{margin-bottom:24px}
+    .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a);opacity:.6;margin-bottom:10px}
+    .stanza-text{font-size:14px;line-height:2.2;white-space:pre-wrap;text-transform:uppercase;color:var(--mu)}
+
+    footer{text-align:center;padding:48px 24px;color:var(--mu);font-size:12px;letter-spacing:2px;text-transform:uppercase;border-top:1px solid var(--br)}
+  </style>
+</head>
+<body>
+  <div class="hero">
+    <div class="hero-tag">#Iglesia · Rosario</div>
+    <div class="hero-title">${lst.name.split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+    <div class="hero-sub">${songs.length} canciones</div>
+    <div class="hero-line"></div>
+  </div>
+  <div class="wrap">
+    <div class="sec-label">Lista de canciones</div>
+    <div id="song-list"></div>
+  </div>
+  <footer>Jóvenes de la IEMA · Rosario</footer>
+  ${acScript}
+</body>
+</html>`;
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // TEMPLATE 3 — GLASS (glassmorphism / moderno)
+  // ─────────────────────────────────────────────────────────────────────────────
+  return`<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>${lst.name}</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    :root{--a:${hex};--r:${r};--g:${g};--b:${b}}
+    body{background:#030308;color:#fff;font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+
+    /* BG ORBS */
+    .orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+    .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18}
+    .orb1{width:600px;height:600px;background:${hex};top:-200px;left:-100px}
+    .orb2{width:400px;height:400px;background:rgba(${r},${g},${b},.8);bottom:-150px;right:-100px;opacity:.12}
+    .orb3{width:300px;height:300px;background:#6366f1;top:40%;left:60%;opacity:.08}
+
+    /* HERO */
+    .hero{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+    .glass-tag{background:rgba(${r},${g},${b},.15);border:1px solid rgba(${r},${g},${b},.3);backdrop-filter:blur(12px);border-radius:999px;padding:7px 18px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a);margin-bottom:32px;display:inline-block}
+    h1{font-size:clamp(44px,12vw,110px);font-weight:700;line-height:1;letter-spacing:-2px;background:linear-gradient(135deg,#fff 30%,var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+    .hero-count{margin-top:20px;font-size:13px;color:rgba(255,255,255,.35);letter-spacing:1px}
+    .hero-arrow{margin-top:48px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:18px;animation:bob 2s ease-in-out infinite}
+    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+
+    /* CONTENT */
+    .content{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:80px 20px 100px}
+
+    /* ACCORDION — glass cards */
+    .ac-item{margin-bottom:8px}
+    .ac-hdr{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:background .2s,border-color .2s}
+    .ac-item:hover .ac-hdr,.ac-item.open .ac-hdr{background:rgba(${r},${g},${b},.1);border-color:rgba(${r},${g},${b},.35)}
+    .ac-num{font-size:12px;color:var(--a);font-weight:600;min-width:24px;font-variant-numeric:tabular-nums}
+    .ac-title{flex:1;font-size:15px;font-weight:500;letter-spacing:.2px}
+    .ac-icon{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.4);transition:all .3s;flex-shrink:0}
+    .ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg);box-shadow:0 0 14px rgba(${r},${g},${b},.5)}
+    .ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+    .ac-item.open .ac-body{max-height:3000px}
+    .ac-inner{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05);border-top:none;border-radius:0 0 14px 14px;padding:24px 24px 28px;backdrop-filter:blur(8px)}
+    .stanza{margin-bottom:20px}
+    .stanza:last-child{margin-bottom:0}
+    .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(${r},${g},${b},.7);margin-bottom:8px}
+    .stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,.45)}
+
+    footer{position:relative;z-index:1;text-align:center;padding:40px 24px;color:rgba(255,255,255,.15);font-size:12px;letter-spacing:1px}
+  </style>
+</head>
+<body>
+  <div class="orbs">
+    <div class="orb orb1"></div>
+    <div class="orb orb2"></div>
+    <div class="orb orb3"></div>
+  </div>
+  <div class="hero">
+    <span class="glass-tag">#Iglesia · Rosario</span>
+    <h1>${lst.name.toUpperCase()}</h1>
+    <div class="hero-count">${songs.length} canciones</div>
+    <div class="hero-arrow">↓</div>
+  </div>
+  <div class="content" id="song-list"></div>
+  <footer>Jóvenes de la IEMA · Rosario</footer>
+  ${acScript}
+</body>
+</html>`;
+}
+
+function exportList(lid,type){
+  const lst=LISTS.find(l=>l.id===lid);if(!lst)return;
+  const html=buildExportHTML(lst);
+  if(type==="html"){
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));
+    a.download=lst.name.replace(/[^a-z0-9áéíóúñü ]/gi,"_")+".html";
+    a.click();URL.revokeObjectURL(a.href);
+  }else{
+    const win=window.open("","_blank");
+    win.document.write(html);win.document.close();
+    win.onload=()=>setTimeout(()=>win.print(),400);
+  }
+}
+
+/* NAME MODAL */
+let _nameCb=null;
+function openNameModal(def="",cb){
+  _nameCb=cb;
+  document.getElementById("name-input").value=def;
+  document.getElementById("mov-name").classList.add("open");
+  setTimeout(()=>document.getElementById("name-input").focus(),100);
+}
+["name-close","name-cancel"].forEach(id=>document.getElementById(id).addEventListener("click",()=>document.getElementById("mov-name").classList.remove("open")));
+document.getElementById("name-ok").addEventListener("click",()=>{
+  const v=document.getElementById("name-input").value.trim();if(!v)return;
+  document.getElementById("mov-name").classList.remove("open");
+  if(_nameCb){_nameCb(v);_nameCb=null;}
+});
+document.getElementById("name-input").addEventListener("keydown",e=>{if(e.key==="Enter")document.getElementById("name-ok").click();});
+
+/* ATL MODAL */
+let _pendingIds=[];
+function openATL(){
+  _pendingIds=[...selected];
+  document.getElementById("atl-sub").textContent=`${_pendingIds.length} canción${_pendingIds.length!==1?"es":""} seleccionadas`;
+  const list=document.getElementById("atl-list");
+  list.innerHTML=!LISTS.length
+    ?`<div style="color:var(--muted);font-size:13px;padding:8px 0">No hay listas todavía.</div>`
+    :LISTS.map(l=>`<div class="atl-item" data-lid="${l.id}"><span class="atl-name">${esc(l.name)}</span><span class="atl-cnt">${l.songIds.length} canc.</span></div>`).join("");
+  list.querySelectorAll(".atl-item").forEach(item=>{
+    item.addEventListener("click",()=>{
+      addToList(item.dataset.lid,_pendingIds);
+      document.getElementById("mov-atl").classList.remove("open");
+      selected.clear();selectMode=false;
+      document.getElementById("btn-sel").classList.remove("active");
+      document.getElementById("btn-sel").textContent="☰ Seleccionar";
+      renderSongList();switchTab("lists");
+    });
+  });
+  document.getElementById("mov-atl").classList.add("open");
+}
+["atl-close","atl-cancel"].forEach(id=>document.getElementById(id).addEventListener("click",()=>document.getElementById("mov-atl").classList.remove("open")));
+document.getElementById("atl-new").addEventListener("click",()=>{
+  document.getElementById("mov-atl").classList.remove("open");
+  openNameModal("",name=>{
+    const lst={id:uid(),name,songIds:[],color:"#E55A00"};LISTS.push(lst);
+    addToList(lst.id,_pendingIds);
+    selected.clear();selectMode=false;
+    document.getElementById("btn-sel").classList.remove("active");
+    document.getElementById("btn-sel").textContent="☰ Seleccionar";
+    renderSongList();switchTab("lists");
+  });
+});
+
+/* TABS */
+function switchTab(id){
+  document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===id));
+  document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+id));
+  if(id==="lists")renderLists();
+}
+document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.view)));
+
+/* NEW LIST FROM LISTS TAB */
+document.getElementById("btn-newlist").addEventListener("click",()=>{
+  openNameModal("",name=>{LISTS.push({id:uid(),name,songIds:[],color:"#E55A00"});saveLists();renderLists();});
+});
+
+/* SONG LIST EVENTS */
+document.getElementById("song-list").addEventListener("click",e=>{
+  const row=e.target.closest(".song-row");if(!row)return;
+  const song=SONGS[+row.dataset.idx];
+  if(selectMode){
+    if(selected.has(song.id)){selected.delete(song.id);row.classList.remove("selected");row.querySelector(".schk").textContent="";}
+    else{selected.add(song.id);row.classList.add("selected");row.querySelector(".schk").textContent="✓";}
+    updateFbar();
+  }else{
+    document.querySelectorAll(".song-row.active").forEach(r=>r.classList.remove("active"));
+    row.classList.add("active");showDetail(song);
+  }
+});
+document.getElementById("d-close").addEventListener("click",()=>{document.getElementById("detail-ov").classList.remove("open");document.querySelectorAll(".song-row.active").forEach(r=>r.classList.remove("active"));});
+document.getElementById("detail-ov").addEventListener("click",e=>{if(e.target===document.getElementById("detail-ov")){document.getElementById("detail-ov").classList.remove("open");document.querySelectorAll(".song-row.active").forEach(r=>r.classList.remove("active"));}});
+
+/* EDIT BUTTON */
+document.getElementById("d-edit").addEventListener("click",()=>{if(_detailSong)openEditModal(_detailSong);});
+
+/* DELETE BUTTON */
+document.getElementById("d-delete").addEventListener("click",()=>{
+  if(!_detailSong)return;
+  if(!confirm(`¿Eliminar "${_detailSong.t}"?\nEsta acción no se puede deshacer.`))return;
+  SONGS=SONGS.filter(s=>s.id!==_detailSong.id);
+  saveDB();updateCount();applyFilter();page=1;renderSongList();
+  document.getElementById("detail-ov").classList.remove("open");
+  _detailSong=null;
+});
+document.getElementById("search").addEventListener("input",e=>{query=e.target.value;page=1;applyFilter();renderSongList();});
+document.getElementById("lm-btn").addEventListener("click",()=>{page++;renderSongList();});
+
+/* LONG PRESS → select mode */
+let _lpTimer=null,_lpMoved=false;
+function _lpStart(e){
+  const row=e.target.closest(".song-row");if(!row||selectMode)return;
+  _lpMoved=false;row.classList.add("pressing");
+  _lpTimer=setTimeout(()=>{
+    row.classList.remove("pressing");
+    const song=SONGS[+row.dataset.idx];if(!song)return;
+    selectMode=true;
+    document.getElementById("btn-sel").classList.add("active");
+    document.getElementById("btn-sel").textContent="✕ Cancelar";
+    selected.add(song.id);
+    if(navigator.vibrate)navigator.vibrate(35);
+    renderSongList();
+  },480);
+}
+function _lpCancel(){
+  if(_lpTimer){clearTimeout(_lpTimer);_lpTimer=null;}
+  document.querySelectorAll(".song-row.pressing").forEach(r=>r.classList.remove("pressing"));
+}
+const sl=document.getElementById("song-list");
+sl.addEventListener("touchstart",_lpStart,{passive:true});
+sl.addEventListener("touchmove",e=>{if(!_lpMoved){_lpMoved=true;_lpCancel();}},{passive:true});
+sl.addEventListener("touchend",_lpCancel,{passive:true});
+sl.addEventListener("touchcancel",_lpCancel,{passive:true});
+sl.addEventListener("mousedown",_lpStart);
+sl.addEventListener("mouseup",_lpCancel);
+sl.addEventListener("mousemove",e=>{if(e.buttons&&_lpTimer)_lpCancel();});
+document.getElementById("btn-sel").addEventListener("click",()=>{
+  selectMode=!selectMode;
+  document.getElementById("btn-sel").classList.toggle("active",selectMode);
+  document.getElementById("btn-sel").textContent=selectMode?"✕ Cancelar":"☰ Seleccionar";
+  if(!selectMode)selected.clear();
+  renderSongList();
+});
+document.getElementById("fbar-clear").addEventListener("click",()=>{selected.clear();renderSongList();});
+document.getElementById("fbar-add").addEventListener("click",openATL);
+
+/* ── EDIT MODAL ── */
+let _editSong=null;
+function openEditModal(song){
+  _editSong=song;
+  document.getElementById("edit-title").value=song.t||"";
+  document.getElementById("edit-artist").value=song.a||"";
+  const st=document.getElementById("edit-status");st.textContent="";st.className="mstatus";
+  renderEditParas(song.p&&song.p.length?song.p:[{d:"",x:song.l||""}]);
+  document.getElementById("mov-edit").classList.add("open");
+  setTimeout(()=>document.getElementById("edit-title").focus(),120);
+}
+function renderEditParas(paras){
+  document.getElementById("edit-paras").innerHTML=paras.map((par,i)=>`
+    <div class="para-item">
+      <button class="para-rm" type="button" onclick="this.closest('.para-item').remove()">×</button>
+      <input class="para-label-input" placeholder="Etiqueta (ej: Coro, Estrofa 1…)" value="${esc(par.d||"")}">
+      <textarea class="para-textarea" placeholder="Letra de esta estrofa…">${esc(par.x||"")}</textarea>
+    </div>`).join("");
+}
+document.getElementById("edit-addpara").addEventListener("click",()=>{
+  const div=document.createElement("div");div.className="para-item";
+  div.innerHTML=`<button class="para-rm" type="button" onclick="this.closest('.para-item').remove()">×</button>
+    <input class="para-label-input" placeholder="Etiqueta (ej: Coro, Estrofa 1…)">
+    <textarea class="para-textarea" placeholder="Letra de esta estrofa…"></textarea>`;
+  document.getElementById("edit-paras").appendChild(div);
+  div.querySelector("textarea").focus();
+});
+document.getElementById("edit-save").addEventListener("click",()=>{
+  if(!_editSong)return;
+  const title=document.getElementById("edit-title").value.trim();
+  if(!title){const st=document.getElementById("edit-status");st.textContent="El título no puede estar vacío.";st.className="mstatus err";return;}
+  const paras=[...document.querySelectorAll("#edit-paras .para-item")].map(item=>({
+    d:item.querySelector(".para-label-input").value.trim(),
+    x:item.querySelector(".para-textarea").value
+  }));
+  _editSong.t=title;
+  _editSong.a=document.getElementById("edit-artist").value.trim();
+  _editSong.p=paras;
+  _editSong.l=paras.map(p=>p.x).join("\n\n");
+  saveDB();applyFilter();renderSongList();
+  showDetail(_editSong);
+  document.getElementById("mov-edit").classList.remove("open");
+});
+["edit-close","edit-cancel"].forEach(id=>document.getElementById(id).addEventListener("click",()=>document.getElementById("mov-edit").classList.remove("open")));
+document.getElementById("mov-edit").addEventListener("click",e=>{if(e.target===document.getElementById("mov-edit"))document.getElementById("mov-edit").classList.remove("open");});
+
+/* ── ADMIN ── */
+document.getElementById("btn-settings").addEventListener("click",openAdmin);
+let tapN=0,tapT=null;
+document.getElementById("header-tap").addEventListener("click",()=>{
+  tapN++;clearTimeout(tapT);
+  if(tapN>=5){tapN=0;openAdmin();}
+  else tapT=setTimeout(()=>tapN=0,3000);
+});
+function openAdmin(){
+  switchAdminTab("update");
+  deleteMarked.clear();renderDelList();
+  document.getElementById("mov-admin").classList.add("open");
+}
+document.getElementById("admin-close").addEventListener("click",()=>document.getElementById("mov-admin").classList.remove("open"));
+document.getElementById("mov-admin").addEventListener("click",e=>{if(e.target===document.getElementById("mov-admin"))document.getElementById("mov-admin").classList.remove("open");});
+
+/* Admin tabs */
+function switchAdminTab(id){
+  document.querySelectorAll(".admin-tab").forEach(t=>t.classList.toggle("active",t.dataset.apanel===id));
+  document.querySelectorAll(".admin-panel").forEach(p=>p.classList.toggle("active",p.id==="ap-"+id));
+}
+document.querySelectorAll(".admin-tab").forEach(t=>t.addEventListener("click",()=>switchAdminTab(t.dataset.apanel)));
+
+/* Update DB */
+const adminFile=document.getElementById("admin-file");
+document.getElementById("admin-zone").addEventListener("click",()=>adminFile.click());
+adminFile.addEventListener("change",()=>{
+  const file=adminFile.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const raw=JSON.parse(e.target.result);
+      if(!Array.isArray(raw)||(!raw[0]?.title&&!raw[0]?.t))throw new Error();
+      SONGS=raw.map(slimSong);
+      saveDB();updateCount();deleteMarked.clear();renderDelList();
+      applyFilter();page=1;renderSongList();
+      document.getElementById("db-tag").textContent="(actualizada)";
+      const st=document.getElementById("admin-status");st.textContent=`✓ ${SONGS.length} canciones cargadas`;st.className="mstatus ok";
+    }catch{
+      const st=document.getElementById("admin-status");st.textContent="✗ Formato inválido";st.className="mstatus err";
+    }
+  };
+  reader.readAsText(file);adminFile.value="";
+});
+document.getElementById("btn-reset-db").addEventListener("click",()=>{
+  if(!confirm("¿Restaurar la base de datos original?"))return;
+  localStorage.removeItem("holyrics_db");
+  SONGS=[];
+  updateCount();deleteMarked.clear();renderDelList();
+  applyFilter();page=1;renderSongList();
+  document.getElementById("db-tag").textContent="";
+  const st=document.getElementById("admin-status");st.textContent="✓ Base de datos original restaurada (vacía)";st.className="mstatus ok";
+});
+
+/* Delete panel */
+let delQuery="";
+function renderDelList(){
+  document.getElementById("del-count").textContent=deleteMarked.size;
+  const q=delQuery.trim().toLowerCase();
+  const items=!q?SONGS:SONGS.filter(s=>(s.t||"").toLowerCase().includes(q)||(s.a||"").toLowerCase().includes(q));
+  document.getElementById("del-list").innerHTML=items.map(s=>{
+    const marked=deleteMarked.has(s.id);
+    return`<div class="admin-row${marked?" marked":""}" data-id="${s.id}">
+      <div class="admin-chk">${marked?"✕":""}</div>
+      <div class="admin-info">
+        <div class="admin-st">${esc(s.t||"Sin título")}</div>
+        ${s.a?`<div class="admin-sa">${esc(s.a)}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("#del-list .admin-row").forEach(row=>{
+    row.addEventListener("click",()=>{
+      const id=Number(row.dataset.id);
+      if(deleteMarked.has(id)){deleteMarked.delete(id);row.classList.remove("marked");row.querySelector(".admin-chk").textContent="";}
+      else{deleteMarked.add(id);row.classList.add("marked");row.querySelector(".admin-chk").textContent="✕";}
+      document.getElementById("del-count").textContent=deleteMarked.size;
+    });
+  });
+}
+document.getElementById("del-search").addEventListener("input",e=>{delQuery=e.target.value;renderDelList();});
+document.getElementById("del-clear").addEventListener("click",()=>{deleteMarked.clear();renderDelList();});
+document.getElementById("del-confirm").addEventListener("click",()=>{
+  if(!deleteMarked.size)return;
+  if(!confirm(`¿Eliminar ${deleteMarked.size} canción${deleteMarked.size!==1?"es":""}? Esta acción no se puede deshacer.`))return;
+  SONGS=SONGS.filter(s=>!deleteMarked.has(s.id));
+  deleteMarked.clear();saveDB();updateCount();renderDelList();
+  applyFilter();page=1;renderSongList();
+  document.getElementById("db-tag").textContent="(modificada)";
+  const st=document.getElementById("del-status");st.textContent=`✓ Canciones eliminadas. Quedan ${SONGS.length} en la base.`;st.className="mstatus ok";
+});
+
+/* Export DB */
+document.getElementById("btn-export-db").addEventListener("click",()=>{
+  const data=JSON.stringify(SONGS.map(toHolyricsFormat),null,2);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+  a.download="Holyrics_Backup.json";
+  a.click();URL.revokeObjectURL(a.href);
+});
+
+/* INIT */
+(async()=>{
+  loadLists();
+  let data;
+
+  // 1. Primero intentá cargar desde localStorage (cambios locales)
+  try{const s=localStorage.getItem("holyrics_db");if(s){data=JSON.parse(s);document.getElementById("db-tag").textContent="(modificada)";}}catch{}
+
+  // 2. Si no hay nada local, bajá el JSON del repo
+  if(!data){
+    try{
+      const res=await fetch("canciones.json");
+      if(!res.ok)throw new Error("HTTP "+res.status);
+      const raw=await res.json();
+      data=raw;
+      document.getElementById("db-tag").textContent="(repo)";
+    }catch(e){console.warn("No se pudo cargar canciones.json:",e);}
+  }
+
+  if(data)SONGS=data.map(s=>s.title!==undefined?slimSong(s):s);
+  else SONGS=[];
+  updateCount();applyFilter();renderSongList();updateBadge();
+  document.getElementById("loading").style.display="none";
+  document.getElementById("app").style.display="";
+})();
+</script>
+</body>
+</html>
