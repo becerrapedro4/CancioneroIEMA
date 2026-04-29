@@ -1,0 +1,135 @@
+<!-- control.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Control - Cancionero en Tiempo Real</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="control-container">
+        <h1>Panel de Control</h1>
+        <div class="room-info">
+            <p><strong>Sala:</strong> <span id="room-name"></span></p>
+            <p><strong>URL del Viewer:</strong> <span id="viewer-url"></span></p>
+            <button id="copy-url-btn">Copiar URL</button>
+        </div>
+        
+        <div class="song-selector">
+            <h2>Seleccionar Canción</h2>
+            <select id="song-select">
+                <option value="">-- Elegí una canción --</option>
+            </select>
+            <button id="send-song-btn">Enviar al Viewer</button>
+        </div>
+        
+        <div class="color-picker">
+            <h2>Color de Fondo del Viewer</h2>
+            <input type="color" id="bg-color" value="#1a1a2e">
+            <button id="apply-color-btn">Aplicar Color</button>
+        </div>
+        
+        <button id="logout-btn">Cerrar sesión</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
+            authDomain: "browser-songs.firebaseapp.com",
+            databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
+            projectId: "browser-songs",
+            storageBucket: "browser-songs.firebasestorage.app",
+            messagingSenderId: "665974000150",
+            appId: "1:665974000150:web:72187dd8ee24024e410337",
+            measurementId: "G-QNT3346SCX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Verificar sesión
+        const username = localStorage.getItem('cancionero_username');
+        if (!username) {
+            window.location.href = 'login.html';
+        }
+
+        const roomId = username;
+        document.getElementById('room-name').textContent = roomId;
+
+        // Generar URL del viewer
+        const viewerUrl = `${window.location.origin}${window.location.pathname.replace('control.html', 'viewer.html')}?room=${encodeURIComponent(roomId)}`;
+        document.getElementById('viewer-url').textContent = viewerUrl;
+
+        document.getElementById('copy-url-btn').addEventListener('click', () => {
+            navigator.clipboard.writeText(viewerUrl).then(() => {
+                alert('¡URL copiada al portapapeles!');
+            });
+        });
+
+        // Cargar canciones de ejemplo (mock)
+        const songs = [
+            { id: 1, titulo: "DING DIN DONG", letra: "Ding din dong, ding din dong...\nSuenan las campanas hoy.\nDing din dong, ding din dong...\nCristo el Salvador nació." },
+            { id: 2, titulo: "NOCHE DE PAZ", letra: "Noche de paz, noche de amor,\nTodo duerme en derredor.\nEntre sus astros que esparcen su luz,\nBella anunciando al niño Jesús." },
+            { id: 3, titulo: "OH VEN EMANUEL (BOSSA)", letra: "Oh ven, oh ven, Emanuel,\nLiberta al cautivo Israel.\nQue sufre desterrado aquí,\nY espera al Hijo de David." },
+            // Agrega más canciones aquí
+        ];
+
+        const songSelect = document.getElementById('song-select');
+        songs.forEach(song => {
+            const option = document.createElement('option');
+            option.value = song.id;
+            option.textContent = song.titulo;
+            songSelect.appendChild(option);
+        });
+
+        // Enviar canción seleccionada
+        document.getElementById('send-song-btn').addEventListener('click', () => {
+            const songId = parseInt(songSelect.value);
+            if (!songId) {
+                alert('Por favor seleccioná una canción.');
+                return;
+            }
+            const song = songs.find(s => s.id === songId);
+            if (song) {
+                const songData = {
+                    id: song.id,
+                    titulo: song.titulo,
+                    letra: song.letra,
+                    timestamp: Date.now()
+                };
+                set(ref(db, `rooms/${roomId}/currentSong`), songData)
+                    .then(() => console.log('Canción enviada:', song.titulo))
+                    .catch(err => console.error('Error al enviar canción:', err));
+            }
+        });
+
+        // Aplicar color de fondo
+        document.getElementById('apply-color-btn').addEventListener('click', () => {
+            const color = document.getElementById('bg-color').value;
+            update(ref(db, `rooms/${roomId}/config`), { bgColor: color })
+                .then(() => console.log('Color aplicado:', color))
+                .catch(err => console.error('Error al aplicar color:', err));
+        });
+
+        // Cargar configuración actual al iniciar
+        const roomRef = ref(db, `rooms/${roomId}`);
+        onValue(roomRef, (snapshot) => {
+            const data = snapshot.val();
+            if (data && data.config && data.config.bgColor) {
+                document.getElementById('bg-color').value = data.config.bgColor;
+            }
+        });
+
+        // Logout
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            localStorage.removeItem('cancionero_username');
+            localStorage.removeItem('cancionero_room');
+            window.location.href = 'login.html';
+        });
+    </script>
+</body>
+</html>
