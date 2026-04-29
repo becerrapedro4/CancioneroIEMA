@@ -1,0 +1,238 @@
+<!-- viewer.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Viewer - Cancionero en Tiempo Real</title>
+    <style>
+        :root {
+            --bg-color: #1a1a2e;
+            --text-color: #ffffff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+            transition: background-color 0.5s ease;
+        }
+
+        /* Fondo animado suave (ondas) */
+        .animated-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%);
+            animation: pulse 8s ease-in-out infinite alternate;
+        }
+
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+                opacity: 0.3;
+            }
+            100% {
+                transform: scale(1.2);
+                opacity: 0.6;
+            }
+        }
+
+        /* Otra capa de fondo animada */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+        }
+
+        .particle {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 50%;
+            animation: float linear infinite;
+        }
+
+        @keyframes float {
+            0% {
+                transform: translateY(0) rotate(0deg);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) rotate(360deg);
+                opacity: 0;
+            }
+        }
+
+        /* Contenido principal */
+        .content {
+            position: relative;
+            z-index: 1;
+            text-align: center;
+            padding: 2rem;
+            max-width: 90%;
+        }
+
+        .song-title {
+            font-size: clamp(2rem, 6vw, 5rem);
+            font-weight: bold;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            animation: fadeInUp 0.8s ease-out;
+        }
+
+        .song-lyrics {
+            font-size: clamp(1.2rem, 3vw, 2.5rem);
+            white-space: pre-line;
+            line-height: 1.6;
+            margin-bottom: 2rem;
+            animation: fadeInUp 1s ease-out 0.2s both;
+        }
+
+        .waiting-message {
+            font-size: 1.5rem;
+            opacity: 0.7;
+            animation: fadeInOut 2s ease-in-out infinite;
+        }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes fadeInOut {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 1; }
+        }
+
+        /* Overlay para OBS/vMix (sin bordes) */
+        .obs-friendly {
+            /* Apto para superponer en OBS/vMix */
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-background"></div>
+    <div class="particles" id="particles"></div>
+    
+    <div class="content">
+        <div id="song-display">
+            <div class="waiting-message" id="waiting-message">
+                Esperando canción...
+            </div>
+            <h1 class="song-title" id="song-title" style="display: none;"></h1>
+            <div class="song-lyrics" id="song-lyrics" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
+            authDomain: "browser-songs.firebaseapp.com",
+            databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
+            projectId: "browser-songs",
+            storageBucket: "browser-songs.firebasestorage.app",
+            messagingSenderId: "665974000150",
+            appId: "1:665974000150:web:72187dd8ee24024e410337",
+            measurementId: "G-QNT3346SCX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Obtener room de la URL (?room=...)
+        const urlParams = new URLSearchParams(window.location.search);
+        const roomId = urlParams.get('room');
+
+        if (!roomId) {
+            document.getElementById('waiting-message').textContent = 'Error: No se especificó una sala. Agregá ?room=nombreDeSala a la URL.';
+        } else {
+            // Referencia a la sala
+            const roomRef = ref(db, `rooms/${roomId}`);
+
+            // Escuchar cambios en tiempo real
+            onValue(roomRef, (snapshot) => {
+                const data = snapshot.val();
+                if (data) {
+                    // Actualizar color de fondo
+                    if (data.config && data.config.bgColor) {
+                        document.documentElement.style.setProperty('--bg-color', data.config.bgColor);
+                    }
+                    
+                    // Actualizar canción
+                    if (data.currentSong) {
+                        const song = data.currentSong;
+                        document.getElementById('waiting-message').style.display = 'none';
+                        document.getElementById('song-title').style.display = 'block';
+                        document.getElementById('song-title').textContent = song.titulo;
+                        document.getElementById('song-lyrics').style.display = 'block';
+                        document.getElementById('song-lyrics').textContent = song.letra;
+                    } else {
+                        document.getElementById('waiting-message').style.display = 'block';
+                        document.getElementById('song-title').style.display = 'none';
+                        document.getElementById('song-lyrics').style.display = 'none';
+                    }
+                } else {
+                    document.getElementById('waiting-message').style.display = 'block';
+                    document.getElementById('song-title').style.display = 'none';
+                    document.getElementById('song-lyrics').style.display = 'none';
+                }
+            }, (error) => {
+                console.error('Error al escuchar cambios:', error);
+                document.getElementById('waiting-message').textContent = 'Error de conexión. Reintentando...';
+            });
+        }
+
+        // Generar partículas animadas (opcional)
+        function createParticles() {
+            const container = document.getElementById('particles');
+            for (let i = 0; i < 30; i++) {
+                const particle = document.createElement('div');
+                particle.classList.add('particle');
+                const size = Math.random() * 5 + 2;
+                particle.style.width = size + 'px';
+                particle.style.height = size + 'px';
+                particle.style.left = Math.random() * 100 + '%';
+                particle.style.top = Math.random() * 100 + '%';
+                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
+                particle.style.animationDelay = Math.random() * 10 + 's';
+                container.appendChild(particle);
+            }
+        }
+        createParticles();
+
+        // Reconexión: mantener última canción cargada (ya se maneja con el snapshot inicial de onValue)
+    </script>
+</body>
+</html>
