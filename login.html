@@ -1,0 +1,58 @@
+<!-- login.html -->
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ingreso - Cancionero en Tiempo Real</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="login-container">
+        <h1>Cancionero en Tiempo Real</h1>
+        <form id="login-form">
+            <label for="username">Elegí tu nombre de usuario (será tu sala única):</label>
+            <input type="text" id="username" placeholder="ej. iglesia_principal" required autofocus>
+            <button type="submit">Ingresar</button>
+        </form>
+        <p class="info">Este nombre define tu "room" o sala. Compartilo con quien maneje la página de control.</p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
+            authDomain: "browser-songs.firebaseapp.com",
+            databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
+            projectId: "browser-songs",
+            storageBucket: "browser-songs.firebasestorage.app",
+            messagingSenderId: "665974000150",
+            appId: "1:665974000150:web:72187dd8ee24024e410337",
+            measurementId: "G-QNT3346SCX"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('login-form').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim();
+            if (username) {
+                // Guardar en localStorage
+                localStorage.setItem('cancionero_username', username);
+                localStorage.setItem('cancionero_room', username);
+                
+                // Redirigir a la página de control (o se podría elegir)
+                window.location.href = 'control.html';
+            }
+        });
+
+        // Si ya hay sesión, redirigir directamente
+        if (localStorage.getItem('cancionero_username')) {
+            window.location.href = 'control.html';
+        }
+    </script>
+</body>
+</html>
