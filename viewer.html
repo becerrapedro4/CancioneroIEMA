@@ -1,238 +1,188 @@
-<!-- viewer.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Viewer - Cancionero en Tiempo Real</title>
-    <style>
-        :root {
-            --bg-color: #1a1a2e;
-            --text-color: #ffffff;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Viewer — Cancionero IEMA</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#000;--tx:#fff;--accent:#F5A623;--dur:.45s}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);color:var(--tx);font-family:'DM Sans',system-ui,sans-serif}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+/* ── ORBS (fondo animado) ── */
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0;transition:opacity .6s}
+.orb{position:absolute;border-radius:50%;filter:blur(90px);opacity:.22;animation:drift 18s ease-in-out infinite}
+.orb1{width:70vw;height:70vw;background:var(--accent);top:-15%;left:-15%;animation-delay:0s}
+.orb2{width:50vw;height:50vw;background:var(--accent);bottom:-10%;right:-10%;animation-delay:-7s;opacity:.14}
+.orb3{width:35vw;height:35vw;background:#fff;top:40%;left:55%;animation-delay:-13s;opacity:.05}
+@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4%,6%) scale(1.05)}66%{transform:translate(-3%,3%) scale(.97)}}
 
-        body {
-            background-color: var(--bg-color);
-            color: var(--text-color);
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh;
-            overflow: hidden;
-            transition: background-color 0.5s ease;
-        }
+/* ── MAIN STAGE ── */
+.stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8vw;text-align:center;transition:opacity var(--dur)}
+.stage.hidden{opacity:0;pointer-events:none}
 
-        /* Fondo animado suave (ondas) */
-        .animated-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-            background: radial-gradient(ellipse at center, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.2) 100%);
-            animation: pulse 8s ease-in-out infinite alternate;
-        }
+.song-label{font-size:clamp(10px,1.5vw,16px);letter-spacing:4px;text-transform:uppercase;color:rgba(255,255,255,.4);margin-bottom:2.5vh;transition:opacity var(--dur)}
+.stanza-label{font-size:clamp(9px,1.2vw,14px);letter-spacing:3px;text-transform:uppercase;color:var(--accent);opacity:.7;margin-bottom:3vh;min-height:1em;transition:opacity var(--dur)}
+.lyric{font-size:clamp(28px,5.5vw,80px);font-weight:600;line-height:1.45;text-transform:uppercase;letter-spacing:.02em;white-space:pre-wrap;max-width:90vw;transition:opacity var(--dur),transform var(--dur)}
 
-        @keyframes pulse {
-            0% {
-                transform: scale(1);
-                opacity: 0.3;
-            }
-            100% {
-                transform: scale(1.2);
-                opacity: 0.6;
-            }
-        }
+/* stanza transition */
+.lyric.fade-out{opacity:0;transform:translateY(12px)}
+.lyric.fade-in{animation:lyricIn var(--dur) ease forwards}
+@keyframes lyricIn{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
 
-        /* Otra capa de fondo animada */
-        .particles {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 0;
-        }
+/* progress dots */
+.progress{position:fixed;bottom:4vh;left:50%;transform:translateX(-50%);z-index:2;display:flex;gap:8px;opacity:.5}
+.pdot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);transition:background .3s,transform .3s}
+.pdot.active{background:var(--accent);transform:scale(1.5)}
 
-        .particle {
-            position: absolute;
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 50%;
-            animation: float linear infinite;
-        }
+/* ── WAITING / STOP screen ── */
+.waiting{position:fixed;inset:0;z-index:3;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;opacity:0;pointer-events:none;transition:opacity .6s}
+.waiting.visible{opacity:1;pointer-events:auto}
+.waiting-logo{font-size:clamp(28px,5vw,52px);font-weight:700;letter-spacing:-1px;color:rgba(255,255,255,.15)}
+.waiting-label{font-size:clamp(10px,1.5vw,14px);letter-spacing:3px;text-transform:uppercase;color:rgba(255,255,255,.2);animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:.4}50%{opacity:1}}
 
-        @keyframes float {
-            0% {
-                transform: translateY(0) rotate(0deg);
-                opacity: 0;
-            }
-            10% {
-                opacity: 1;
-            }
-            90% {
-                opacity: 1;
-            }
-            100% {
-                transform: translateY(-100vh) rotate(360deg);
-                opacity: 0;
-            }
-        }
+/* ── ROOM badge ── */
+.room-badge{position:fixed;top:20px;right:24px;z-index:10;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:rgba(255,255,255,.2);background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08);border-radius:999px;padding:5px 12px;backdrop-filter:blur(8px)}
 
-        /* Contenido principal */
-        .content {
-            position: relative;
-            z-index: 1;
-            text-align: center;
-            padding: 2rem;
-            max-width: 90%;
-        }
-
-        .song-title {
-            font-size: clamp(2rem, 6vw, 5rem);
-            font-weight: bold;
-            margin-bottom: 2rem;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
-            animation: fadeInUp 0.8s ease-out;
-        }
-
-        .song-lyrics {
-            font-size: clamp(1.2rem, 3vw, 2.5rem);
-            white-space: pre-line;
-            line-height: 1.6;
-            margin-bottom: 2rem;
-            animation: fadeInUp 1s ease-out 0.2s both;
-        }
-
-        .waiting-message {
-            font-size: 1.5rem;
-            opacity: 0.7;
-            animation: fadeInOut 2s ease-in-out infinite;
-        }
-
-        @keyframes fadeInUp {
-            from {
-                opacity: 0;
-                transform: translateY(30px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        @keyframes fadeInOut {
-            0%, 100% { opacity: 0.5; }
-            50% { opacity: 1; }
-        }
-
-        /* Overlay para OBS/vMix (sin bordes) */
-        .obs-friendly {
-            /* Apto para superponer en OBS/vMix */
-        }
-    </style>
+/* ── FULLSCREEN hint ── */
+.fs-hint{position:fixed;bottom:20px;right:24px;z-index:10;font-size:11px;color:rgba(255,255,255,.15);cursor:pointer;letter-spacing:1px;transition:color .2s}
+.fs-hint:hover{color:rgba(255,255,255,.5)}
+</style>
 </head>
 <body>
-    <div class="animated-background"></div>
-    <div class="particles" id="particles"></div>
-    
-    <div class="content">
-        <div id="song-display">
-            <div class="waiting-message" id="waiting-message">
-                Esperando canción...
-            </div>
-            <h1 class="song-title" id="song-title" style="display: none;"></h1>
-            <div class="song-lyrics" id="song-lyrics" style="display: none;"></div>
-        </div>
-    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-        import { getDatabase, ref, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+<div class="orbs">
+  <div class="orb orb1"></div>
+  <div class="orb orb2"></div>
+  <div class="orb orb3"></div>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-            authDomain: "browser-songs.firebaseapp.com",
-            databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
-            projectId: "browser-songs",
-            storageBucket: "browser-songs.firebasestorage.app",
-            messagingSenderId: "665974000150",
-            appId: "1:665974000150:web:72187dd8ee24024e410337",
-            measurementId: "G-QNT3346SCX"
-        };
+<div class="room-badge" id="room-badge"></div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+<div class="stage" id="stage">
+  <div class="song-label" id="song-label"></div>
+  <div class="stanza-label" id="stanza-label"></div>
+  <div class="lyric" id="lyric"></div>
+</div>
 
-        // Obtener room de la URL (?room=...)
-        const urlParams = new URLSearchParams(window.location.search);
-        const roomId = urlParams.get('room');
+<div class="progress" id="progress"></div>
 
-        if (!roomId) {
-            document.getElementById('waiting-message').textContent = 'Error: No se especificó una sala. Agregá ?room=nombreDeSala a la URL.';
-        } else {
-            // Referencia a la sala
-            const roomRef = ref(db, `rooms/${roomId}`);
+<div class="waiting visible" id="waiting">
+  <div class="waiting-logo">CANCIONERO IEMA</div>
+  <div class="waiting-label">Esperando presentación…</div>
+</div>
 
-            // Escuchar cambios en tiempo real
-            onValue(roomRef, (snapshot) => {
-                const data = snapshot.val();
-                if (data) {
-                    // Actualizar color de fondo
-                    if (data.config && data.config.bgColor) {
-                        document.documentElement.style.setProperty('--bg-color', data.config.bgColor);
-                    }
-                    
-                    // Actualizar canción
-                    if (data.currentSong) {
-                        const song = data.currentSong;
-                        document.getElementById('waiting-message').style.display = 'none';
-                        document.getElementById('song-title').style.display = 'block';
-                        document.getElementById('song-title').textContent = song.titulo;
-                        document.getElementById('song-lyrics').style.display = 'block';
-                        document.getElementById('song-lyrics').textContent = song.letra;
-                    } else {
-                        document.getElementById('waiting-message').style.display = 'block';
-                        document.getElementById('song-title').style.display = 'none';
-                        document.getElementById('song-lyrics').style.display = 'none';
-                    }
-                } else {
-                    document.getElementById('waiting-message').style.display = 'block';
-                    document.getElementById('song-title').style.display = 'none';
-                    document.getElementById('song-lyrics').style.display = 'none';
-                }
-            }, (error) => {
-                console.error('Error al escuchar cambios:', error);
-                document.getElementById('waiting-message').textContent = 'Error de conexión. Reintentando...';
-            });
-        }
+<div class="fs-hint" id="fs-hint" title="Pantalla completa">⛶ Fullscreen</div>
 
-        // Generar partículas animadas (opcional)
-        function createParticles() {
-            const container = document.getElementById('particles');
-            for (let i = 0; i < 30; i++) {
-                const particle = document.createElement('div');
-                particle.classList.add('particle');
-                const size = Math.random() * 5 + 2;
-                particle.style.width = size + 'px';
-                particle.style.height = size + 'px';
-                particle.style.left = Math.random() * 100 + '%';
-                particle.style.top = Math.random() * 100 + '%';
-                particle.style.animationDuration = (Math.random() * 10 + 10) + 's';
-                particle.style.animationDelay = Math.random() * 10 + 's';
-                container.appendChild(particle);
-            }
-        }
-        createParticles();
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script>
+const FB_CONFIG={
+  apiKey:"AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
+  authDomain:"browser-songs.firebaseapp.com",
+  databaseURL:"https://browser-songs-default-rtdb.firebaseio.com",
+  projectId:"browser-songs"
+};
 
-        // Reconexión: mantener última canción cargada (ya se maneja con el snapshot inicial de onValue)
-    </script>
+firebase.initializeApp(FB_CONFIG);
+const db=firebase.database();
+
+// ── get room from URL ──
+const params=new URLSearchParams(location.search);
+let room=params.get("room")||(localStorage.getItem("pres_room")||"");
+
+if(!room){
+  room=prompt("Nombre de la sala:","iglesia")||"iglesia";
+  room=room.trim().replace(/[^a-zA-Z0-9_-]/g,"_");
+}
+localStorage.setItem("pres_room",room);
+document.getElementById("room-badge").textContent="⬤ "+room;
+
+// ── state ──
+let currentId=null;
+
+function setAccent(hex){
+  // change orb colors to match presenter choice if desired
+}
+
+function showLyric(data){
+  if(!data||data.stop){
+    // stop / offline
+    document.getElementById("waiting").classList.add("visible");
+    document.getElementById("stage").classList.add("hidden");
+    document.getElementById("progress").innerHTML="";
+    currentId=null;
+    return;
+  }
+
+  if(data.blank){
+    // blank screen
+    document.getElementById("waiting").classList.remove("visible");
+    document.getElementById("stage").classList.add("hidden");
+    document.getElementById("progress").innerHTML="";
+    return;
+  }
+
+  document.getElementById("waiting").classList.remove("visible");
+
+  // animate lyric change
+  const lyricEl=document.getElementById("lyric");
+  lyricEl.classList.add("fade-out");
+
+  setTimeout(()=>{
+    document.getElementById("song-label").textContent=data.titulo||"";
+    document.getElementById("stanza-label").textContent=data.label||"";
+    lyricEl.textContent=data.estrofa||"";
+    lyricEl.classList.remove("fade-out","fade-in");
+    // force reflow
+    void lyricEl.offsetWidth;
+    lyricEl.classList.add("fade-in");
+    document.getElementById("stage").classList.remove("hidden");
+
+    // progress dots
+    const prog=document.getElementById("progress");
+    if(data.total>1){
+      prog.innerHTML=Array.from({length:data.total},(_,i)=>
+        `<div class="pdot${i===data.idx?" active":""}"></div>`
+      ).join("");
+    } else {
+      prog.innerHTML="";
+    }
+  },200);
+
+  currentId=data.id;
+}
+
+// ── listen ──
+db.ref(`rooms/${room}/currentSong`).on("value",snap=>{
+  showLyric(snap.val());
+});
+
+// ── fullscreen ──
+document.getElementById("fs-hint").addEventListener("click",()=>{
+  if(!document.fullscreenElement){
+    document.documentElement.requestFullscreen().catch(()=>{});
+    document.getElementById("fs-hint").textContent="✕ Salir";
+  } else {
+    document.exitFullscreen();
+    document.getElementById("fs-hint").textContent="⛶ Fullscreen";
+  }
+});
+document.addEventListener("fullscreenchange",()=>{
+  if(!document.fullscreenElement)
+    document.getElementById("fs-hint").textContent="⛶ Fullscreen";
+});
+
+// ── prevent sleep on mobile ──
+let wakeLock=null;
+if("wakeLock" in navigator){
+  navigator.wakeLock.request("screen").then(wl=>{wakeLock=wl;}).catch(()=>{});
+  document.addEventListener("visibilitychange",()=>{
+    if(document.visibilityState==="visible"&&!wakeLock)
+      navigator.wakeLock.request("screen").then(wl=>{wakeLock=wl;}).catch(()=>{});
+  });
+}
+</script>
 </body>
 </html>
