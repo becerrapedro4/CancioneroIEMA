@@ -732,32 +732,6 @@ function presentFromList(lid, sid) {
   document.getElementById("detail-ov").classList.remove("open");
 }
 
-  // Si la canción tiene estrofas, presentar la primera
-  const stanzas=presStanzas(song);
-  const stanza=stanzas[0]||{d:"",x:song.l||""};
-  try{
-    const db=firebase.database(firebase.apps[0]||firebase.initializeApp({
-      apiKey:"AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-      authDomain:"browser-songs.firebaseapp.com",
-      databaseURL:"https://browser-songs-default-rtdb.firebaseio.com",
-      projectId:"browser-songs"
-    }));
-    db.ref(`rooms/${_presRoom}/currentSong`).set({
-      type:"song",blank:false,
-      titulo:song.t||"",
-      estrofa:stanza.x,
-      label:stanza.d,
-      idx:0,
-      total:stanzas.length,
-      showRef:false,
-      version:"",
-      ts:Date.now()
-    });
-    toast(`📺 ${song.t}`);
-  }catch(e){
-    toast("Error: "+e.message);
-  }
-
 
 /* EXPORT LIST */
 function buildExportHTML(lst){
