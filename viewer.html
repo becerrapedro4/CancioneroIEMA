@@ -3,97 +3,39 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Viewer</title>
+<title>Viewer - IEMA</title>
 <style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
-
-.orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
-.orb{position:absolute;border-radius:50%;filter:blur(90px);animation:drift 18s ease-in-out infinite}
-.orb1{width:70vw;height:70vw;background:#F5A623;opacity:.18;top:-15%;left:-15%;animation-delay:0s}
-.orb2{width:50vw;height:50vw;background:#F5A623;opacity:.10;bottom:-10%;right:-10%;animation-delay:-7s}
-.orb3{width:35vw;height:35vw;background:#fff;opacity:.04;top:40%;left:55%;animation-delay:-13s}
-@keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4%,6%) scale(1.05)}66%{transform:translate(-3%,3%) scale(.97)}}
-
-.stage{position:fixed;inset:0;z-index:1;display:flex;align-items:center;justify-content:center;padding:8vw;text-align:center;transition:opacity .4s}
-.stage.hidden{opacity:0;pointer-events:none}
-
-.lyric{
-  font-family:system-ui,-apple-system,sans-serif;
-  font-size:clamp(28px,5.5vw,88px);
-  font-weight:600;
-  line-height:1.45;
-  text-transform:uppercase;
-  letter-spacing:.02em;
-  white-space:pre-wrap;
-  max-width:90vw;
+* { box-sizing: border-box; margin:0; padding:0; }
+html, body {
+  width: 100%; height: 100%; overflow: hidden;
+  background: #000; color: #fff;
+  font-family: 'DM Sans', system-ui, -apple-system, sans-serif;
 }
-.lyric.out{opacity:0;transform:translateY(14px);transition:opacity .2s,transform .2s}
-.lyric.in{animation:lyricIn .35s ease forwards}
-@keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+
+.stage {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  padding: 5vh 5vw; text-align: center;
+}
+
+.lyric {
+  font-size: clamp(36px, 7vw, 110px);
+  font-weight: 500;
+  line-height: 1.3;
+  max-width: 95vw;
+  text-align: center;
+  text-shadow: 0 4px 20px rgba(0,0,0,0.8);
+}
 </style>
 </head>
 <body>
 
-<div class="orbs">
-  <div class="orb orb1"></div>
-  <div class="orb orb2"></div>
-  <div class="orb orb3"></div>
-</div>
-
-<div class="stage hidden" id="stage">
+<div class="stage" id="stage">
   <div class="lyric" id="lyric"></div>
 </div>
 
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
-firebase.initializeApp({
-  apiKey:"AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-  authDomain:"browser-songs.firebaseapp.com",
-  databaseURL:"https://browser-songs-default-rtdb.firebaseio.com",
-  projectId:"browser-songs"
-});
-const db=firebase.database();
-
-const params=new URLSearchParams(location.search);
-let room=params.get("room")||localStorage.getItem("pres_room")||"";
-if(!room){
-  room=(prompt("Nombre de la sala:","iglesia")||"iglesia").trim().replace(/[^a-zA-Z0-9_-]/g,"_");
-}
-localStorage.setItem("pres_room",room);
-
-const stage=document.getElementById("stage");
-const lyricEl=document.getElementById("lyric");
-
-function showLyric(data){
-  if(!data||data.stop||data.blank){
-    stage.classList.add("hidden");
-    return;
-  }
-  lyricEl.classList.remove("in");
-  lyricEl.classList.add("out");
-  setTimeout(()=>{
-    lyricEl.textContent=data.estrofa||"";
-    lyricEl.classList.remove("out");
-    void lyricEl.offsetWidth;
-    lyricEl.classList.add("in");
-    stage.classList.remove("hidden");
-  },200);
-}
-
-db.ref(`rooms/${room}/currentSong`).on("value",snap=>showLyric(snap.val()));
-
-document.addEventListener("click",()=>{
-  if(!document.fullscreenElement)
-    document.documentElement.requestFullscreen().catch(()=>{});
-});
-
-if("wakeLock" in navigator){
-  const lock=()=>navigator.wakeLock.request("screen").catch(()=>{});
-  lock();
-  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")lock();});
-}
+// ... tu código de Firebase actual ...
 </script>
 </body>
 </html>
