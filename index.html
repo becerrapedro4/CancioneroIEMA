@@ -793,7 +793,7 @@ function buildExportHTML(lst){
     <div class="hc">${songs.length} canciones</div>
   </header>
   <main id="song-list"></main>
-  <footer>Jóvenes de la IEMA · Rosario</footer>
+  <footer>IEMA · Rosario</footer>
   ${acScript}
 </body>
 </html>`;
@@ -855,7 +855,7 @@ function buildExportHTML(lst){
     <div class="sec-label">Lista de canciones</div>
     <div id="song-list"></div>
   </div>
-  <footer>Jóvenes de la IEMA · Rosario</footer>
+  <footer>IEMA · Rosario</footer>
   ${acScript}
 </body>
 </html>`;
@@ -925,7 +925,7 @@ function buildExportHTML(lst){
     <div class="hero-arrow">↓</div>
   </div>
   <div class="content" id="song-list"></div>
-  <footer>Jóvenes de la IEMA · Rosario</footer>
+  <footer>IEMA · Rosario</footer>
   ${acScript}
 </body>
 </html>`;
@@ -939,13 +939,26 @@ function exportList(lid,type){
     a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));
     a.download=lst.name.replace(/[^a-z0-9áéíóúñü ]/gi,"_")+".html";
     a.click();URL.revokeObjectURL(a.href);
-  }else{
-    // PDF: one song per page max, two columns if long
+ }else{
+    // PDF: una canción por página máximo, con primera hoja = índice
     const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
+    
+    // ─── PRIMERA HOJA: Índice de canciones (solo título y artista) ───
+    const indexBody=songs.map((s,i)=>`
+      <div class="idx-row">
+        <span class="idx-num">${String(i+1).padStart(2,'0')}</span>
+        <div class="idx-info">
+          <div class="idx-title">${esc(s.t||"Sin título")}</div>
+          ${s.a?`<div class="idx-artist">${esc(s.a)}</div>`:""}
+        </div>
+      </div>
+    `).join("");
+    
+    // ─── HOJAS SIGUIENTES: Letras completas ───
     const songsHTML=songs.map(s=>{
       const stanzas=s.p&&s.p.length?s.p:[{d:"",x:s.l||""}];
       const totalChars=stanzas.reduce((n,p)=>n+(p.x||"").length,0);
-      const isLong=totalChars>500; // threshold for two-column
+      const isLong=totalChars>500;
       const body=stanzas.map(p=>`
         ${p.d?`<div class="slabel">${esc(p.d)}</div>`:""}
         <div class="stext">${esc(p.x||"")}</div>`).join('<div class="sdiv"></div>');
@@ -957,12 +970,28 @@ function exportList(lid,type){
         <div class="pbody${isLong?" two-col":""}">${body}</div>
       </div>`;
     }).join("");
+    
+    // ─── HTML COMPLETO ───
     const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>${esc(lst.name)}</title>
 <style>
   *{box-sizing:border-box;margin:0;padding:0}
   @page{size:A4 portrait;margin:18mm 18mm}
   body{font-family:system-ui,-apple-system,sans-serif;color:#111;background:#fff}
+  
+  /* PÁGINA DE ÍNDICE */
+  .idx-page{page-break-after:always;height:257mm;display:flex;flex-direction:column}
+  .idx-header{flex-shrink:0;border-bottom:3px solid #000;padding-bottom:12px;margin-bottom:16px}
+  .idx-list-title{font-size:26pt;font-weight:800;text-transform:uppercase;letter-spacing:-1px;line-height:1}
+  .idx-list-sub{font-size:10pt;color:#777;margin-top:4px;letter-spacing:2px}
+  .idx-body{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+  .idx-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid #eee}
+  .idx-num{font-size:10pt;font-weight:700;color:#999;min-width:24px;text-align:right;font-variant-numeric:tabular-nums}
+  .idx-info{flex:1;min-width:0}
+  .idx-title{font-size:12pt;font-weight:600;text-transform:uppercase}
+  .idx-artist{font-size:9pt;color:#999;margin-top:1px}
+  
+  /* CANCIONES */
   .page{page-break-after:always;page-break-inside:avoid;height:257mm;display:flex;flex-direction:column}
   .page:last-child{page-break-after:avoid}
   .pheader{flex-shrink:0;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:10px}
@@ -973,12 +1002,26 @@ function exportList(lid,type){
   .slabel{font-size:7.5pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin:14px 0 4px;break-after:avoid}
   .stext{font-size:11.5pt;line-height:1.95;text-transform:uppercase;white-space:pre-wrap;break-inside:avoid}
   .sdiv{height:10px;break-inside:avoid}
-</style></head><body>${songsHTML}</body></html>`;
+</style></head><body>
+
+<!-- ÍNDICE -->
+<div class="idx-page">
+  <div class="idx-header">
+    <div class="idx-list-title">${esc(lst.name)}</div>
+    <div class="idx-list-sub">${songs.length} canciones · Lista de contenido</div>
+  </div>
+  <div class="idx-body">${indexBody}</div>
+</div>
+
+<!-- CANCIONES -->
+${songsHTML}
+
+</body></html>`;
+    
     const win=window.open("","_blank");
     win.document.write(html);win.document.close();
     win.onload=()=>setTimeout(()=>win.print(),300);
   }
-}
 
 /* NAME MODAL */
 let _nameCb=null;
