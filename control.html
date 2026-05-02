@@ -1,135 +1,127 @@
-<!-- control.html -->
 <!DOCTYPE html>
 <html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Control - Cancionero en Tiempo Real</title>
-    <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Control - IEMA</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif; background:#0D0D0D; color:#F0EDE8; min-height:100vh}
+header{background:#161616; padding:15px 20px; display:flex; align-items:center; justify-content:space-between; border-bottom:1px solid #2A2A2A}
+h1{font-size:24px}
+
+.container{padding:20px; max-width:1200px; margin:auto}
+
+.search-box{width:100%; padding:14px; background:#1E1E1E; border:1px solid #2A2A2A; border-radius:12px; color:white; margin-bottom:20px}
+
+.song-list{max-height:70vh; overflow-y:auto}
+.song-item{
+  padding:16px; background:#161616; margin-bottom:8px; border-radius:12px;
+  border:1px solid #2A2A2A; cursor:pointer; transition:all .2s;
+}
+.song-item:hover{border-color:#F5A623}
+
+.controls-bar{
+  position:fixed; bottom:0; left:0; right:0; background:#161616;
+  padding:15px; display:flex; gap:10px; border-top:1px solid #2A2A2A;
+}
+.btn{
+  flex:1; padding:16px; border:none; border-radius:12px; font-size:16px; font-weight:600; cursor:pointer;
+}
+.btn-send{background:#F5A623; color:black}
+.btn-clear{background:#E05252; color:white}
+</style>
 </head>
 <body>
-    <div class="control-container">
-        <h1>Panel de Control</h1>
-        <div class="room-info">
-            <p><strong>Sala:</strong> <span id="room-name"></span></p>
-            <p><strong>URL del Viewer:</strong> <span id="viewer-url"></span></p>
-            <button id="copy-url-btn">Copiar URL</button>
-        </div>
-        
-        <div class="song-selector">
-            <h2>Seleccionar Canción</h2>
-            <select id="song-select">
-                <option value="">-- Elegí una canción --</option>
-            </select>
-            <button id="send-song-btn">Enviar al Viewer</button>
-        </div>
-        
-        <div class="color-picker">
-            <h2>Color de Fondo del Viewer</h2>
-            <input type="color" id="bg-color" value="#1a1a2e">
-            <button id="apply-color-btn">Aplicar Color</button>
-        </div>
-        
-        <button id="logout-btn">Cerrar sesión</button>
-    </div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-app.js";
-        import { getDatabase, ref, set, update, onValue } from "https://www.gstatic.com/firebasejs/12.12.1/firebase-database.js";
+<header>
+  <h1>🎛️ Control IEMA</h1>
+  <button onclick="exportToHolyrics()" style="padding:8px 16px; background:#4CAF7D; color:white; border:none; border-radius:8px;">Exportar Holyrics</button>
+</header>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-            authDomain: "browser-songs.firebaseapp.com",
-            databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
-            projectId: "browser-songs",
-            storageBucket: "browser-songs.firebasestorage.app",
-            messagingSenderId: "665974000150",
-            appId: "1:665974000150:web:72187dd8ee24024e410337",
-            measurementId: "G-QNT3346SCX"
-        };
+<div class="container">
+  <input type="text" class="search-box" id="search" placeholder="Buscar canción..." onkeyup="filterSongs()">
+  
+  <div class="song-list" id="song-list">
+    <!-- Se llena con JavaScript -->
+  </div>
+</div>
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+<div class="controls-bar">
+  <button class="btn btn-clear" onclick="clearPresentation()">Limpiar Pantalla</button>
+  <button class="btn btn-send" onclick="sendToViewer()">Enviar a Proyector</button>
+</div>
 
-        // Verificar sesión
-        const username = localStorage.getItem('cancionero_username');
-        if (!username) {
-            window.location.href = 'login.html';
-        }
+<script>
+// Ejemplo de canciones (se cargará desde canciones.json en versión final)
+let songs = [];
 
-        const roomId = username;
-        document.getElementById('room-name').textContent = roomId;
+async function loadSongs() {
+  try {
+    const res = await fetch('canciones.json');
+    songs = await res.json();
+    renderSongs(songs);
+  } catch(e) {
+    console.error("Error cargando canciones", e);
+  }
+}
 
-        // Generar URL del viewer
-        const viewerUrl = `${window.location.origin}${window.location.pathname.replace('control.html', 'viewer.html')}?room=${encodeURIComponent(roomId)}`;
-        document.getElementById('viewer-url').textContent = viewerUrl;
+function renderSongs(filteredSongs) {
+  const container = document.getElementById("song-list");
+  container.innerHTML = "";
+  
+  filteredSongs.forEach(song => {
+    const div = document.createElement("div");
+    div.className = "song-item";
+    div.innerHTML = `<strong>${song.title}</strong>`;
+    div.onclick = () => selectSong(song);
+    container.appendChild(div);
+  });
+}
 
-        document.getElementById('copy-url-btn').addEventListener('click', () => {
-            navigator.clipboard.writeText(viewerUrl).then(() => {
-                alert('¡URL copiada al portapapeles!');
-            });
-        });
+function filterSongs() {
+  const term = document.getElementById("search").value.toLowerCase();
+  const filtered = songs.filter(s => s.title.toLowerCase().includes(term));
+  renderSongs(filtered);
+}
 
-        // Cargar canciones de ejemplo (mock)
-        const songs = [
-            { id: 1, titulo: "DING DIN DONG", letra: "Ding din dong, ding din dong...\nSuenan las campanas hoy.\nDing din dong, ding din dong...\nCristo el Salvador nació." },
-            { id: 2, titulo: "NOCHE DE PAZ", letra: "Noche de paz, noche de amor,\nTodo duerme en derredor.\nEntre sus astros que esparcen su luz,\nBella anunciando al niño Jesús." },
-            { id: 3, titulo: "OH VEN EMANUEL (BOSSA)", letra: "Oh ven, oh ven, Emanuel,\nLiberta al cautivo Israel.\nQue sufre desterrado aquí,\nY espera al Hijo de David." },
-            // Agrega más canciones aquí
-        ];
+function selectSong(song) {
+  console.log("Canción seleccionada:", song.title);
+  // Aquí guardarías en Firebase para que el viewer lo muestre
+}
 
-        const songSelect = document.getElementById('song-select');
-        songs.forEach(song => {
-            const option = document.createElement('option');
-            option.value = song.id;
-            option.textContent = song.titulo;
-            songSelect.appendChild(option);
-        });
+function clearPresentation() {
+  if(confirm("¿Limpiar la pantalla del proyector?")) {
+    alert("Pantalla limpiada");
+  }
+}
 
-        // Enviar canción seleccionada
-        document.getElementById('send-song-btn').addEventListener('click', () => {
-            const songId = parseInt(songSelect.value);
-            if (!songId) {
-                alert('Por favor seleccioná una canción.');
-                return;
-            }
-            const song = songs.find(s => s.id === songId);
-            if (song) {
-                const songData = {
-                    id: song.id,
-                    titulo: song.titulo,
-                    letra: song.letra,
-                    timestamp: Date.now()
-                };
-                set(ref(db, `rooms/${roomId}/currentSong`), songData)
-                    .then(() => console.log('Canción enviada:', song.titulo))
-                    .catch(err => console.error('Error al enviar canción:', err));
-            }
-        });
+function sendToViewer() {
+  alert("Enviado al proyector (simulado)");
+}
 
-        // Aplicar color de fondo
-        document.getElementById('apply-color-btn').addEventListener('click', () => {
-            const color = document.getElementById('bg-color').value;
-            update(ref(db, `rooms/${roomId}/config`), { bgColor: color })
-                .then(() => console.log('Color aplicado:', color))
-                .catch(err => console.error('Error al aplicar color:', err));
-        });
+// Exportar a Holyrics
+function exportToHolysics() {
+  const data = {
+    version: "1.0",
+    songs: songs.map(s => ({
+      title: s.title,
+      lyrics: s.lyrics?.full_text || "",
+      key: s.key || "",
+      bpm: s.bpm || 0
+    }))
+  };
 
-        // Cargar configuración actual al iniciar
-        const roomRef = ref(db, `rooms/${roomId}`);
-        onValue(roomRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data && data.config && data.config.bgColor) {
-                document.getElementById('bg-color').value = data.config.bgColor;
-            }
-        });
+  const blob = new Blob([JSON.stringify(data, null, 2)], {type:"application/json"});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = "Cancionero_IEMA_Holyrics.json";
+  a.click();
+}
 
-        // Logout
-        document.getElementById('logout-btn').addEventListener('click', () => {
-            localStorage.removeItem('cancionero_username');
-            localStorage.removeItem('cancionero_room');
-            window.location.href = 'login.html';
-        });
-    </script>
+window.onload = loadSongs;
+</script>
 </body>
 </html>
