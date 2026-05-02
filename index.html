@@ -939,12 +939,12 @@ function exportList(lid,type){
     a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));
     a.download=lst.name.replace(/[^a-z0-9áéíóúñü ]/gi,"_")+".html";
     a.click();URL.revokeObjectURL(a.href);
- }else{
-    // PDF: una canción por página máximo, con primera hoja = índice
+  }else{
+    // PDF con índice en primera hoja
     const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
     
-    // ─── PRIMERA HOJA: Índice de canciones (solo título y artista) ───
-    const indexBody=songs.map((s,i)=>`
+    // ─── ÍNDICE (primera hoja) ───
+    const indexRows=songs.map((s,i)=>`
       <div class="idx-row">
         <span class="idx-num">${String(i+1).padStart(2,'0')}</span>
         <div class="idx-info">
@@ -954,14 +954,15 @@ function exportList(lid,type){
       </div>
     `).join("");
     
-    // ─── HOJAS SIGUIENTES: Letras completas ───
+    // ─── CANCIONES (hojas siguientes) ───
     const songsHTML=songs.map(s=>{
       const stanzas=s.p&&s.p.length?s.p:[{d:"",x:s.l||""}];
       const totalChars=stanzas.reduce((n,p)=>n+(p.x||"").length,0);
       const isLong=totalChars>500;
       const body=stanzas.map(p=>`
         ${p.d?`<div class="slabel">${esc(p.d)}</div>`:""}
-        <div class="stext">${esc(p.x||"")}</div>`).join('<div class="sdiv"></div>');
+        <div class="stext">${esc(p.x||"")}</div>
+      `).join('<div class="sdiv"></div>');
       return `<div class="page">
         <div class="pheader">
           <div class="ptitle">${esc(s.t||"Sin título")}</div>
@@ -979,7 +980,7 @@ function exportList(lid,type){
   @page{size:A4 portrait;margin:18mm 18mm}
   body{font-family:system-ui,-apple-system,sans-serif;color:#111;background:#fff}
   
-  /* PÁGINA DE ÍNDICE */
+  /* ÍNDICE */
   .idx-page{page-break-after:always;height:257mm;display:flex;flex-direction:column}
   .idx-header{flex-shrink:0;border-bottom:3px solid #000;padding-bottom:12px;margin-bottom:16px}
   .idx-list-title{font-size:26pt;font-weight:800;text-transform:uppercase;letter-spacing:-1px;line-height:1}
@@ -1004,24 +1005,23 @@ function exportList(lid,type){
   .sdiv{height:10px;break-inside:avoid}
 </style></head><body>
 
-<!-- ÍNDICE -->
 <div class="idx-page">
   <div class="idx-header">
     <div class="idx-list-title">${esc(lst.name)}</div>
     <div class="idx-list-sub">${songs.length} canciones · Lista de contenido</div>
   </div>
-  <div class="idx-body">${indexBody}</div>
+  <div class="idx-body">${indexRows}</div>
 </div>
 
-<!-- CANCIONES -->
 ${songsHTML}
 
 </body></html>`;
-    
+
     const win=window.open("","_blank");
     win.document.write(html);win.document.close();
     win.onload=()=>setTimeout(()=>win.print(),300);
   }
+}
 
 /* NAME MODAL */
 let _nameCb=null;
