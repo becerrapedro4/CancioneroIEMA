@@ -718,7 +718,7 @@ function presentFromList(lid, sid) {
     }
   }
 
-  // Abrir el panel presentador con esta canción
+  // Abrir el panel presentador
   _presSong = song;
   _presIdx = 0;
   _presBlank = false;
@@ -731,12 +731,6 @@ function presentFromList(lid, sid) {
   // Cerrar el detalle si está abierto
   document.getElementById("detail-ov").classList.remove("open");
 }
-
-  // Abrir el panel presentador
-  openPresenter(song);
-  
-  // Cerrar el detalle si está abierto
-  document.getElementById("detail-ov").classList.remove("open");
 
   // Si la canción tiene estrofas, presentar la primera
   const stanzas=presStanzas(song);
