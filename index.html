@@ -704,18 +704,26 @@ function renameList(lid){
   const l=LISTS.find(x=>x.id===lid);if(!l)return;
   openNameModal(l.name,n=>{l.name=n;saveLists();renderLists();});
 }
-function presentFromList(lid,sid){
-  const song=SONGS.find(s=>s.id===sid);
-  if(!song)return;
-  if(!_presRoom){
-    _presRoom=localStorage.getItem("pres_room")||"";
-    if(!_presRoom){
-      const r=prompt("Nombre de la sala:","iglesia");
-      if(!r)return;
-      _presRoom=r.trim().replace(/[^a-zA-Z0-9_-]/g,"_");
-      localStorage.setItem("pres_room",_presRoom);
+function presentFromList(lid, sid) {
+  const song = SONGS.find(s => s.id === sid);
+  if (!song) return;
+
+  if (!_presRoom) {
+    _presRoom = localStorage.getItem("pres_room") || "";
+    if (!_presRoom) {
+      const r = prompt("Nombre de la sala:", "iglesia");
+      if (!r) return;
+      _presRoom = r.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+      localStorage.setItem("pres_room", _presRoom);
     }
   }
+
+  // Abrir el panel presentador
+  openPresenter(song);
+  
+  // Cerrar el detalle si está abierto
+  document.getElementById("detail-ov").classList.remove("open");
+}
   // Si la canción tiene estrofas, presentar la primera
   const stanzas=presStanzas(song);
   const stanza=stanzas[0]||{d:"",x:song.l||""};
