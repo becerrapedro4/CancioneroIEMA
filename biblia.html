@@ -455,6 +455,8 @@ function presentVerse(el){
     type:"bible",blank:false,
     titulo:ref,estrofa:text,
     label:"Biblia",reference:ref,
+    version:localStorage.getItem("bible_name")||"",
+    showRef:true,  // <-- NUEVO: mostramos cita por defecto
     idx:1,total:1,ts:Date.now()
   });
   presentingRef=ref;
