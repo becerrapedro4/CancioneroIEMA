@@ -359,6 +359,55 @@ function initUI(name){
   }
 }
 
+  // ─── Botones de toggle: Cita y Versión ───
+if(!document.getElementById("btn-toggle-ref")){
+  const sep=document.createElement("div");
+  sep.style.cssText="width:1px;height:24px;background:var(--border);flex-shrink:0;margin:0 4px";
+  document.querySelector(".topbar").appendChild(sep);
+  
+  // Toggle Cita
+  const btnRef=document.createElement("button");
+  btnRef.id="btn-toggle-ref";
+  btnRef.title="Mostrar/ocultar cita bíblica";
+  btnRef.textContent="📖";
+  btnRef.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
+  btnRef.dataset.on="1";
+  btnRef.addEventListener("click",()=>{
+    const on=btnRef.dataset.on==="1";
+    btnRef.dataset.on=on?"0":"1";
+    btnRef.style.background=on?"var(--surface2)":"var(--accent)";
+    btnRef.style.color=on?"var(--accent)":"#000";
+    btnRef.style.borderColor="var(--accent)";
+  });
+  document.querySelector(".topbar").appendChild(btnRef);
+  
+  // Toggle Versión
+  const btnVer=document.createElement("button");
+  btnVer.id="btn-toggle-ver";
+  btnVer.title="Mostrar/ocultar versión";
+  btnVer.textContent="📋";
+  btnVer.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
+  btnVer.dataset.on="0";
+  btnVer.addEventListener("click",()=>{
+    const on=btnVer.dataset.on==="1";
+    btnVer.dataset.on=on?"0":"1";
+    btnVer.style.background=on?"var(--surface2)":`var(--accent)`;
+    btnVer.style.color=on?"var(--muted)":"#000";
+    btnVer.style.borderColor=on?"var(--border)":"var(--accent)";
+    // También actualiza el toggle de cita si se activa versión
+    if(!on){
+      const btnRef=document.getElementById("btn-toggle-ref");
+      if(btnRef&&btnRef.dataset.on==="0"){
+        btnRef.dataset.on="1";
+        btnRef.style.background="var(--surface2)";
+        btnRef.style.color="var(--accent)";
+        btnRef.style.borderColor="var(--accent)";
+      }
+    }
+  });
+  document.querySelector(".topbar").appendChild(btnVer);
+}
+
 function syncChapSel(){
   const cSel=document.getElementById("chap-sel");
   const book=BIBLE[bookIdx];
