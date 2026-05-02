@@ -718,6 +718,20 @@ function presentFromList(lid, sid) {
     }
   }
 
+  // Abrir el panel presentador con esta canción
+  _presSong = song;
+  _presIdx = 0;
+  _presBlank = false;
+  _presStanzas = presStanzas(song);
+  presRenderUI();
+  presWrite(false);
+  document.getElementById("mov-pres").classList.add("open");
+  updateSettingsBtn();
+  
+  // Cerrar el detalle si está abierto
+  document.getElementById("detail-ov").classList.remove("open");
+}
+
   // Abrir el panel presentador
   openPresenter(song);
   
