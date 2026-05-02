@@ -13,7 +13,6 @@
   --border:#2A2A2A;--green:#4CAF7D;--red:#E05252;--blue:#5B9CF6;
 }
 html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh}
-
 .topbar{position:sticky;top:0;z-index:50;background:rgba(13,13,13,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);padding:10px 16px;display:flex;align-items:center;gap:10px}
 .back-btn{width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:17px;cursor:pointer;text-decoration:none;flex-shrink:0;transition:border-color .15s}
 .back-btn:hover{border-color:var(--accent);color:var(--accent)}
@@ -21,19 +20,15 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .live-dot{width:8px;height:8px;border-radius:50%;background:var(--red);flex-shrink:0;animation:pdot 1.4s ease-in-out infinite}
 .live-label{font-size:11px;color:var(--red);letter-spacing:1px;text-transform:uppercase;font-weight:500;white-space:nowrap}
 @keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
-
 .search-wrap{padding:12px 16px 0}
 .search-inp{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:12px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;transition:border-color .15s;-webkit-appearance:none}
 .search-inp:focus{border-color:var(--accent)}
-
 .nav-row{display:flex;gap:8px;padding:12px 16px 0}
 .nav-sel{flex:1;padding:9px 10px;border-radius:10px;border:1px solid var(--border);background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--text);cursor:pointer;outline:none;-webkit-appearance:none;appearance:none;transition:border-color .15s;min-width:0;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8'%3E%3Cpath d='M0 0l6 8 6-8z' fill='%236B6560'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;padding-right:28px}
 .nav-sel:focus{border-color:var(--accent)}
-
 .tabs{display:flex;border-bottom:1px solid var(--border);margin:12px 0 0;padding:0 16px}
 .tab{padding:10px 14px;font-size:13px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:-1px;transition:color .15s;white-space:nowrap}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
-
 /* VERSE LIST */
 .verse-list{padding:6px 0 100px}
 .verse-item{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .12s;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
@@ -42,17 +37,14 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .verse-num{font-size:11px;font-weight:600;color:var(--accent);min-width:26px;padding-top:3px;text-align:right;flex-shrink:0}
 .verse-text{font-size:14px;line-height:1.8;color:var(--text)}
 .verse-ref{font-size:11px;color:var(--muted);margin-top:3px}
-
 /* CHAPTER GRID */
 .chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;padding:14px 16px 100px}
 .chap-btn{padding:14px 4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all .15s}
 .chap-btn:hover,.chap-btn:active{border-color:var(--accent);color:var(--accent)}
 .chap-btn.active{background:rgba(245,166,35,.12);border-color:var(--accent);color:var(--accent);font-weight:600}
-
 /* SEARCH */
 .results-count{font-size:11px;color:var(--muted);padding:10px 16px 4px;letter-spacing:1px;text-transform:uppercase}
 .no-results{padding:48px 20px;text-align:center;color:var(--muted);font-size:13px}
-
 /* UPLOAD */
 .upload-card{margin:24px 16px;background:var(--surface);border:2px dashed var(--border);border-radius:16px;padding:36px 24px;text-align:center}
 .upload-card h2{font-size:17px;margin-bottom:8px}
@@ -61,48 +53,40 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .upload-btn:hover{opacity:.85}
 .format-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.8}
 .upload-progress{margin-top:16px;font-size:13px;color:var(--muted)}
-
 /* LOADING */
 .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px}
 .spinner-b{width:36px;height:36px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
-
 /* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:13px;color:var(--text);z-index:100;transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.6)}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 </style>
 </head>
 <body>
-
 <div class="topbar">
   <a class="back-btn" href="index.html">←</a>
   <div class="topbar-title" id="topbar-title">Biblia</div>
   <div class="live-dot" id="live-dot" style="display:none"></div>
   <div class="live-label" id="live-label" style="display:none">En vivo</div>
 </div>
-
 <div id="search-wrap" class="search-wrap" style="display:none">
   <input class="search-inp" id="search-inp" type="search" placeholder="Buscar en la Biblia…" autocorrect="off" autocapitalize="off" spellcheck="false">
 </div>
-
 <div class="nav-row" id="nav-row" style="display:none">
   <select class="nav-sel" id="book-sel"></select>
   <select class="nav-sel" id="chap-sel"></select>
 </div>
-
 <div class="tabs" id="tabs-wrap" style="display:none">
   <button class="tab active" data-tab="verses">Versículos</button>
   <button class="tab" data-tab="chapters">Capítulos</button>
   <button class="tab" data-tab="search">Buscar</button>
 </div>
-
 <div id="main-content">
   <div class="loading-state" id="loading-state">
     <div class="spinner-b"></div>
     <div style="font-size:13px;color:var(--muted)">Cargando Biblia…</div>
   </div>
 </div>
-
 <div class="toast" id="toast"></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -125,12 +109,13 @@ let bookIdx=0,chapIdx=0,currentTab="verses",presentingRef=null;
 /* ── TOAST ── */
 function toast(msg,ms=2200){
   const el=document.getElementById("toast");
-  el.textContent=msg;el.classList.add("show");
-  clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),ms);
+  if(el){
+    el.textContent=msg;el.classList.add("show");
+    clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),ms);
+  }
 }
 
 /* ── PARSE XMLBIBLE ── */
-// Format: <XMLBIBLE><BIBLEBOOK bnumber bname><CHAPTER cnumber><VERS vnumber>text</VERS>
 function parseXMLBible(xmlStr){
   const parser=new DOMParser();
   const doc=parser.parseFromString(xmlStr,"text/xml");
@@ -152,8 +137,6 @@ function parseXMLBible(xmlStr){
 }
 
 /* ── PARSE JSON BIBLE ── */
-// Supports: [{name/book, chapters:[[v1,v2],...] or [{verses:[{text},...]},...]}]
-// Also: {books:[...]} wrapper
 function parseJSONBible(raw){
   let books=Array.isArray(raw)?raw:(raw.books||raw.bible||[]);
   return books.map(b=>{
@@ -180,9 +163,12 @@ async function loadBible(){
 }
 
 async function showVersionPicker(){
-  document.getElementById("loading-state").innerHTML=`
-    <div class="spinner-b"></div>
-    <div style="font-size:13px;color:var(--muted)">Buscando versiones en el repo…</div>`;
+  const loadingEl = document.getElementById("loading-state");
+  if(loadingEl){
+    loadingEl.innerHTML=`
+      <div class="spinner-b"></div>
+      <div style="font-size:13px;color:var(--muted)">Buscando versiones en el repo…</div>`;
+  }
 
   // Fetch file list from GitHub API
   let repoFiles=[];
@@ -204,7 +190,7 @@ async function showVersionPicker(){
   }
   const offlineCached=cachedKeys.filter(k=>!repoFiles.some(f=>f.name===k));
 
-  document.getElementById("loading-state").style.display="none";
+  if(loadingEl) loadingEl.style.display="none";
 
   // Inject styles
   if(!document.getElementById("vp-style")){
@@ -224,7 +210,6 @@ async function showVersionPicker(){
   }
 
   let html=`<div style="padding:20px 16px 100px">`;
-
   if(repoFiles.length){
     html+=`<div class="vp-section">📡 En el repositorio</div>`;
     repoFiles.forEach(f=>{
@@ -240,7 +225,6 @@ async function showVersionPicker(){
       No se encontraron .xml en el repo <b style="color:var(--text)">${REPO}</b>. Subí los archivos al repo y recargá esta página.
     </div>`;
   }
-
   if(offlineCached.length){
     html+=`<div class="vp-section" style="margin-top:20px">📱 Solo en este dispositivo</div>`;
     offlineCached.forEach(k=>{
@@ -251,7 +235,6 @@ async function showVersionPicker(){
       </div>`;
     });
   }
-
   html+=`<div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
     <div class="vp-section">📂 Cargar desde archivo</div>
     <label class="vp-upload">Seleccionar .xml o .json
@@ -260,13 +243,13 @@ async function showVersionPicker(){
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Se guarda en este dispositivo</div>
   </div></div>`;
 
-  document.getElementById("main-content").innerHTML=html;
+  const mainContent = document.getElementById("main-content");
+  if(mainContent) mainContent.innerHTML=html;
 
   // Wire repo rows
   document.querySelectorAll(".version-row[data-url]").forEach(row=>{
     row.addEventListener("click",async()=>{
       const url=row.dataset.url,fname=row.dataset.file,name=row.dataset.name;
-      // Load from cache if available
       const cached=localStorage.getItem("bible_cache_"+fname);
       if(cached){
         try{
@@ -274,7 +257,6 @@ async function showVersionPicker(){
           if(BIBLE.length){localStorage.setItem("bible_name",name);initUI(name);return;}
         }catch{}
       }
-      // Download from repo
       row.innerHTML=`<div class="vr-loading"><div class="spinner-b" style="width:22px;height:22px;border-width:2px;flex-shrink:0"></div><span style="font-size:13px;color:var(--muted)">Descargando ${name}…</span></div>`;
       try{
         const res=await fetch(url);
@@ -305,23 +287,26 @@ async function showVersionPicker(){
   });
 
   // Wire file upload
-  document.getElementById("bible-file").addEventListener("change",e=>{
-    const f=e.target.files[0];if(!f)return;
-    const reader=new FileReader();
-    reader.onload=ev=>{
-      try{
-        const content=ev.target.result;
-        BIBLE=f.name.endsWith(".xml")||content.trimStart().startsWith("<")
-          ?parseXMLBible(content):parseJSONBible(JSON.parse(content));
-        if(!BIBLE.length)throw new Error("No se encontraron libros");
-        const name=f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
-        try{localStorage.setItem("bible_cache_"+f.name,JSON.stringify(BIBLE));}catch{}
-        localStorage.setItem("bible_name",name);
-        initUI(name);
-      }catch(err){alert("Error: "+err.message);}
-    };
-    reader.readAsText(f,"UTF-8");
-  });
+  const fileInput = document.getElementById("bible-file");
+  if(fileInput){
+    fileInput.addEventListener("change",e=>{
+      const f=e.target.files[0];if(!f)return;
+      const reader=new FileReader();
+      reader.onload=ev=>{
+        try{
+          const content=ev.target.result;
+          BIBLE=f.name.endsWith(".xml")||content.trimStart().startsWith("<")
+            ?parseXMLBible(content):parseJSONBible(JSON.parse(content));
+          if(!BIBLE.length)throw new Error("No se encontraron libros");
+          const name=f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+          try{localStorage.setItem("bible_cache_"+f.name,JSON.stringify(BIBLE));}catch{}
+          localStorage.setItem("bible_name",name);
+          initUI(name);
+        }catch(err){alert("Error: "+err.message);}
+      };
+      reader.readAsText(f,"UTF-8");
+    });
+  }
 }
 
 function cacheAndInit(name){
@@ -337,7 +322,7 @@ function initUI(name){
   document.getElementById("nav-row").style.display="";
   document.getElementById("tabs-wrap").style.display="";
   document.getElementById("topbar-title").textContent=name||"Biblia";
-  // Add version change button
+
   if(!document.getElementById("btn-change-version")){
     const btn=document.createElement("button");
     btn.id="btn-change-version";
@@ -361,7 +346,6 @@ function initUI(name){
     syncChapSel();
     if(currentTab!=="search")renderCurrentTab();
   });
-
   syncChapSel();
 
   // Tabs
@@ -393,6 +377,7 @@ function initUI(name){
   renderCurrentTab();
 }
 
+/* Resto de funciones (syncChapSel, renderCurrentTab, etc.) se mantienen iguales */
 function syncChapSel(){
   const cSel=document.getElementById("chap-sel");
   const book=BIBLE[bookIdx];
@@ -402,7 +387,6 @@ function syncChapSel(){
   document.getElementById("book-sel").value=bookIdx;
 }
 
-/* ── RENDER ── */
 function renderCurrentTab(){
   if(currentTab==="verses")renderVerses();
   else if(currentTab==="chapters")renderChapterGrid();
@@ -501,14 +485,16 @@ function bindVerseClicks(){
 }
 
 function setContent(html){
-  document.getElementById("main-content").innerHTML=html;
+  const main = document.getElementById("main-content");
+  if(main) main.innerHTML=html;
 }
 
 /* ── ESCAPE ── */
 function escHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escAttr(s){return String(s).replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 
-loadBible();
+/* FIX: Ejecutar solo cuando el DOM esté listo */
+document.addEventListener("DOMContentLoaded", loadBible);
 </script>
 </body>
 </html>
