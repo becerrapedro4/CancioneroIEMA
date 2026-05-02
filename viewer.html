@@ -15,13 +15,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 .orb3{width:35vw;height:35vw;background:#fff;opacity:.04;top:40%;left:55%;animation-delay:-13s}
 @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4%,6%) scale(1.05)}66%{transform:translate(-3%,3%) scale(.97)}}
 
-/* Controles superiores (ocultos en fullscreen pero accesibles con hover) */
-.controls{position:fixed;top:0;left:0;right:0;z-index:10;padding:12px 16px;display:flex;align-items:center;gap:10px;opacity:0;transition:opacity .3s;background:linear-gradient(rgba(0,0,0,.7),transparent)}
-.controls:hover,.controls.show{opacity:1}
-.ctrl-btn{padding:8px 14px;border-radius:8px;border:1px solid rgba(255,255,255,.25);background:rgba(0,0,0,.5);color:#fff;font-family:system-ui,-apple-system,sans-serif;font-size:13px;cursor:pointer;white-space:nowrap;backdrop-filter:blur(8px);transition:all .2s}
-.ctrl-btn:hover{background:rgba(255,255,255,.1);border-color:rgba(255,255,255,.4)}
-.ctrl-btn.active{background:rgba(245,166,35,.25);border-color:rgba(245,166,35,.6);color:#F5A623}
-
 .stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8vw;text-align:center;transition:opacity .4s}
 .stage.hidden{opacity:0;pointer-events:none}
 
@@ -39,13 +32,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 .lyric.in{animation:lyricIn .35s ease forwards}
 @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 
-/* Cita y versión abajo */
 .ref-info{
   position:absolute;bottom:6vh;left:50%;transform:translateX(-50%);
   font-family:system-ui,-apple-system,sans-serif;
   font-size:clamp(14px,2.5vw,28px);
   font-weight:400;
-  color:rgba(255,255,255,.55);
+  color:rgba(255,255,255,.5);
   letter-spacing:.04em;
   text-align:center;
   max-width:80vw;
@@ -60,11 +52,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
   <div class="orb orb1"></div>
   <div class="orb orb2"></div>
   <div class="orb orb3"></div>
-</div>
-
-<!-- Controles -->
-<div class="controls" id="controls">
-  <button class="ctrl-btn active" id="btn-ref" title="Mostrar/ocultar cita">📖 Cita</button>
 </div>
 
 <div class="stage hidden" id="stage">
@@ -93,46 +80,6 @@ localStorage.setItem("pres_room",room);
 const stage=document.getElementById("stage");
 const lyricEl=document.getElementById("lyric");
 const refInfo=document.getElementById("ref-info");
-const btnRef=document.getElementById("btn-ref");
-const controls=document.getElementById("controls");
-
-let showRef=true; // toggle local, se sincroniza con lo que venga de Firebase
-
-/* Toggle cita */
-btnRef.addEventListener("click",()=>{
-  showRef=!showRef;
-  btnRef.classList.toggle("active",showRef);
-  updateRefVisibility();
-});
-
-function updateRefVisibility(){
-  if(showRef){
-    refInfo.classList.remove("hidden");
-  }else{
-    refInfo.classList.add("hidden");
-  }
-}
-
-/* Mostrar controls al mover el mouse (escritorio) y ocultar después */
-let hideTimer;
-document.addEventListener("mousemove",()=>{
-  controls.classList.add("show");
-  clearTimeout(hideTimer);
-  hideTimer=setTimeout(()=>controls.classList.remove("show"),2500);
-});
-
-/* También mostrar al tocar (mobile) */
-document.addEventListener("click",(e)=>{
-  if(!e.target.closest(".ctrl-btn")){
-    controls.classList.add("show");
-    clearTimeout(hideTimer);
-    hideTimer=setTimeout(()=>controls.classList.remove("show"),2500);
-  }
-  // Fullscreen al primer toque
-  if(!document.fullscreenElement){
-    document.documentElement.requestFullscreen().catch(()=>{});
-  }
-});
 
 function showLyric(data){
   if(!data||data.stop||data.blank){
@@ -140,7 +87,7 @@ function showLyric(data){
     return;
   }
   
-  // Cambiar texto principal
+  // Texto principal
   lyricEl.classList.remove("in");
   lyricEl.classList.add("out");
   
@@ -152,27 +99,22 @@ function showLyric(data){
     stage.classList.remove("hidden");
   },200);
 
-  // Armar cita: "Mateo 5:3 (NVI)" o similar
-  const ref=data.reference||data.titulo||"";
+  // Referencia y versión
+  const ref=data.reference||"";
   const ver=data.version||"";
+  const showRef=data.showRef!==false;
   
-  if(ref){
-    refInfo.textContent=ver?`${ref} (${ver})`:ref;
+  if(ref&&showRef){
+    refInfo.textContent=ver?`${ref} · ${ver}`:ref;
+    refInfo.classList.remove("hidden");
   }else{
-    refInfo.textContent="";
+    refInfo.classList.add("hidden");
   }
-  
-  // Sincronizar toggle si viene showRef
-  if(typeof data.showRef!=="undefined"){
-    showRef=data.showRef;
-    btnRef.classList.toggle("active",showRef);
-  }
-  updateRefVisibility();
 }
 
 db.ref(`rooms/${room}/currentSong`).on("value",snap=>showLyric(snap.val()));
 
-// Wake lock para evitar que la pantalla se apague
+// Wake lock
 if("wakeLock" in navigator){
   const lock=()=>navigator.wakeLock.request("screen").catch(()=>{});
   lock();
