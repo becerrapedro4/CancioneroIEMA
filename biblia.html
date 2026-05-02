@@ -71,7 +71,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 </head>
 <body>
 
-<div class="topbar">
+<div class="topbar" id="topbar">
   <a class="back-btn" href="index.html">←</a>
   <div class="topbar-title" id="topbar-title">Biblia</div>
   <div class="live-dot" id="live-dot" style="display:none"></div>
@@ -169,28 +169,33 @@ async function showVersionPicker(){
   const main=document.getElementById("main-content");
   if(!main)return;
   
-  // Ocultar UI de navegación mientras se elige versión
   document.getElementById("search-wrap").style.display="none";
   document.getElementById("nav-row").style.display="none";
   document.getElementById("tabs-wrap").style.display="none";
   document.getElementById("topbar-title").textContent="Biblia";
   document.getElementById("live-dot").style.display="none";
   document.getElementById("live-label").style.display="none";
+  
+  // Ocultar toggles viejos si existen
+  const oldRef=document.getElementById("btn-toggle-ref");
+  const oldVer=document.getElementById("btn-toggle-ver");
+  const oldSep=document.getElementById("toggle-sep");
+  if(oldRef)oldRef.remove();
+  if(oldVer)oldVer.remove();
+  if(oldSep)oldSep.remove();
 
-  // Archivos reales en el repositorio → jsDelivr
   const FILES=[
     {name:"La Biblia de Las Americas.xml",label:"La Biblia de las Américas"},
     {name:"Nueva Traducción Viviente.xml",label:"Nueva Traducción Viviente"},
     {name:"Nueva Versión Internacional.xml",label:"Nueva Versión Internacional"},
     {name:"Palabra de Dios para Todos.xml",label:"Palabra de Dios para Todos"},
     {name:"RVC.xml",label:"Reina Valera Contemporánea"},
-    {name:"Reina-Valera 1960.xml",label:"Reina-Valera 1960"},
+    {name:"Reina-Valera 1960.xml",label:"Reina Valera 1960"},
     {name:"Traducción en Lenguaje Actual.xml",label:"Traducción en Lenguaje Actual"}
   ];
 
   const repoFiles=FILES.map(f=>({...f,download_url:`https://cdn.jsdelivr.net/gh/becerrapedro4/CancioneroIEMA@main/${encodeURIComponent(f.name)}`}));
 
-  // Caché local
   const cachedKeys=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
@@ -232,12 +237,9 @@ async function showVersionPicker(){
 
   main.innerHTML=html;
 
-  // Event listeners
   document.querySelectorAll(".version-row[data-url]").forEach(row=>{
     row.addEventListener("click",async()=>{
       const url=row.dataset.url,fname=row.dataset.file,name=row.dataset.name;
-      
-      // Intentar caché primero
       const cached=localStorage.getItem("bible_cache_"+fname);
       if(cached){
         try{
@@ -245,8 +247,6 @@ async function showVersionPicker(){
           if(BIBLE.length){localStorage.setItem("bible_name",name);initUI(name);return;}
         }catch(e){localStorage.removeItem("bible_cache_"+fname);}
       }
-
-      // Descargar de jsDelivr
       row.innerHTML=`<div class="vr-loading"><div class="spinner-b" style="width:22px;height:22px;border-width:2px;flex-shrink:0"></div><span style="font-size:13px;color:var(--muted)">Descargando ${name}…</span></div>`;
       try{
         const res=await fetch(url);
@@ -307,7 +307,6 @@ function initUI(name){
     document.getElementById("live-label").style.display="";
   }
 
-  // Book select
   const bSel=document.getElementById("book-sel");
   bSel.innerHTML=BIBLE.map((b,i)=>`<option value="${i}">${b.name}</option>`).join("");
   bSel.addEventListener("change",()=>{
@@ -318,7 +317,6 @@ function initUI(name){
 
   syncChapSel();
 
-  // Tabs
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     currentTab=t.dataset.tab;
     document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));
@@ -326,7 +324,6 @@ function initUI(name){
     renderCurrentTab();
   }));
 
-  // Search
   const si=document.getElementById("search-inp");
   let searchTimer=null;
   si.addEventListener("input",()=>{
@@ -347,7 +344,7 @@ function initUI(name){
   setContent(`<div class="verse-list" id="verse-list"></div>`);
   renderCurrentTab();
 
-  // Botón para cambiar versión
+  // Botón cambiar versión
   if(!document.getElementById("btn-change-version")){
     const btn=document.createElement("button");
     btn.id="btn-change-version";
@@ -355,57 +352,58 @@ function initUI(name){
     btn.textContent="⇄";
     btn.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;transition:border-color .15s";
     btn.addEventListener("click",showVersionPicker);
-    document.querySelector(".topbar").appendChild(btn);
+    document.getElementById("topbar").appendChild(btn);
   }
-}
 
-  // ─── Botones de toggle: Cita y Versión ───
-if(!document.getElementById("btn-toggle-ref")){
-  const sep=document.createElement("div");
-  sep.style.cssText="width:1px;height:24px;background:var(--border);flex-shrink:0;margin:0 4px";
-  document.querySelector(".topbar").appendChild(sep);
-  
-  // Toggle Cita
-  const btnRef=document.createElement("button");
-  btnRef.id="btn-toggle-ref";
-  btnRef.title="Mostrar/ocultar cita bíblica";
-  btnRef.textContent="📖";
-  btnRef.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
-  btnRef.dataset.on="1";
-  btnRef.addEventListener("click",()=>{
-    const on=btnRef.dataset.on==="1";
-    btnRef.dataset.on=on?"0":"1";
-    btnRef.style.background=on?"var(--surface2)":"var(--accent)";
-    btnRef.style.color=on?"var(--accent)":"#000";
-    btnRef.style.borderColor="var(--accent)";
-  });
-  document.querySelector(".topbar").appendChild(btnRef);
-  
-  // Toggle Versión
-  const btnVer=document.createElement("button");
-  btnVer.id="btn-toggle-ver";
-  btnVer.title="Mostrar/ocultar versión";
-  btnVer.textContent="📋";
-  btnVer.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
-  btnVer.dataset.on="0";
-  btnVer.addEventListener("click",()=>{
-    const on=btnVer.dataset.on==="1";
-    btnVer.dataset.on=on?"0":"1";
-    btnVer.style.background=on?"var(--surface2)":`var(--accent)`;
-    btnVer.style.color=on?"var(--muted)":"#000";
-    btnVer.style.borderColor=on?"var(--border)":"var(--accent)";
-    // También actualiza el toggle de cita si se activa versión
-    if(!on){
-      const btnRef=document.getElementById("btn-toggle-ref");
-      if(btnRef&&btnRef.dataset.on==="0"){
-        btnRef.dataset.on="1";
-        btnRef.style.background="var(--surface2)";
-        btnRef.style.color="var(--accent)";
-        btnRef.style.borderColor="var(--accent)";
+  // ─── Toggle Cita ───
+  if(!document.getElementById("btn-toggle-ref")){
+    const sep=document.createElement("div");
+    sep.id="toggle-sep";
+    sep.style.cssText="width:1px;height:24px;background:var(--border);flex-shrink:0;margin:0 4px";
+    document.getElementById("topbar").appendChild(sep);
+    
+    const btnRef=document.createElement("button");
+    btnRef.id="btn-toggle-ref";
+    btnRef.title="Mostrar/ocultar cita bíblica";
+    btnRef.textContent="📖";
+    btnRef.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
+    btnRef.dataset.on="1";
+    btnRef.addEventListener("click",()=>{
+      const on=btnRef.dataset.on==="1";
+      btnRef.dataset.on=on?"0":"1";
+      btnRef.style.background=on?"var(--surface2)":"var(--accent)";
+      btnRef.style.color=on?"var(--accent)":"#000";
+      btnRef.style.borderColor="var(--accent)";
+    });
+    document.getElementById("topbar").appendChild(btnRef);
+    document.getElementById("topbar").appendChild(btnRef);
+    
+    // Toggle Versión
+    const btnVer=document.createElement("button");
+    btnVer.id="btn-toggle-ver";
+    btnVer.title="Mostrar/ocultar versión";
+    btnVer.textContent="📋";
+    btnVer.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
+    btnVer.dataset.on="0";
+    btnVer.addEventListener("click",()=>{
+      const on=btnVer.dataset.on==="1";
+      btnVer.dataset.on=on?"0":"1";
+      btnVer.style.background=on?"var(--surface2)":"var(--accent)";
+      btnVer.style.color=on?"var(--muted)":"#000";
+      btnVer.style.borderColor=on?"var(--border)":"var(--accent)";
+      // Si se activa versión, forzar que cita también esté activa
+      if(!on){
+        const btnRef=document.getElementById("btn-toggle-ref");
+        if(btnRef&&btnRef.dataset.on==="0"){
+          btnRef.dataset.on="1";
+          btnRef.style.background="var(--surface2)";
+          btnRef.style.color="var(--accent)";
+          btnRef.style.borderColor="var(--accent)";
+        }
       }
-    }
-  });
-  document.querySelector(".topbar").appendChild(btnVer);
+    });
+    document.getElementById("topbar").appendChild(btnVer);
+  }
 }
 
 function syncChapSel(){
@@ -417,7 +415,6 @@ function syncChapSel(){
   document.getElementById("book-sel").value=bookIdx;
 }
 
-/* ── RENDER ── */
 function renderCurrentTab(){
   if(currentTab==="verses")renderVerses();
   else if(currentTab==="chapters")renderChapterGrid();
@@ -459,7 +456,7 @@ function renderChapterGrid(){
 function renderSearch(){
   const q=document.getElementById("search-inp").value.trim();
   if(!q){
-    setContent(`<div class="no-results" style="padding-top:48px">Escribí para buscar en toda la Biblia</div>`);
+    setContent(`<div class="no-results" style="padding-top:48px">Escribí para buscar</div>`);
     return;
   }
   const ql=q.toLowerCase();
@@ -500,12 +497,33 @@ function presentVerse(el){
   if(!r){toast("⚠️ Configurá la sala en el Admin del Cancionero");return;}
   const ref=el.dataset.ref;
   const text=el.dataset.text;
+  
+  // Leer estado de los toggles
+  const btnRef=document.getElementById("btn-toggle-ref");
+  const btnVer=document.getElementById("btn-toggle-ver");
+  const showRef=btnRef?btnRef.dataset.on==="1":true;
+  const showVer=btnVer?btnVer.dataset.on==="1":false;
+  
+  // Versión abreviada
+  let version="";
+  if(showVer){
+    version=localStorage.getItem("bible_name")||"";
+    if(!version){
+      const topbar=document.getElementById("topbar-title");
+      if(topbar&&topbar.textContent&&topbar.textContent!=="Biblia"){
+        version=topbar.textContent;
+      }
+    }
+    const words=version.split(" ");
+    if(words.length>4)version=words.slice(0,4).join(" ")+"...";
+  }
+  
   db.ref(`rooms/${r}/currentSong`).set({
     type:"bible",blank:false,
     titulo:ref,estrofa:text,
-    label:"Biblia",reference:ref,
-    version:localStorage.getItem("bible_name")||"",
-    showRef:true,  // <-- NUEVO: mostramos cita por defecto
+    label:"Biblia",reference:showRef?ref:"",
+    version:version,
+    showRef:showRef,
     idx:1,total:1,ts:Date.now()
   });
   presentingRef=ref;
@@ -521,7 +539,6 @@ function setContent(html){
   document.getElementById("main-content").innerHTML=html;
 }
 
-/* ── ESCAPE ── */
 function escHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escAttr(s){return String(s).replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 
