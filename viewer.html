@@ -15,33 +15,47 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 .orb3{width:35vw;height:35vw;background:#fff;opacity:.04;top:40%;left:55%;animation-delay:-13s}
 @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4%,6%) scale(1.05)}66%{transform:translate(-3%,3%) scale(.97)}}
 
-.stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:8vw;text-align:center;transition:opacity .4s}
+.stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6vh 6vw;text-align:center;transition:opacity .4s}
 .stage.hidden{opacity:0;pointer-events:none}
 
+/* Título (solo canciones, no Biblia) */
+.song-title{
+  font-family:system-ui,-apple-system,sans-serif;
+  font-weight:700;
+  line-height:1.1;
+  text-transform:uppercase;
+  letter-spacing:-.02em;
+  margin-bottom:3vh;
+  opacity:.7;
+  transition:font-size .3s;
+}
+.song-title.hidden{display:none}
+
+/* Letra / versículo */
 .lyric{
   font-family:system-ui,-apple-system,sans-serif;
-  font-size:clamp(28px,5.5vw,88px);
   font-weight:600;
-  line-height:1.45;
+  line-height:1.4;
   text-transform:uppercase;
   letter-spacing:.02em;
   white-space:pre-wrap;
-  max-width:90vw;
+  max-width:94vw;
+  transition:font-size .3s,opacity .2s,transform .2s;
 }
-.lyric.out{opacity:0;transform:translateY(14px);transition:opacity .2s,transform .2s}
+.lyric.out{opacity:0;transform:translateY(14px)}
 .lyric.in{animation:lyricIn .35s ease forwards}
 @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 
+/* Cita bíblica */
 .ref-info{
-  position:absolute;bottom:6vh;left:50%;transform:translateX(-50%);
+  position:absolute;bottom:5vh;left:50%;transform:translateX(-50%);
   font-family:system-ui,-apple-system,sans-serif;
-  font-size:clamp(14px,2.5vw,28px);
   font-weight:400;
-  color:rgba(255,255,255,.5);
+  color:rgba(255,255,255,.45);
   letter-spacing:.04em;
   text-align:center;
   max-width:80vw;
-  transition:opacity .3s;
+  transition:opacity .3s,font-size .3s;
 }
 .ref-info.hidden{opacity:0}
 </style>
@@ -55,8 +69,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 </div>
 
 <div class="stage hidden" id="stage">
+  <div class="song-title hidden" id="song-title"></div>
   <div class="lyric" id="lyric"></div>
-  <div class="ref-info" id="ref-info"></div>
+  <div class="ref-info hidden" id="ref-info"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -79,7 +94,29 @@ localStorage.setItem("pres_room",room);
 
 const stage=document.getElementById("stage");
 const lyricEl=document.getElementById("lyric");
+const titleEl=document.getElementById("song-title");
 const refInfo=document.getElementById("ref-info");
+
+/* ── Calcular tamaño de fuente dinámico ── */
+function calcFontSize(text, isTitle){
+  const len=(text||"").length;
+  const vw=window.innerWidth/100;
+  const vh=window.innerHeight/100;
+  
+  if(isTitle){
+    // Título: más chico que la letra
+    if(len<15)return Math.min(5*vw,6*vh)+"px";
+    if(len<30)return Math.min(3.5*vw,4.5*vh)+"px";
+    return Math.min(2.5*vw,3.5*vh)+"px";
+  }else{
+    // Letra: se achica si es muy larga
+    if(len<80)return Math.min(5.5*vw,7*vh)+"px";
+    if(len<200)return Math.min(4*vw,5.5*vh)+"px";
+    if(len<400)return Math.min(3*vw,4*vh)+"px";
+    if(len<700)return Math.min(2.3*vw,3.3*vh)+"px";
+    return Math.min(1.8*vw,2.5*vh)+"px";
+  }
+}
 
 function showLyric(data){
   if(!data||data.stop||data.blank){
@@ -87,25 +124,39 @@ function showLyric(data){
     return;
   }
   
-  // Texto principal
+  const isBible=data.type==="bible";
+  const showTitle=data.showTitle!==false&&!!data.titulo&&!isBible;
+  
+  // Título
+  if(showTitle){
+    titleEl.textContent=data.titulo;
+    titleEl.style.fontSize=calcFontSize(data.titulo,false);
+    titleEl.classList.remove("hidden");
+  }else{
+    titleEl.classList.add("hidden");
+  }
+  
+  // Letra
   lyricEl.classList.remove("in");
   lyricEl.classList.add("out");
   
   setTimeout(()=>{
     lyricEl.textContent=data.estrofa||"";
+    lyricEl.style.fontSize=calcFontSize(data.estrofa||"",false);
     lyricEl.classList.remove("out");
     void lyricEl.offsetWidth;
     lyricEl.classList.add("in");
     stage.classList.remove("hidden");
   },200);
 
-  // Referencia y versión
+  // Cita bíblica
   const ref=data.reference||"";
   const ver=data.version||"";
   const showRef=data.showRef!==false;
   
   if(ref&&showRef){
     refInfo.textContent=ver?`${ref} · ${ver}`:ref;
+    refInfo.style.fontSize=Math.min(2.5*window.innerWidth/100,3.5*window.innerHeight/100)+"px";
     refInfo.classList.remove("hidden");
   }else{
     refInfo.classList.add("hidden");
@@ -113,6 +164,17 @@ function showLyric(data){
 }
 
 db.ref(`rooms/${room}/currentSong`).on("value",snap=>showLyric(snap.val()));
+
+// Recalcular al cambiar tamaño de ventana
+window.addEventListener("resize",()=>{
+  const currentText=lyricEl.textContent;
+  if(currentText){
+    lyricEl.style.fontSize=calcFontSize(currentText,false);
+    if(!titleEl.classList.contains("hidden")){
+      titleEl.style.fontSize=calcFontSize(titleEl.textContent,true);
+    }
+  }
+});
 
 // Wake lock
 if("wakeLock" in navigator){
