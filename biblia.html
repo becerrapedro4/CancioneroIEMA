@@ -283,7 +283,7 @@ async function showVersionPicker(){
   });
 
   document.querySelectorAll(".version-row[data-cachekey]").forEach(row=>{
-    row.addEventListener("click",()=>{
+    row.addEventListener("click",async()=>{
       try{
         BIBLE=JSON.parse(localStorage.getItem("bible_cache_"+row.dataset.cachekey)||"[]");
         if(!BIBLE.length)throw new Error("Caché vacío");
