@@ -406,6 +406,26 @@ function initUI(name){
   }
 }
 
+    // ─── Botón Detener presentación ───
+  if(!document.getElementById("btn-stop-pres")){
+    const btnStop=document.createElement("button");
+    btnStop.id="btn-stop-pres";
+    btnStop.title="Detener presentación";
+    btnStop.textContent="⏹";
+    btnStop.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--red);color:var(--red);font-size:16px;cursor:pointer;flex-shrink:0;transition:all .15s";
+    btnStop.addEventListener("click",()=>{
+      const r=getRoom();
+      if(!r){toast("⚠️ No hay sala configurada");return;}
+      db.ref(`rooms/${r}/currentSong`).set({
+        blank:true,stop:true,ts:Date.now()
+      });
+      presentingRef=null;
+      document.querySelectorAll(".verse-item.presenting").forEach(x=>x.classList.remove("presenting"));
+      toast("⏹ Presentación detenida");
+    });
+    document.getElementById("topbar").appendChild(btnStop);
+  }
+
 function syncChapSel(){
   const cSel=document.getElementById("chap-sel");
   const book=BIBLE[bookIdx];
