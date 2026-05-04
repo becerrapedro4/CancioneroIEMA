@@ -127,25 +127,6 @@ function toast(msg,ms=2200){
   clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),ms);
 }
 
-  try{
-  const res=await fetch(url);
-  if(!res.ok)throw new Error("HTTP "+res.status);
-  const text=await res.text();
-  
-  // Verificar que sea XML
-  if(!text.trimStart().startsWith("<")){
-    throw new Error("El archivo no parece ser XML (primeros 50 caracteres: "+text.substring(0,50)+")");
-  }
-  
-  BIBLE=parseXMLBible(text);
-  if(!BIBLE.length)throw new Error("No se encontraron libros");
-  try{localStorage.setItem("bible_cache_"+fname,JSON.stringify(BIBLE));}catch(e){}
-  localStorage.setItem("bible_name",name);
-  initUI(name);
-}catch(e){
-  row.innerHTML=`<div style="color:var(--red);padding:12px 16px;font-size:13px">Error: ${e.message} — <a href="#" onclick="showVersionPicker();return false" style="color:var(--accent)">reintentar</a></div>`;
-}
-
 /* ── PARSE XML ── */
 function parseXMLBible(xmlStr){
   const parser=new DOMParser();
@@ -267,18 +248,26 @@ async function showVersionPicker(){
         }catch(e){localStorage.removeItem("bible_cache_"+fname);}
       }
       row.innerHTML=`<div class="vr-loading"><div class="spinner-b" style="width:22px;height:22px;border-width:2px;flex-shrink:0"></div><span style="font-size:13px;color:var(--muted)">Descargando ${name}…</span></div>`;
+      
       try{
-        const res=await fetch(url);
-        if(!res.ok)throw new Error("HTTP "+res.status);
-        const text=await res.text();
-        BIBLE=parseXMLBible(text);
-        if(!BIBLE.length)throw new Error("No se encontraron libros");
-        try{localStorage.setItem("bible_cache_"+fname,JSON.stringify(BIBLE));}catch(e){}
-        localStorage.setItem("bible_name",name);
-        initUI(name);
-      }catch(e){
-        row.innerHTML=`<div style="color:var(--red);padding:12px 16px;font-size:13px">Error: ${e.message} — <a href="#" onclick="showVersionPicker();return false" style="color:var(--accent)">reintentar</a></div>`;
-      }
+  const res=await fetch(url);
+  if(!res.ok)throw new Error("HTTP "+res.status);
+  const text=await res.text();
+  
+  // Verificar que sea XML
+  if(!text.trimStart().startsWith("<")){
+    throw new Error("El archivo no parece ser XML (primeros 50 caracteres: "+text.substring(0,50)+")");
+  }
+  
+  BIBLE=parseXMLBible(text);
+  if(!BIBLE.length)throw new Error("No se encontraron libros");
+  try{localStorage.setItem("bible_cache_"+fname,JSON.stringify(BIBLE));}catch(e){}
+  localStorage.setItem("bible_name",name);
+  initUI(name);
+}catch(e){
+  row.innerHTML=`<div style="color:var(--red);padding:12px 16px;font-size:13px">Error: ${e.message} — <a href="#" onclick="showVersionPicker();return false" style="color:var(--accent)">reintentar</a></div>`;
+}
+     
     });
   });
 
