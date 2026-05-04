@@ -194,7 +194,9 @@ async function showVersionPicker(){
     {name:"Traducción en Lenguaje Actual.xml",label:"Traducción en Lenguaje Actual"}
   ];
 
-  const repoFiles=FILES.map(f=>({...f,download_url:`https://cdn.jsdelivr.net/gh/becerrapedro4/CancioneroIEMA@main/biblias/${encodeURIComponent(f.name)}`}));
+ // const repoFiles=FILES.map(f=>({...f,download_url:`https://cdn.jsdelivr.net/gh/becerrapedro4/CancioneroIEMA@main/biblias/${encodeURIComponent(f.name)}`}));
+
+  const repoFiles=FILES.map(f=>({...f,download_url:`https://cdn.jsdelivr.net/gh/becerrapedro4/CancioneroIEMA@main/biblias/${encodeURIComponent(f.name)}?v=${Date.now()}`}));
 
   const cachedKeys=[];
   for(let i=0;i<localStorage.length;i++){
