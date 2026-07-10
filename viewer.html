@@ -18,7 +18,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 .stage{position:fixed;inset:0;z-index:1;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6vh 6vw;text-align:center;transition:opacity .4s}
 .stage.hidden{opacity:0;pointer-events:none}
 
-/* Título (solo canciones, no Biblia) */
 .song-title{
   font-family:system-ui,-apple-system,sans-serif;
   font-weight:700;
@@ -31,7 +30,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 }
 .song-title.hidden{display:none}
 
-/* Letra / versículo */
 .lyric{
   font-family:system-ui,-apple-system,sans-serif;
   font-weight:600;
@@ -46,7 +44,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 .lyric.in{animation:lyricIn .35s ease forwards}
 @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 
-/* Cita bíblica */
 .ref-info{
   position:absolute;bottom:5vh;left:50%;transform:translateX(-50%);
   font-family:system-ui,-apple-system,sans-serif;
@@ -58,8 +55,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
   transition:opacity .3s,font-size .3s;
 }
 .ref-info.hidden{opacity:0}
-
-/* 🔥 Nueva: Cita en la parte inferior para Biblia */
 .bible-ref{
   font-family:system-ui,-apple-system,sans-serif;
   font-weight:400;
@@ -111,19 +106,18 @@ const titleEl=document.getElementById("song-title");
 const refInfo=document.getElementById("ref-info");
 const bibleRef=document.getElementById("bible-ref");
 
-// ── Estado para configuraciones ──
+// ── Estado ──
 let config = {
-  showTitle: true,  // Mostrar título de canciones
+  showTitle: true,
   bgColor: '#1a1a2e'
 };
+let lastData = null;
 
-// ── Escuchar cambios en la configuración de la sala ──
+// ── Escuchar configuración ──
 db.ref(`rooms/${room}/config`).on("value", (snap) => {
   const data = snap.val();
   if (data) {
-    if (data.showTitle !== undefined) {
-      config.showTitle = data.showTitle;
-    }
+    if (data.showTitle !== undefined) config.showTitle = data.showTitle;
     if (data.bgColor) {
       config.bgColor = data.bgColor;
       document.body.style.backgroundColor = config.bgColor;
@@ -131,7 +125,42 @@ db.ref(`rooms/${room}/config`).on("value", (snap) => {
   }
 });
 
-// ── Calcular tamaño de fuente dinámico ──
+// ── 🔥 NUEVO: Escuchar AMBAS rutas ──
+// Ruta 1: /rooms/{room}/currentSong (desde control.html)
+db.ref(`rooms/${room}/currentSong`).on("value", (snap) => {
+  const data = snap.val();
+  if (data && !data.stop && !data.blank) {
+    lastData = { ...data, _source: 'control' };
+    showLyric(lastData);
+  } else if (data && (data.stop || data.blank)) {
+    stage.classList.add("hidden");
+  }
+});
+
+// Ruta 2: /holyrics/live (desde HolyBridge)
+db.ref("/holyrics/live").on("value", (snap) => {
+  const data = snap.val();
+  if (data && data.activo && data.texto) {
+    // Convertir formato HolyBridge → formato viewer
+    const converted = {
+      type: data.tipo === "BIBLE" ? "bible" : "song",
+      titulo: data.titulo || (data.tipo === "BIBLE" ? data.versiculo?.slice(0, 30) + "..." : ""),
+      estrofa: data.tipo === "BIBLE" ? data.versiculo : data.texto,
+      reference: data.cita || "",
+      citation: data.cita || "",
+      version: "Holyrics",
+      showTitle: true,
+      showRef: true,
+      _source: 'holybridge'
+    };
+    lastData = converted;
+    showLyric(converted);
+  } else if (data && !data.activo) {
+    stage.classList.add("hidden");
+  }
+});
+
+// ── Función para mostrar ──
 function calcFontSize(text, isTitle){
   const len=(text||"").length;
   const vw=window.innerWidth/100;
@@ -151,18 +180,16 @@ function calcFontSize(text, isTitle){
 }
 
 function showLyric(data){
-  if(!data||data.stop||data.blank){
+  if(!data || data.stop || data.blank){
     stage.classList.add("hidden");
     return;
   }
   
-  const isBible=data.type==="bible";
-  
-  // ── TÍTULO ──
-  // 🔥 Usar showTitle de la data (enviado desde control) o del config
+  const isBible = data.type === "bible";
   const showTitle = data.showTitle !== undefined ? data.showTitle : config.showTitle;
   const hasTitle = data.titulo && data.titulo.trim() && !isBible;
   
+  // Título
   if(hasTitle && showTitle){
     titleEl.textContent = data.titulo;
     titleEl.style.fontSize = calcFontSize(data.titulo, true);
@@ -171,7 +198,7 @@ function showLyric(data){
     titleEl.classList.add("hidden");
   }
   
-  // ── LETRA ──
+  // Letra
   lyricEl.classList.remove("in");
   lyricEl.classList.add("out");
   
@@ -184,12 +211,10 @@ function showLyric(data){
     stage.classList.remove("hidden");
   },200);
 
-  // ── REFERENCIA / CITA ──
+  // Referencia
   const ref = data.reference || data.citation || "";
-  const versionName = data.version || "";
   const showRef = data.showRef !== false;
   
-  // 🔥 Si es Biblia, mostrar la cita en la parte inferior
   if(isBible && ref && showRef){
     const citationText = data.citation || ref;
     bibleRef.textContent = citationText;
@@ -197,7 +222,6 @@ function showLyric(data){
     bibleRef.classList.remove("hidden");
     refInfo.classList.add("hidden");
   } else if(ref && showRef) {
-    // Para canciones, mostrar referencia si existe
     refInfo.textContent = ref;
     refInfo.style.fontSize = Math.min(2.5*window.innerWidth/100, 3.5*window.innerHeight/100) + "px";
     refInfo.classList.remove("hidden");
@@ -208,10 +232,7 @@ function showLyric(data){
   }
 }
 
-// ── Escuchar cambios en currentSong ──
-db.ref(`rooms/${room}/currentSong`).on("value", snap => showLyric(snap.val()));
-
-// Recalcular al cambiar tamaño de ventana
+// Recalcular al cambiar tamaño
 window.addEventListener("resize", ()=>{
   const currentText = lyricEl.textContent;
   if(currentText){
