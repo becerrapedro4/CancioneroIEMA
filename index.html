@@ -814,7 +814,6 @@ function renderLists(){
       if(!l)return;
       l.style=btn.dataset.style;
       saveLists();
-      // Actualizar active states en este grupo
       btn.closest(".style-pick").querySelectorAll(".spbtn").forEach(b=>b.classList.toggle("active",b===btn));
     });
   });
@@ -912,7 +911,7 @@ function buildExportHTML(lst, isLive = false) {
     });
   <\/script>`;
 
-  // ─── ESTILO 1: MINIMALISTA (original) ─────────────────────────────────
+  // ─── ESTILO 1: MINIMALISTA ──────────────────────────────────────────
   if (style === "minimal") return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <style>
@@ -930,7 +929,7 @@ main{max-width:680px;margin:0 auto;padding:0 28px 100px}
 .ac-item:last-child{border-bottom:1px solid var(--br)}
 .ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
 .ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
-.ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s}
+.ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s;color:#DEDAD4}
 .ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
 .ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
 .ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
@@ -939,7 +938,7 @@ main{max-width:680px;margin:0 auto;padding:0 28px 100px}
 .ac-inner{padding:0 0 32px 40px}
 .stanza{margin-bottom:22px}
 .stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
-.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#888}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(222,218,212,0.9)}
 footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
 </style>
 </head>
@@ -952,7 +951,7 @@ footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spac
 ${acScript}
 </body></html>`;
 
-  // ─── ESTILO 2: AESTHETIC (original) ──────────────────────────────────
+  // ─── ESTILO 2: AESTHETIC ──────────────────────────────────────────
   if (style === "aesthetic") return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
@@ -972,7 +971,7 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-h
 .ac-item{border-bottom:1px solid var(--br)}
 .ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:26px 0;cursor:pointer;user-select:none}
 .ac-num{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--mu);font-style:italic}
-.ac-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;transition:color .25s}
+.ac-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;transition:color .25s;color:#EDE8E0}
 .ac-item.open .ac-title,.ac-item:hover .ac-title{color:var(--a)}
 .ac-icon{width:24px;height:24px;border-radius:50%;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mu);transition:all .3s;flex-shrink:0;justify-self:end}
 .ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg)}
@@ -981,7 +980,7 @@ body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-h
 .ac-inner{padding:8px 0 36px 52px}
 .stanza{margin-bottom:24px}
 .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a);opacity:.6;margin-bottom:10px}
-.stanza-text{font-size:14px;line-height:2.2;white-space:pre-wrap;text-transform:uppercase;color:var(--mu)}
+.stanza-text{font-size:14px;line-height:2.2;white-space:pre-wrap;text-transform:uppercase;color:rgba(237,232,224,0.9)}
 footer{text-align:center;padding:48px 24px;color:var(--mu);font-size:12px;letter-spacing:2px;text-transform:uppercase;border-top:1px solid var(--br)}
 </style>
 </head>
@@ -997,7 +996,7 @@ footer{text-align:center;padding:48px 24px;color:var(--mu);font-size:12px;letter
 ${acScript}
 </body></html>`;
 
-  // ─── ESTILO 3: GLASS (original) ─────────────────────────────────────
+  // ─── ESTILO 3: GLASS ──────────────────────────────────────────────
   if (style === "glass") return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
@@ -1021,7 +1020,7 @@ h1{font-size:clamp(44px,12vw,110px);font-weight:700;line-height:1;letter-spacing
 .ac-hdr{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:background .2s,border-color .2s}
 .ac-item:hover .ac-hdr,.ac-item.open .ac-hdr{background:rgba(${r},${g},${b},.1);border-color:rgba(${r},${g},${b},.35)}
 .ac-num{font-size:12px;color:var(--a);font-weight:600;min-width:24px;font-variant-numeric:tabular-nums}
-.ac-title{flex:1;font-size:15px;font-weight:500;letter-spacing:.2px}
+.ac-title{flex:1;font-size:15px;font-weight:500;letter-spacing:.2px;color:#fff}
 .ac-icon{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.4);transition:all .3s;flex-shrink:0}
 .ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg);box-shadow:0 0 14px rgba(${r},${g},${b},.5)}
 .ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
@@ -1030,7 +1029,7 @@ h1{font-size:clamp(44px,12vw,110px);font-weight:700;line-height:1;letter-spacing
 .stanza{margin-bottom:20px}
 .stanza:last-child{margin-bottom:0}
 .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(${r},${g},${b},.7);margin-bottom:8px}
-.stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,.45)}
+.stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,0.9)}
 footer{position:relative;z-index:1;text-align:center;padding:40px 24px;color:rgba(255,255,255,.15);font-size:12px;letter-spacing:1px}
 </style>
 </head>
@@ -1047,7 +1046,7 @@ footer{position:relative;z-index:1;text-align:center;padding:40px 24px;color:rgb
 ${acScript}
 </body></html>`;
 
-  // ─── ESTILO 4: VINTAGE ──────────────────────────────────────────────
+  // ─── ESTILO 4: VINTAGE ────────────────────────────────────────────
   if (style === "vintage") return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
@@ -1067,7 +1066,7 @@ body{background:#F5F0E8;color:#3C2E22;font-family:'DM Serif Display',serif;min-h
 .ac-item{border-bottom:1px solid #E8DCC8}
 .ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:22px 0;cursor:pointer;user-select:none}
 .ac-num{font-family:'Playfair Display',serif;font-size:14px;color:#8B7355;font-style:italic}
-.ac-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;transition:color .3s}
+.ac-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;transition:color .3s;color:#2C1F16}
 .ac-item.open .ac-title,.ac-item:hover .ac-title{color:#8B7355}
 .ac-icon{font-size:20px;color:#C4B5A0;transition:transform .3s}
 .ac-item.open .ac-icon{transform:rotate(45deg);color:#8B7355}
@@ -1092,7 +1091,7 @@ footer{text-align:center;padding:40px 24px;color:#8B7355;font-size:12px;letter-s
 ${acScript}
 </body></html>`;
 
-  // ─── ESTILO 5: NEON ──────────────────────────────────────────────────
+  // ─── ESTILO 5: NEON ───────────────────────────────────────────────
   if (style === "neon") return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
@@ -1109,7 +1108,7 @@ body{background:#0A0A12;color:#fff;font-family:'Orbitron',monospace;min-height:1
 .ac-item{border-bottom:1px solid rgba(255,255,255,.05)}
 .ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none}
 .ac-num{font-size:11px;color:rgba(${r},${g},${b},0.5);font-variant-numeric:tabular-nums}
-.ac-title{font-size:16px;font-weight:700;letter-spacing:1px;transition:color .3s;text-transform:uppercase}
+.ac-title{font-size:16px;font-weight:700;letter-spacing:1px;transition:color .3s;text-transform:uppercase;color:#fff}
 .ac-item.open .ac-title,.ac-item:hover .ac-title{color:rgb(${r},${g},${b});text-shadow:0 0 20px rgba(${r},${g},${b},0.3)}
 .ac-icon{font-size:18px;color:rgba(255,255,255,.2);transition:transform .3s}
 .ac-item.open .ac-icon{transform:rotate(45deg);color:rgb(${r},${g},${b})}
@@ -1118,7 +1117,7 @@ body{background:#0A0A12;color:#fff;font-family:'Orbitron',monospace;min-height:1
 .ac-inner{padding:0 0 32px 52px}
 .stanza{margin-bottom:20px}
 .stanza-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(${r},${g},${b},0.5);margin-bottom:8px}
-.stanza-text{font-size:12px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,.4)}
+.stanza-text{font-size:12px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,0.9)}
 footer{text-align:center;padding:40px 24px;color:rgba(255,255,255,.1);font-size:10px;letter-spacing:4px;border-top:1px solid rgba(255,255,255,.05)}
 </style>
 </head>
@@ -1134,7 +1133,7 @@ footer{text-align:center;padding:40px 24px;color:rgba(255,255,255,.1);font-size:
 ${acScript}
 </body></html>`;
 
-  // ─── ESTILO 6: NATURALEZA ────────────────────────────────────────────
+  // ─── ESTILO 6: NATURALEZA ─────────────────────────────────────────
   if (style === "nature") return `<!DOCTYPE html>
 <html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
@@ -1153,7 +1152,7 @@ body{background:#1A241E;color:#D4C9B8;font-family:'Lora',serif;min-height:100vh}
 .ac-item{border-bottom:1px solid #2A3A30}
 .ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none}
 .ac-num{font-family:'Inter',sans-serif;font-size:11px;color:#7A9A7E;font-variant-numeric:tabular-nums}
-.ac-title{font-size:18px;font-weight:600;transition:color .3s}
+.ac-title{font-size:18px;font-weight:600;transition:color .3s;color:#D4C9B8}
 .ac-item.open .ac-title,.ac-item:hover .ac-title{color:#7A9A7E}
 .ac-icon{font-size:18px;color:#3A4A3E;transition:transform .3s}
 .ac-item.open .ac-icon{transform:rotate(45deg);color:#7A9A7E}
@@ -1162,7 +1161,7 @@ body{background:#1A241E;color:#D4C9B8;font-family:'Lora',serif;min-height:100vh}
 .ac-inner{padding:0 0 32px 52px}
 .stanza{margin-bottom:20px}
 .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#7A9A7E;margin-bottom:8px}
-.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#A8B8A8}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(212,201,184,0.9)}
 footer{text-align:center;padding:40px 24px;color:#3A4A3E;font-size:11px;letter-spacing:2px;border-top:1px solid #2A3A30}
 </style>
 </head>
