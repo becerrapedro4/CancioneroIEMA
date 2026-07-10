@@ -53,15 +53,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .results-count{font-size:11px;color:var(--muted);padding:10px 16px 4px;letter-spacing:1px;text-transform:uppercase}
 .no-results{padding:48px 20px;text-align:center;color:var(--muted);font-size:13px}
 
-/* UPLOAD */
-.upload-card{margin:24px 16px;background:var(--surface);border:2px dashed var(--border);border-radius:16px;padding:36px 24px;text-align:center}
-.upload-card h2{font-size:17px;margin-bottom:8px}
-.upload-card p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:22px}
-.upload-btn{display:inline-block;padding:12px 24px;background:var(--accent);color:#000;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
-.upload-btn:hover{opacity:.85}
-.format-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.8}
-.upload-progress{margin-top:16px;font-size:13px;color:var(--muted)}
-
 /* LOADING */
 .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px}
 .spinner-b{width:36px;height:36px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
@@ -152,6 +143,90 @@ const getRoom=()=>localStorage.getItem("pres_room")||"";
 /* ── STATE ── */
 let BIBLE=[];
 let bookIdx=0,chapIdx=0,currentTab="verses",presentingRef=null;
+
+// ── INDEXED DB ──
+const DB_NAME = "BibleCache";
+const STORE_NAME = "bibles";
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const request = indexedDB.open(DB_NAME, 1);
+    request.onupgradeneeded = (event) => {
+      const db = event.target.result;
+      if (!db.objectStoreNames.contains(STORE_NAME)) {
+        db.createObjectStore(STORE_NAME, { keyPath: "id" });
+      }
+    };
+    request.onsuccess = (event) => resolve(event.target.result);
+    request.onerror = (event) => reject(event.target.error);
+  });
+}
+
+async function saveBibleToDB(name, data) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.put({ id: name, data: data, timestamp: Date.now() });
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    });
+    return true;
+  } catch(e) {
+    console.warn("Error guardando en IndexedDB:", e);
+    return false;
+  }
+}
+
+async function getBibleFromDB(name) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.get(name);
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result ? request.result.data : null);
+      request.onerror = () => reject(request.error);
+    });
+  } catch(e) {
+    console.warn("Error obteniendo de IndexedDB:", e);
+    return null;
+  }
+}
+
+async function getAllBibleKeys() {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readonly");
+    const store = tx.objectStore(STORE_NAME);
+    const request = store.getAllKeys();
+    return new Promise((resolve, reject) => {
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+  } catch(e) {
+    console.warn("Error obteniendo keys de IndexedDB:", e);
+    return [];
+  }
+}
+
+async function deleteBibleFromDB(name) {
+  try {
+    const db = await openDB();
+    const tx = db.transaction(STORE_NAME, "readwrite");
+    const store = tx.objectStore(STORE_NAME);
+    store.delete(name);
+    await new Promise((resolve, reject) => {
+      tx.oncomplete = resolve;
+      tx.onerror = reject;
+    });
+    return true;
+  } catch(e) {
+    console.warn("Error eliminando de IndexedDB:", e);
+    return false;
+  }
+}
 
 /* ── TOAST ── */
 function toast(msg,ms=2200){
@@ -254,30 +329,26 @@ async function showVersionPicker(){
       <div style="font-size:13px;color:var(--muted)">Buscando versiones en el repo…</div>`;
   }
 
-  // 🔥 NUEVO: Buscar TODOS los archivos en la carpeta "biblias"
+  // Buscar TODOS los archivos en la carpeta "biblias"
   let repoFiles=[];
   try{
     const res=await fetch(`https://api.github.com/repos/${REPO}/contents/biblias`,
       {headers:{Accept:"application/vnd.github.v3+json"}});
     if(res.ok){
       const all=await res.json();
-      repoFiles=all.filter(f=>f.type==="file"&&/\.(xml|json)$/i.test(f.name)
+      repoFiles=all.filter(f=>f.type==="file"&&/\.xml$/i.test(f.name) // Solo XML
         &&!["canciones.json","package.json"].includes(f.name));
     } else {
       console.warn("GitHub API respondió con status:", res.status);
     }
   }catch(e){console.warn("GitHub API error:", e);}
 
-  // Cached versions in localStorage
-  const cachedKeys=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&k.startsWith("bible_cache_"))cachedKeys.push(k.replace("bible_cache_",""));
-  }
-
+  // Cached versions en IndexedDB
+  const cachedKeys = await getAllBibleKeys();
+  
   // Normalizar nombres para comparación
   const normalizeName = (name) => {
-    return name.trim().toLowerCase().replace(/\s+/g, ' ').replace(/\.(xml|json)$/i, '');
+    return name.trim().toLowerCase().replace(/\s+/g, ' ').replace(/\.xml$/i, '');
   };
 
   // Verificar offline cached
@@ -288,7 +359,7 @@ async function showVersionPicker(){
 
   console.log('📚 Total archivos encontrados:', repoFiles.length);
   console.log('📚 Archivos en repo:', repoFiles.map(f => f.name));
-  console.log('💾 Archivos en caché:', cachedKeys);
+  console.log('💾 Archivos en caché (IndexedDB):', cachedKeys);
   console.log('📱 Solo offline:', offlineCached);
 
   if (loadingState) loadingState.style.display="none";
@@ -301,6 +372,7 @@ async function showVersionPicker(){
       .version-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s;-webkit-tap-highlight-color:transparent}
       .version-row:hover,.version-row:active{border-color:var(--accent);background:rgba(245,166,35,.04)}
       .version-row.error{border-color:var(--red);background:rgba(224,82,82,.06)}
+      .version-row.loading{opacity:0.6;cursor:default}
       .vr-name{font-size:15px;font-weight:500;text-transform:capitalize}
       .vr-sub{font-size:11px;color:var(--muted);margin-top:2px}
       .vr-arr{font-size:18px;color:var(--accent);flex-shrink:0}
@@ -309,82 +381,89 @@ async function showVersionPicker(){
       .vp-upload:hover{border-color:var(--accent)}
       .vp-error{color:var(--red);font-size:12px;margin-top:4px}
       .vp-stats{font-size:12px;color:var(--muted);margin-bottom:14px;padding:0 2px}
+      .vp-size{font-size:10px;color:var(--muted);margin-left:4px}
     `;
     document.head.appendChild(s);
   }
 
   let html=`<div style="padding:20px 16px 100px">`;
 
-  // 🔥 Mostrar estadísticas
   if(repoFiles.length){
     html+=`<div class="vp-stats">📚 ${repoFiles.length} versiones disponibles en el repositorio</div>`;
     html+=`<div class="vp-section">📡 En el repositorio</div>`;
     
-    // 🔥 Ordenar alfabéticamente para mejor visualización
     repoFiles.sort((a,b) => a.name.localeCompare(b.name));
     
-    repoFiles.forEach(f=>{
+    for (const f of repoFiles) {
       const downloadUrl = `https://cdn.jsdelivr.net/gh/${REPO}@main/biblias/${encodeURIComponent(f.name)}`;
-      // 🔥 Mejorar el nombre para mostrar (más legible)
-      let name = f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
-      // Si el nombre está en camelCase o sin espacios, intentar separarlo
+      let name = f.name.replace(/\.xml$/i,"").replace(/[-_]/g," ");
       name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
-      // Capitalizar cada palabra
       name = name.replace(/\b\w/g, l => l.toUpperCase());
       
-      const cached=cachedKeys.some(k => normalizeName(k) === normalizeName(f.name));
+      const cached = cachedKeys.includes(f.name);
+      const size = f.size ? `(${(f.size/1024).toFixed(1)}KB)` : '';
+      
       html+=`<div class="version-row" data-url="${downloadUrl}" data-file="${f.name}" data-name="${name}">
-        <div><div class="vr-name">${name}</div><div class="vr-sub">${f.name}${cached?" · ✅ en caché":""}</div></div>
+        <div><div class="vr-name">${name}</div><div class="vr-sub">${f.name} ${size}${cached?" · ✅ en caché":""}</div></div>
         <span class="vr-arr">${cached?"★":"→"}</span>
       </div>`;
-    });
+    }
   }else{
     html+=`<div style="background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:var(--muted);line-height:1.7">
-      ⚠️ No se encontraron archivos .xml o .json en la carpeta <b style="color:var(--text)">biblias/</b> del repo <b style="color:var(--text)">${REPO}</b>.<br>
-      <span style="font-size:12px">Asegurate de que los archivos estén en la carpeta correcta y que el repositorio sea público.</span>
+      ⚠️ No se encontraron archivos .xml en la carpeta <b style="color:var(--text)">biblias/</b> del repo <b style="color:var(--text)">${REPO}</b>.<br>
+      <span style="font-size:12px">Asegurate de que los archivos estén en la carpeta correcta.</span>
     </div>`;
   }
 
   if(offlineCached.length){
     html+=`<div class="vp-section" style="margin-top:20px">📱 Solo en este dispositivo (${offlineCached.length})</div>`;
-    offlineCached.forEach(k=>{
-      let name=k.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+    for (const k of offlineCached) {
+      let name=k.replace(/\.xml$/i,"").replace(/[-_]/g," ");
       name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
       name = name.replace(/\b\w/g, l => l.toUpperCase());
       html+=`<div class="version-row" data-cachekey="${k}" data-name="${name}">
         <div><div class="vr-name">${name}</div><div class="vr-sub">Guardada localmente</div></div>
         <span class="vr-arr">★</span>
       </div>`;
-    });
+    }
   }
 
   html+=`<div style="margin-top:20px;border-top:1px solid var(--border);padding-top:20px">
     <div class="vp-section">📂 Cargar desde archivo</div>
-    <label class="vp-upload">Seleccionar .xml o .json
-      <input type="file" accept=".xml,.json" id="bible-file" style="display:none">
+    <label class="vp-upload">Seleccionar .xml
+      <input type="file" accept=".xml" id="bible-file" style="display:none">
     </label>
-    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Se guarda en este dispositivo</div>
+    <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Se guarda en este dispositivo (IndexedDB)</div>
   </div></div>`;
 
   document.getElementById("main-content").innerHTML=html;
 
   // Wire repo rows
   document.querySelectorAll(".version-row[data-url]").forEach(row=>{
-    row.addEventListener("click",async function() {
-      const url=this.dataset.url,fname=this.dataset.file,name=this.dataset.name;
+    row.addEventListener("click", async function() {
+      if (this.classList.contains('loading')) return;
       
-      // Load from cache if available
-      const cached=localStorage.getItem("bible_cache_"+fname);
+      const url=this.dataset.url;
+      const fname=this.dataset.file;
+      const name=this.dataset.name;
+      
+      // Load from IndexedDB cache
+      const cached = await getBibleFromDB(fname);
       if(cached){
         try{
-          BIBLE=JSON.parse(cached);
-          if(BIBLE.length){localStorage.setItem("bible_name",name);initUI(name);return;}
+          BIBLE = cached;
+          if(BIBLE.length){
+            localStorage.setItem("bible_name", name);
+            initUI(name);
+            return;
+          }
         }catch(e){
           console.warn("Error cargando caché:", e);
         }
       }
       
       // Download from repo
+      this.classList.add('loading');
       this.innerHTML=`<div class="vr-loading"><div class="spinner-b" style="width:22px;height:22px;border-width:2px;flex-shrink:0"></div><span style="font-size:13px;color:var(--muted)">Descargando ${name}…</span></div>`;
       
       try{
@@ -393,38 +472,41 @@ async function showVersionPicker(){
         
         const text=await res.text();
         
-        // Verificar que no sea HTML
         if(text.trim().startsWith("<html") || text.trim().startsWith("<!DOCTYPE html")) {
           throw new Error("El servidor devolvió HTML en lugar del archivo");
         }
         
-        // Intentar parsear según el tipo
-        let parsedBooks;
-        if(fname.endsWith(".xml") || text.trimStart().startsWith("<")){
-          parsedBooks = parseXMLBible(text);
-        } else {
-          parsedBooks = parseJSONBible(JSON.parse(text));
+        // Verificar que no esté vacío
+        if (!text.trim() || text.trim().length < 50) {
+          throw new Error("El archivo está vacío o es demasiado pequeño");
         }
+        
+        const parsedBooks = parseXMLBible(text);
         
         if(!parsedBooks || !parsedBooks.length) throw new Error("Sin libros");
         
         BIBLE = parsedBooks;
-        try{localStorage.setItem("bible_cache_"+fname,JSON.stringify(BIBLE));}catch(e){console.warn("No se pudo guardar en caché:", e);}
-        localStorage.setItem("bible_name",name);
-        localStorage.setItem("bible_last",fname);
+        
+        // Guardar en IndexedDB (sin límite de tamaño)
+        await saveBibleToDB(fname, BIBLE);
+        
+        localStorage.setItem("bible_name", name);
+        localStorage.setItem("bible_last", fname);
         initUI(name);
       }catch(e){
         console.error("Error descargando:", e);
+        this.classList.remove('loading');
         this.className = "version-row error";
         this.innerHTML=`<div style="color:var(--red);padding:8px 16px;font-size:13px;flex:1">
           ⚠️ Error: ${e.message}
           <br><span style="font-size:11px;color:var(--muted)">Haz clic para reintentar</span>
         </div>`;
         // Permitir reintentar
+        const self = this;
         this.addEventListener("click", function handler() {
-          this.removeEventListener("click", handler);
-          this.className = "version-row";
-          this.click();
+          self.removeEventListener("click", handler);
+          self.className = "version-row";
+          self.click();
         }, { once: true });
       }
     });
@@ -432,38 +514,33 @@ async function showVersionPicker(){
 
   // Wire cached-only rows
   document.querySelectorAll(".version-row[data-cachekey]").forEach(row=>{
-    row.addEventListener("click",()=>{
+    row.addEventListener("click", async () => {
       try{
-        const data = localStorage.getItem("bible_cache_"+row.dataset.cachekey);
+        const data = await getBibleFromDB(row.dataset.cachekey);
         if(!data) throw new Error("No hay datos en caché");
-        BIBLE=JSON.parse(data);
+        BIBLE=data;
         if(!BIBLE.length)throw new Error("Caché vacío");
-        localStorage.setItem("bible_name",row.dataset.name);
-        localStorage.setItem("bible_last",row.dataset.cachekey);
+        localStorage.setItem("bible_name", row.dataset.name);
+        localStorage.setItem("bible_last", row.dataset.cachekey);
         initUI(row.dataset.name);
       }catch(e){toast("Error: "+e.message);}
     });
   });
 
   // Wire file upload
-  document.getElementById("bible-file").addEventListener("change",e=>{
+  document.getElementById("bible-file").addEventListener("change", async (e) => {
     const f=e.target.files[0];if(!f)return;
     const reader=new FileReader();
-    reader.onload=ev=>{
+    reader.onload=async (ev) => {
       try{
         const content=ev.target.result;
-        let parsedBooks;
-        if(f.name.endsWith(".xml") || content.trimStart().startsWith("<")){
-          parsedBooks = parseXMLBible(content);
-        } else {
-          parsedBooks = parseJSONBible(JSON.parse(content));
-        }
+        const parsedBooks = parseXMLBible(content);
         if(!parsedBooks.length)throw new Error("No se encontraron libros");
         BIBLE = parsedBooks;
-        const name=f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
-        try{localStorage.setItem("bible_cache_"+f.name,JSON.stringify(BIBLE));}catch(e){console.warn("No se pudo guardar en caché:", e);}
-        localStorage.setItem("bible_name",name);
-        localStorage.setItem("bible_last",f.name);
+        const name=f.name.replace(/\.xml$/i,"").replace(/[-_]/g," ");
+        await saveBibleToDB(f.name, BIBLE);
+        localStorage.setItem("bible_name", name);
+        localStorage.setItem("bible_last", f.name);
         initUI(name);
       }catch(err){toast("Error: "+err.message);}
     };
@@ -474,7 +551,9 @@ async function showVersionPicker(){
 
 /* ── INIT UI ── */
 function initUI(name){
-  document.getElementById("loading-state").style.display="none";
+  const loadingState = document.getElementById("loading-state");
+  if (loadingState) loadingState.style.display="none";
+  
   document.getElementById("main-content").innerHTML="<div class='verse-list' id='verse-list'></div>";
   document.getElementById("search-wrap").style.display="";
   document.getElementById("nav-row").style.display="";
@@ -489,26 +568,24 @@ function initUI(name){
 
   // Version dropdown
   const vSel=document.getElementById("version-sel");
-  const keys=[];
-  for(let i=0;i<localStorage.length;i++){
-    const k=localStorage.key(i);
-    if(k&&k.startsWith("bible_cache_"))keys.push(k.replace("bible_cache_",""));
-  }
-  vSel.innerHTML=keys.map(k=>{
-    let n=k.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
-    n = n.replace(/([a-z])([A-Z])/g, '$1 $2');
-    n = n.replace(/\b\w/g, l => l.toUpperCase());
-    return `<option value="${k}" ${k===localStorage.getItem("bible_last")?"selected":""}>${n}</option>`;
-  }).join("")||`<option value="">${name}</option>`;
-  vSel.innerHTML+=`<option value="__picker__">＋ Cambiar versión…</option>`;
-  vSel.addEventListener("change",()=>{
+  getAllBibleKeys().then(keys => {
+    vSel.innerHTML = keys.map(k => {
+      let n=k.replace(/\.xml$/i,"").replace(/[-_]/g," ");
+      n = n.replace(/([a-z])([A-Z])/g, '$1 $2');
+      n = n.replace(/\b\w/g, l => l.toUpperCase());
+      return `<option value="${k}" ${k===localStorage.getItem("bible_last")?"selected":""}>${n}</option>`;
+    }).join("") || `<option value="">${name}</option>`;
+    vSel.innerHTML += `<option value="__picker__">＋ Cambiar versión…</option>`;
+  });
+  
+  vSel.addEventListener("change", async () => {
     const v=vSel.value;
     if(v==="__picker__"){showVersionPicker();return;}
     try{
-      const data=JSON.parse(localStorage.getItem("bible_cache_"+v)||"[]");
-      if(!data.length)throw new Error();
+      const data = await getBibleFromDB(v);
+      if(!data || !data.length) throw new Error();
       BIBLE=data;
-      let n=v.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+      let n=v.replace(/\.xml$/i,"").replace(/[-_]/g," ");
       n = n.replace(/([a-z])([A-Z])/g, '$1 $2');
       n = n.replace(/\b\w/g, l => l.toUpperCase());
       localStorage.setItem("bible_last",v);
@@ -568,10 +645,11 @@ function initUI(name){
 function syncChapSel(){
   const cSel=document.getElementById("chap-sel");
   const book=BIBLE[bookIdx];
+  if (!book || !book.chapters) return;
   cSel.innerHTML=book.chapters.map((_,i)=>`<option value="${i}">Cap. ${i+1}</option>`).join("");
   cSel.onchange=()=>{chapIdx=+cSel.value;if(currentTab!=="search")renderCurrentTab();};
-  cSel.value=chapIdx;
-  document.getElementById("book-sel").value=bookIdx;
+  cSel.value=chapIdx || 0;
+  document.getElementById("book-sel").value=bookIdx || 0;
 }
 
 /* ── RENDER ── */
@@ -582,6 +660,10 @@ function renderCurrentTab(){
 }
 
 function renderVerses(){
+  if (!BIBLE || !BIBLE.length || !BIBLE[bookIdx]) {
+    setContent(`<div class="no-results">No hay datos disponibles</div>`);
+    return;
+  }
   const book=BIBLE[bookIdx];
   const verses=book.chapters[chapIdx]||[];
   let html="";
@@ -598,6 +680,10 @@ function renderVerses(){
 }
 
 function renderChapterGrid(){
+  if (!BIBLE || !BIBLE.length || !BIBLE[bookIdx]) {
+    setContent(`<div class="no-results">No hay datos disponibles</div>`);
+    return;
+  }
   const book=BIBLE[bookIdx];
   let html=`<div class="chapter-grid">`;
   book.chapters.forEach((_,i)=>{
@@ -614,6 +700,10 @@ function renderChapterGrid(){
 }
 
 function renderSearch(){
+  if (!BIBLE || !BIBLE.length) {
+    setContent(`<div class="no-results">No hay datos disponibles</div>`);
+    return;
+  }
   const q=document.getElementById("search-inp").value.trim();
   if(!q){
     setContent(`<div class="no-results" style="padding-top:48px">Escribí para buscar en toda la Biblia</div>`);
