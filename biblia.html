@@ -34,6 +34,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .tab{padding:10px 14px;font-size:13px;font-weight:500;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;font-family:'DM Sans',sans-serif;margin-bottom:-1px;transition:color .15s;white-space:nowrap}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent)}
 
+/* VERSE LIST */
 .verse-list{padding:6px 0 100px}
 .verse-item{display:flex;align-items:flex-start;gap:12px;padding:13px 16px;border-bottom:1px solid rgba(255,255,255,.04);cursor:pointer;transition:background .12s;user-select:none;-webkit-user-select:none;-webkit-tap-highlight-color:transparent}
 .verse-item:active{background:var(--surface)}
@@ -42,40 +43,61 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .verse-text{font-size:14px;line-height:1.8;color:var(--text)}
 .verse-ref{font-size:11px;color:var(--muted);margin-top:3px}
 
+/* CHAPTER GRID */
 .chapter-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(52px,1fr));gap:8px;padding:14px 16px 100px}
 .chap-btn{padding:14px 4px;border-radius:10px;background:var(--surface2);border:1px solid var(--border);color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;cursor:pointer;text-align:center;transition:all .15s}
 .chap-btn:hover,.chap-btn:active{border-color:var(--accent);color:var(--accent)}
 .chap-btn.active{background:rgba(245,166,35,.12);border-color:var(--accent);color:var(--accent);font-weight:600}
 
+/* SEARCH */
 .results-count{font-size:11px;color:var(--muted);padding:10px 16px 4px;letter-spacing:1px;text-transform:uppercase}
 .no-results{padding:48px 20px;text-align:center;color:var(--muted);font-size:13px}
 
+/* UPLOAD */
+.upload-card{margin:24px 16px;background:var(--surface);border:2px dashed var(--border);border-radius:16px;padding:36px 24px;text-align:center}
+.upload-card h2{font-size:17px;margin-bottom:8px}
+.upload-card p{font-size:13px;color:var(--muted);line-height:1.65;margin-bottom:22px}
+.upload-btn{display:inline-block;padding:12px 24px;background:var(--accent);color:#000;border:none;border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .15s}
+.upload-btn:hover{opacity:.85}
+.format-note{font-size:11px;color:var(--muted);margin-top:14px;line-height:1.8}
+.upload-progress{margin-top:16px;font-size:13px;color:var(--muted)}
+
+/* LOADING */
 .loading-state{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px}
 .spinner-b{width:36px;height:36px;border-radius:50%;border:3px solid var(--border);border-top-color:var(--accent);animation:spin .8s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
+/* TOAST */
 .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(80px);background:var(--surface2);border:1px solid var(--border);border-radius:12px;padding:12px 20px;font-size:13px;color:var(--text);z-index:100;transition:transform .3s,opacity .3s;opacity:0;pointer-events:none;white-space:nowrap;box-shadow:0 8px 32px rgba(0,0,0,.6)}
 .toast.show{transform:translateX(-50%) translateY(0);opacity:1}
 
-.version-picker{padding:20px 16px 100px}
-.vp-section{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 10px;padding:0 2px}
-.version-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s}
-.version-row:hover,.version-row:active{border-color:var(--accent);background:rgba(245,166,35,.04)}
-.vr-name{font-size:15px;font-weight:500}
-.vr-sub{font-size:11px;color:var(--muted);margin-top:2px}
-.vr-arr{font-size:18px;color:var(--accent);flex-shrink:0}
-.vr-loading{display:flex;gap:10px;align-items:center;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
-.vp-upload{display:block;width:100%;padding:13px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-align:center;transition:border-color .15s}
-.vp-upload:hover{border-color:var(--accent)}
+/* PRESENTATION BAR */
+.pres-bar{position:fixed;bottom:0;left:0;right:0;z-index:80;background:rgba(13,13,13,.96);backdrop-filter:blur(16px);border-top:1px solid var(--border);padding:12px 16px 16px;display:none;flex-direction:column;gap:10px}
+.pres-bar.visible{display:flex}
+.pres-bar-top{display:flex;align-items:center;gap:10px}
+.pres-bar-ref{flex:1;font-size:12px;color:var(--accent);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pres-stop-btn{padding:8px 14px;border-radius:8px;border:1px solid rgba(224,82,82,.3);background:rgba(224,82,82,.1);color:var(--red);font-family:'DM Sans',sans-serif;font-size:12px;font-weight:500;cursor:pointer;white-space:nowrap;transition:opacity .15s;flex-shrink:0}
+.pres-stop-btn:hover{opacity:.75}
+.pres-checks{display:flex;gap:20px;flex-wrap:wrap}
+.pres-check{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;-webkit-user-select:none}
+.pres-check input[type=checkbox]{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
+.pres-check span{font-size:12px;color:var(--muted)}
 </style>
 </head>
 <body>
 
-<div class="topbar" id="topbar">
+<div class="topbar">
   <a class="back-btn" href="index.html">←</a>
   <div class="topbar-title" id="topbar-title">Biblia</div>
   <div class="live-dot" id="live-dot" style="display:none"></div>
   <div class="live-label" id="live-label" style="display:none">En vivo</div>
+</div>
+
+<!-- VERSION DROPDOWN -->
+<div id="version-row" style="display:none;padding:10px 16px 0">
+  <div style="position:relative">
+    <select class="nav-sel" id="version-sel" style="width:100%;padding-right:32px"></select>
+  </div>
 </div>
 
 <div id="search-wrap" class="search-wrap" style="display:none">
@@ -102,6 +124,18 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 
 <div class="toast" id="toast"></div>
 
+<!-- PRESENTATION BAR -->
+<div class="pres-bar" id="pres-bar">
+  <div class="pres-bar-top">
+    <div class="pres-bar-ref" id="pres-bar-ref">—</div>
+    <button class="pres-stop-btn" id="pres-stop-btn">⏹ Terminar</button>
+  </div>
+  <div class="pres-checks">
+    <label class="pres-check"><input type="checkbox" id="chk-citation" checked><span>Mostrar cita</span></label>
+    <label class="pres-check"><input type="checkbox" id="chk-version"><span>Mostrar versión</span></label>
+  </div>
+</div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script>
@@ -122,106 +156,201 @@ let bookIdx=0,chapIdx=0,currentTab="verses",presentingRef=null;
 /* ── TOAST ── */
 function toast(msg,ms=2200){
   const el=document.getElementById("toast");
-  if(!el)return;
   el.textContent=msg;el.classList.add("show");
   clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove("show"),ms);
 }
 
-/* ── PARSE XML ── */
+/* ── PARSE XMLBIBLE ── */
 function parseXMLBible(xmlStr){
-  const parser=new DOMParser();
-  const doc=parser.parseFromString(xmlStr,"text/xml");
-  if(doc.querySelector("parsererror"))throw new Error("XML inválido");
-  const books=[];
-  doc.querySelectorAll("BIBLEBOOK").forEach(bb=>{
-    const name=bb.getAttribute("bname")||bb.getAttribute("bsname")||"?";
-    const chapters=[];
-    bb.querySelectorAll("CHAPTER").forEach(ch=>{
-      const verses=[];
-      ch.querySelectorAll("VERS").forEach(v=>verses.push((v.textContent||"").trim()));
-      if(verses.length)chapters.push(verses);
-    });
-    if(chapters.length)books.push({name,chapters});
-  });
-  return books;
-}
-
-/* ── PARSE JSON ── */
-function parseJSONBible(raw){
-  let books=Array.isArray(raw)?raw:(raw.books||raw.bible||[]);
-  return books.map(b=>{
-    const name=b.name||b.book||b.title||"?";
-    let chapters=[];
-    if(Array.isArray(b.chapters)){
-      chapters=b.chapters.map(ch=>{
-        if(Array.isArray(ch)&&typeof ch[0]==="string")return ch;
-        if(Array.isArray(ch)&&ch[0]?.text)return ch.map(v=>v.text||"");
-        if(ch?.verses)return ch.verses.map(v=>typeof v==="string"?v:(v.text||v.verse||""));
-        return [];
-      }).filter(arr=>arr.length);
+  try {
+    if (!xmlStr || typeof xmlStr !== 'string') {
+      throw new Error("Contenido vacío o inválido");
     }
-    return {name,chapters};
-  }).filter(b=>b.chapters.length);
+    
+    if (xmlStr.charCodeAt(0) === 0xFEFF) {
+      xmlStr = xmlStr.slice(1);
+    }
+    
+    const parser=new DOMParser();
+    const doc=parser.parseFromString(xmlStr,"text/xml");
+    
+    const parserError = doc.querySelector("parsererror");
+    if(parserError) {
+      console.error("Error de parser:", parserError.textContent);
+      throw new Error("XML inválido: " + parserError.textContent);
+    }
+    
+    const books=[];
+    const bibleBooks = doc.querySelectorAll("BIBLEBOOK");
+    
+    if (bibleBooks.length === 0) {
+      throw new Error("No se encontraron libros en el XML");
+    }
+    
+    bibleBooks.forEach(bb=>{
+      const name=bb.getAttribute("bname")||bb.getAttribute("bsname")||bb.getAttribute("name")||"?";
+      const chapters=[];
+      bb.querySelectorAll("CHAPTER").forEach(ch=>{
+        const verses=[];
+        ch.querySelectorAll("VERS").forEach(v=>{
+          const text = (v.textContent||"").trim();
+          if (text) verses.push(text);
+        });
+        if(verses.length) chapters.push(verses);
+      });
+      if(chapters.length) books.push({name,chapters});
+    });
+    
+    if (books.length === 0) {
+      throw new Error("No se encontraron libros en el XML");
+    }
+    
+    return books;
+  } catch(e) {
+    console.error("Error parseando XML:", e);
+    throw e;
+  }
 }
 
-/* ── SHOW VERSION PICKER ── */
+/* ── PARSE JSON BIBLE ── */
+function parseJSONBible(raw){
+  try {
+    let books=Array.isArray(raw)?raw:(raw.books||raw.bible||[]);
+    if (!books || !books.length) {
+      throw new Error("No se encontraron libros en el JSON");
+    }
+    return books.map(b=>{
+      const name=b.name||b.book||b.title||"?";
+      let chapters=[];
+      if(Array.isArray(b.chapters)){
+        chapters=b.chapters.map(ch=>{
+          if(Array.isArray(ch)&&typeof ch[0]==="string")return ch;
+          if(Array.isArray(ch)&&ch[0]?.text)return ch.map(v=>v.text||"");
+          if(ch?.verses)return ch.verses.map(v=>typeof v==="string"?v:(v.text||v.verse||""));
+          return [];
+        });
+      }
+      return {name,chapters};
+    }).filter(b=>b.chapters.length);
+  } catch(e) {
+    console.error("Error parseando JSON:", e);
+    throw e;
+  }
+}
+
+/* ── REPO ── */
+const REPO="becerrapedro4/CancioneroIEMA";
+
+/* ── LOAD ── */
+async function loadBible(){
+  showVersionPicker();
+}
+
 async function showVersionPicker(){
-  const main=document.getElementById("main-content");
-  if(!main)return;
-  
-  document.getElementById("search-wrap").style.display="none";
-  document.getElementById("nav-row").style.display="none";
-  document.getElementById("tabs-wrap").style.display="none";
-  document.getElementById("topbar-title").textContent="Biblia";
-  document.getElementById("live-dot").style.display="none";
-  document.getElementById("live-label").style.display="none";
-  
-  // Ocultar toggles viejos si existen
-  const oldRef=document.getElementById("btn-toggle-ref");
-  const oldVer=document.getElementById("btn-toggle-ver");
-  const oldSep=document.getElementById("toggle-sep");
-  if(oldRef)oldRef.remove();
-  if(oldVer)oldVer.remove();
-  if(oldSep)oldSep.remove();
+  const loadingState = document.getElementById("loading-state");
+  if (loadingState) {
+    loadingState.innerHTML=`
+      <div class="spinner-b"></div>
+      <div style="font-size:13px;color:var(--muted)">Buscando versiones en el repo…</div>`;
+  }
 
-  const FILES=[
-    {name:"La Biblia de Las Americas.xml",label:"La Biblia de las Américas"},
-    {name:"Nueva Traducción Viviente.xml",label:"Nueva Traducción Viviente"},
-    {name:"Nueva Versión Internacional.xml",label:"Nueva Versión Internacional"},
-    {name:"Palabra de Dios para Todos.xml",label:"Palabra de Dios para Todos"},
-    {name:"RVC.xml",label:"Reina Valera Contemporánea"},
-    {name:"Reina-Valera 1960.xml",label:"Reina Valera 1960"},
-    {name:"Traducción en Lenguaje Actual.xml",label:"Traducción en Lenguaje Actual"}
-  ];
+  // 🔥 NUEVO: Buscar TODOS los archivos en la carpeta "biblias"
+  let repoFiles=[];
+  try{
+    const res=await fetch(`https://api.github.com/repos/${REPO}/contents/biblias`,
+      {headers:{Accept:"application/vnd.github.v3+json"}});
+    if(res.ok){
+      const all=await res.json();
+      repoFiles=all.filter(f=>f.type==="file"&&/\.(xml|json)$/i.test(f.name)
+        &&!["canciones.json","package.json"].includes(f.name));
+    } else {
+      console.warn("GitHub API respondió con status:", res.status);
+    }
+  }catch(e){console.warn("GitHub API error:", e);}
 
- // const repoFiles=FILES.map(f=>({...f,download_url:`https://cdn.jsdelivr.net/gh/becerrapedro4/CancioneroIEMA@main/biblias/${encodeURIComponent(f.name)}`}));
-
-  const repoFiles=FILES.map(f=>({...f,download_url:`https://cdn.jsdelivr.net/gh/becerrapedro4/CancioneroIEMA@main/biblias/${encodeURIComponent(f.name)}?v=${Date.now()}`}));
-
+  // Cached versions in localStorage
   const cachedKeys=[];
   for(let i=0;i<localStorage.length;i++){
     const k=localStorage.key(i);
     if(k&&k.startsWith("bible_cache_"))cachedKeys.push(k.replace("bible_cache_",""));
   }
-  const offlineCached=cachedKeys.filter(k=>!repoFiles.some(f=>f.name===k));
 
-  let html=`<div class="version-picker">`;
-  
+  // Normalizar nombres para comparación
+  const normalizeName = (name) => {
+    return name.trim().toLowerCase().replace(/\s+/g, ' ').replace(/\.(xml|json)$/i, '');
+  };
+
+  // Verificar offline cached
+  const offlineCached = cachedKeys.filter(k => {
+    const normalizedK = normalizeName(k);
+    return !repoFiles.some(f => normalizeName(f.name) === normalizedK);
+  });
+
+  console.log('📚 Total archivos encontrados:', repoFiles.length);
+  console.log('📚 Archivos en repo:', repoFiles.map(f => f.name));
+  console.log('💾 Archivos en caché:', cachedKeys);
+  console.log('📱 Solo offline:', offlineCached);
+
+  if (loadingState) loadingState.style.display="none";
+
+  // Inject styles
+  if(!document.getElementById("vp-style")){
+    const s=document.createElement("style");s.id="vp-style";
+    s.textContent=`
+      .vp-section{font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:0 0 10px;padding:0 2px}
+      .version-row{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px;cursor:pointer;transition:border-color .15s,background .15s;-webkit-tap-highlight-color:transparent}
+      .version-row:hover,.version-row:active{border-color:var(--accent);background:rgba(245,166,35,.04)}
+      .version-row.error{border-color:var(--red);background:rgba(224,82,82,.06)}
+      .vr-name{font-size:15px;font-weight:500;text-transform:capitalize}
+      .vr-sub{font-size:11px;color:var(--muted);margin-top:2px}
+      .vr-arr{font-size:18px;color:var(--accent);flex-shrink:0}
+      .vr-loading{display:flex;gap:10px;align-items:center;padding:14px 16px;background:var(--surface);border:1px solid var(--border);border-radius:12px;margin-bottom:8px}
+      .vp-upload{display:block;width:100%;padding:13px;background:var(--surface2);color:var(--text);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;cursor:pointer;text-align:center;transition:border-color .15s}
+      .vp-upload:hover{border-color:var(--accent)}
+      .vp-error{color:var(--red);font-size:12px;margin-top:4px}
+      .vp-stats{font-size:12px;color:var(--muted);margin-bottom:14px;padding:0 2px}
+    `;
+    document.head.appendChild(s);
+  }
+
+  let html=`<div style="padding:20px 16px 100px">`;
+
+  // 🔥 Mostrar estadísticas
   if(repoFiles.length){
+    html+=`<div class="vp-stats">📚 ${repoFiles.length} versiones disponibles en el repositorio</div>`;
     html+=`<div class="vp-section">📡 En el repositorio</div>`;
+    
+    // 🔥 Ordenar alfabéticamente para mejor visualización
+    repoFiles.sort((a,b) => a.name.localeCompare(b.name));
+    
     repoFiles.forEach(f=>{
-      const cached=cachedKeys.includes(f.name);
-      html+=`<div class="version-row" data-url="${f.download_url}" data-file="${f.name}" data-name="${f.label}">
-        <div><div class="vr-name">${f.label}</div><div class="vr-sub">${f.name}${cached?" · en caché ✓":""}</div></div>
+      const downloadUrl = `https://cdn.jsdelivr.net/gh/${REPO}@main/biblias/${encodeURIComponent(f.name)}`;
+      // 🔥 Mejorar el nombre para mostrar (más legible)
+      let name = f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+      // Si el nombre está en camelCase o sin espacios, intentar separarlo
+      name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+      // Capitalizar cada palabra
+      name = name.replace(/\b\w/g, l => l.toUpperCase());
+      
+      const cached=cachedKeys.some(k => normalizeName(k) === normalizeName(f.name));
+      html+=`<div class="version-row" data-url="${downloadUrl}" data-file="${f.name}" data-name="${name}">
+        <div><div class="vr-name">${name}</div><div class="vr-sub">${f.name}${cached?" · ✅ en caché":""}</div></div>
         <span class="vr-arr">${cached?"★":"→"}</span>
       </div>`;
     });
+  }else{
+    html+=`<div style="background:rgba(224,82,82,.06);border:1px solid rgba(224,82,82,.2);border-radius:12px;padding:14px 16px;margin-bottom:16px;font-size:13px;color:var(--muted);line-height:1.7">
+      ⚠️ No se encontraron archivos .xml o .json en la carpeta <b style="color:var(--text)">biblias/</b> del repo <b style="color:var(--text)">${REPO}</b>.<br>
+      <span style="font-size:12px">Asegurate de que los archivos estén en la carpeta correcta y que el repositorio sea público.</span>
+    </div>`;
   }
 
   if(offlineCached.length){
-    html+=`<div class="vp-section" style="margin-top:20px">📱 Solo en este dispositivo</div>`;
+    html+=`<div class="vp-section" style="margin-top:20px">📱 Solo en este dispositivo (${offlineCached.length})</div>`;
     offlineCached.forEach(k=>{
-      const name=k.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+      let name=k.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+      name = name.replace(/([a-z])([A-Z])/g, '$1 $2');
+      name = name.replace(/\b\w/g, l => l.toUpperCase());
       html+=`<div class="version-row" data-cachekey="${k}" data-name="${name}">
         <div><div class="vr-name">${name}</div><div class="vr-sub">Guardada localmente</div></div>
         <span class="vr-arr">★</span>
@@ -237,86 +366,159 @@ async function showVersionPicker(){
     <div style="font-size:11px;color:var(--muted);text-align:center;margin-top:8px">Se guarda en este dispositivo</div>
   </div></div>`;
 
-  main.innerHTML=html;
+  document.getElementById("main-content").innerHTML=html;
 
+  // Wire repo rows
   document.querySelectorAll(".version-row[data-url]").forEach(row=>{
-    row.addEventListener("click",async()=>{
-      const url=row.dataset.url,fname=row.dataset.file,name=row.dataset.name;
+    row.addEventListener("click",async function() {
+      const url=this.dataset.url,fname=this.dataset.file,name=this.dataset.name;
+      
+      // Load from cache if available
       const cached=localStorage.getItem("bible_cache_"+fname);
       if(cached){
         try{
           BIBLE=JSON.parse(cached);
           if(BIBLE.length){localStorage.setItem("bible_name",name);initUI(name);return;}
-        }catch(e){localStorage.removeItem("bible_cache_"+fname);}
+        }catch(e){
+          console.warn("Error cargando caché:", e);
+        }
       }
-      row.innerHTML=`<div class="vr-loading"><div class="spinner-b" style="width:22px;height:22px;border-width:2px;flex-shrink:0"></div><span style="font-size:13px;color:var(--muted)">Descargando ${name}…</span></div>`;
+      
+      // Download from repo
+      this.innerHTML=`<div class="vr-loading"><div class="spinner-b" style="width:22px;height:22px;border-width:2px;flex-shrink:0"></div><span style="font-size:13px;color:var(--muted)">Descargando ${name}…</span></div>`;
       
       try{
-  const res=await fetch(url);
-  if(!res.ok)throw new Error("HTTP "+res.status);
-  const text=await res.text();
-  
-  // Verificar que sea XML
-  if(!text.trimStart().startsWith("<")){
-    throw new Error("El archivo no parece ser XML (primeros 50 caracteres: "+text.substring(0,50)+")");
-  }
-  
-  BIBLE=parseXMLBible(text);
-  if(!BIBLE.length)throw new Error("No se encontraron libros");
-  try{localStorage.setItem("bible_cache_"+fname,JSON.stringify(BIBLE));}catch(e){}
-  localStorage.setItem("bible_name",name);
-  initUI(name);
-}catch(e){
-  row.innerHTML=`<div style="color:var(--red);padding:12px 16px;font-size:13px">Error: ${e.message} — <a href="#" onclick="showVersionPicker();return false" style="color:var(--accent)">reintentar</a></div>`;
-}
-     
+        const res=await fetch(url);
+        if(!res.ok)throw new Error(`HTTP ${res.status}: ${res.statusText}`);
+        
+        const text=await res.text();
+        
+        // Verificar que no sea HTML
+        if(text.trim().startsWith("<html") || text.trim().startsWith("<!DOCTYPE html")) {
+          throw new Error("El servidor devolvió HTML en lugar del archivo");
+        }
+        
+        // Intentar parsear según el tipo
+        let parsedBooks;
+        if(fname.endsWith(".xml") || text.trimStart().startsWith("<")){
+          parsedBooks = parseXMLBible(text);
+        } else {
+          parsedBooks = parseJSONBible(JSON.parse(text));
+        }
+        
+        if(!parsedBooks || !parsedBooks.length) throw new Error("Sin libros");
+        
+        BIBLE = parsedBooks;
+        try{localStorage.setItem("bible_cache_"+fname,JSON.stringify(BIBLE));}catch(e){console.warn("No se pudo guardar en caché:", e);}
+        localStorage.setItem("bible_name",name);
+        localStorage.setItem("bible_last",fname);
+        initUI(name);
+      }catch(e){
+        console.error("Error descargando:", e);
+        this.className = "version-row error";
+        this.innerHTML=`<div style="color:var(--red);padding:8px 16px;font-size:13px;flex:1">
+          ⚠️ Error: ${e.message}
+          <br><span style="font-size:11px;color:var(--muted)">Haz clic para reintentar</span>
+        </div>`;
+        // Permitir reintentar
+        this.addEventListener("click", function handler() {
+          this.removeEventListener("click", handler);
+          this.className = "version-row";
+          this.click();
+        }, { once: true });
+      }
     });
   });
 
+  // Wire cached-only rows
   document.querySelectorAll(".version-row[data-cachekey]").forEach(row=>{
-    row.addEventListener("click",async()=>{
+    row.addEventListener("click",()=>{
       try{
-        BIBLE=JSON.parse(localStorage.getItem("bible_cache_"+row.dataset.cachekey)||"[]");
+        const data = localStorage.getItem("bible_cache_"+row.dataset.cachekey);
+        if(!data) throw new Error("No hay datos en caché");
+        BIBLE=JSON.parse(data);
         if(!BIBLE.length)throw new Error("Caché vacío");
         localStorage.setItem("bible_name",row.dataset.name);
+        localStorage.setItem("bible_last",row.dataset.cachekey);
         initUI(row.dataset.name);
       }catch(e){toast("Error: "+e.message);}
     });
   });
 
-  const fileInput=document.getElementById("bible-file");
-  if(fileInput){
-    fileInput.addEventListener("change",e=>{
-      const f=e.target.files[0];if(!f)return;
-      const reader=new FileReader();
-      reader.onload=ev=>{
-        try{
-          const content=ev.target.result;
-          BIBLE=f.name.endsWith(".xml")||content.trimStart().startsWith("<")?parseXMLBible(content):parseJSONBible(JSON.parse(content));
-          if(!BIBLE.length)throw new Error("No se encontraron libros");
-          const name=f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
-          try{localStorage.setItem("bible_cache_"+f.name,JSON.stringify(BIBLE));}catch(e){}
-          localStorage.setItem("bible_name",name);
-          initUI(name);
-        }catch(err){alert("Error: "+err.message);}
-      };
-      reader.readAsText(f,"UTF-8");
-    });
-  }
+  // Wire file upload
+  document.getElementById("bible-file").addEventListener("change",e=>{
+    const f=e.target.files[0];if(!f)return;
+    const reader=new FileReader();
+    reader.onload=ev=>{
+      try{
+        const content=ev.target.result;
+        let parsedBooks;
+        if(f.name.endsWith(".xml") || content.trimStart().startsWith("<")){
+          parsedBooks = parseXMLBible(content);
+        } else {
+          parsedBooks = parseJSONBible(JSON.parse(content));
+        }
+        if(!parsedBooks.length)throw new Error("No se encontraron libros");
+        BIBLE = parsedBooks;
+        const name=f.name.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+        try{localStorage.setItem("bible_cache_"+f.name,JSON.stringify(BIBLE));}catch(e){console.warn("No se pudo guardar en caché:", e);}
+        localStorage.setItem("bible_name",name);
+        localStorage.setItem("bible_last",f.name);
+        initUI(name);
+      }catch(err){toast("Error: "+err.message);}
+    };
+    reader.onerror = ()=>toast("Error leyendo el archivo");
+    reader.readAsText(f,"UTF-8");
+  });
 }
 
 /* ── INIT UI ── */
 function initUI(name){
-  document.getElementById("topbar-title").textContent=name||"Biblia";
+  document.getElementById("loading-state").style.display="none";
+  document.getElementById("main-content").innerHTML="<div class='verse-list' id='verse-list'></div>";
   document.getElementById("search-wrap").style.display="";
   document.getElementById("nav-row").style.display="";
   document.getElementById("tabs-wrap").style.display="";
-  
+  document.getElementById("version-row").style.display="";
+  document.getElementById("topbar-title").textContent=name||"Biblia";
+
   if(getRoom()){
     document.getElementById("live-dot").style.display="";
     document.getElementById("live-label").style.display="";
   }
 
+  // Version dropdown
+  const vSel=document.getElementById("version-sel");
+  const keys=[];
+  for(let i=0;i<localStorage.length;i++){
+    const k=localStorage.key(i);
+    if(k&&k.startsWith("bible_cache_"))keys.push(k.replace("bible_cache_",""));
+  }
+  vSel.innerHTML=keys.map(k=>{
+    let n=k.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+    n = n.replace(/([a-z])([A-Z])/g, '$1 $2');
+    n = n.replace(/\b\w/g, l => l.toUpperCase());
+    return `<option value="${k}" ${k===localStorage.getItem("bible_last")?"selected":""}>${n}</option>`;
+  }).join("")||`<option value="">${name}</option>`;
+  vSel.innerHTML+=`<option value="__picker__">＋ Cambiar versión…</option>`;
+  vSel.addEventListener("change",()=>{
+    const v=vSel.value;
+    if(v==="__picker__"){showVersionPicker();return;}
+    try{
+      const data=JSON.parse(localStorage.getItem("bible_cache_"+v)||"[]");
+      if(!data.length)throw new Error();
+      BIBLE=data;
+      let n=v.replace(/\.(xml|json)$/i,"").replace(/[-_]/g," ");
+      n = n.replace(/([a-z])([A-Z])/g, '$1 $2');
+      n = n.replace(/\b\w/g, l => l.toUpperCase());
+      localStorage.setItem("bible_last",v);
+      localStorage.setItem("bible_name",n);
+      bookIdx=0;chapIdx=0;
+      initUI(n);
+    }catch{toast("Error al cargar la versión");}
+  });
+
+  // Book select
   const bSel=document.getElementById("book-sel");
   bSel.innerHTML=BIBLE.map((b,i)=>`<option value="${i}">${b.name}</option>`).join("");
   bSel.addEventListener("change",()=>{
@@ -327,6 +529,7 @@ function initUI(name){
 
   syncChapSel();
 
+  // Tabs
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
     currentTab=t.dataset.tab;
     document.querySelectorAll(".tab").forEach(x=>x.classList.toggle("active",x===t));
@@ -334,6 +537,7 @@ function initUI(name){
     renderCurrentTab();
   }));
 
+  // Search input
   const si=document.getElementById("search-inp");
   let searchTimer=null;
   si.addEventListener("input",()=>{
@@ -345,96 +549,21 @@ function initUI(name){
           document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.tab==="search"));
         }
         renderSearch();
-      }else if(currentTab==="search"){
-        renderSearch();
-      }
+      }else if(currentTab==="search"){renderSearch();}
     },300);
   });
 
-  setContent(`<div class="verse-list" id="verse-list"></div>`);
+  // Pres bar stop button
+  document.getElementById("pres-stop-btn").onclick=()=>{
+    const r=getRoom();
+    if(r)db.ref(`rooms/${r}/currentSong`).set({blank:true,stop:true,ts:Date.now()});
+    presentingRef=null;
+    document.getElementById("pres-bar").classList.remove("visible");
+    document.querySelectorAll(".verse-item").forEach(x=>x.classList.remove("presenting"));
+  };
+
   renderCurrentTab();
-
-  // Botón cambiar versión
-  if(!document.getElementById("btn-change-version")){
-    const btn=document.createElement("button");
-    btn.id="btn-change-version";
-    btn.title="Cambiar versión";
-    btn.textContent="⇄";
-    btn.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:16px;cursor:pointer;flex-shrink:0;transition:border-color .15s";
-    btn.addEventListener("click",showVersionPicker);
-    document.getElementById("topbar").appendChild(btn);
-  }
-
-  // ─── Toggle Cita ───
-  if(!document.getElementById("btn-toggle-ref")){
-    const sep=document.createElement("div");
-    sep.id="toggle-sep";
-    sep.style.cssText="width:1px;height:24px;background:var(--border);flex-shrink:0;margin:0 4px";
-    document.getElementById("topbar").appendChild(sep);
-    
-    const btnRef=document.createElement("button");
-    btnRef.id="btn-toggle-ref";
-    btnRef.title="Mostrar/ocultar cita bíblica";
-    btnRef.textContent="📖";
-    btnRef.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--accent);color:var(--accent);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
-    btnRef.dataset.on="1";
-    btnRef.addEventListener("click",()=>{
-      const on=btnRef.dataset.on==="1";
-      btnRef.dataset.on=on?"0":"1";
-      btnRef.style.background=on?"var(--surface2)":"var(--accent)";
-      btnRef.style.color=on?"var(--accent)":"#000";
-      btnRef.style.borderColor="var(--accent)";
-    });
-    document.getElementById("topbar").appendChild(btnRef);
-    document.getElementById("topbar").appendChild(btnRef);
-    
-    // Toggle Versión
-    const btnVer=document.createElement("button");
-    btnVer.id="btn-toggle-ver";
-    btnVer.title="Mostrar/ocultar versión";
-    btnVer.textContent="📋";
-    btnVer.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--border);color:var(--muted);font-size:15px;cursor:pointer;flex-shrink:0;transition:all .15s";
-    btnVer.dataset.on="0";
-    btnVer.addEventListener("click",()=>{
-      const on=btnVer.dataset.on==="1";
-      btnVer.dataset.on=on?"0":"1";
-      btnVer.style.background=on?"var(--surface2)":"var(--accent)";
-      btnVer.style.color=on?"var(--muted)":"#000";
-      btnVer.style.borderColor=on?"var(--border)":"var(--accent)";
-      // Si se activa versión, forzar que cita también esté activa
-      if(!on){
-        const btnRef=document.getElementById("btn-toggle-ref");
-        if(btnRef&&btnRef.dataset.on==="0"){
-          btnRef.dataset.on="1";
-          btnRef.style.background="var(--surface2)";
-          btnRef.style.color="var(--accent)";
-          btnRef.style.borderColor="var(--accent)";
-        }
-      }
-    });
-    document.getElementById("topbar").appendChild(btnVer);
-  }
 }
-
-    // ─── Botón Detener presentación ───
-  if(!document.getElementById("btn-stop-pres")){
-    const btnStop=document.createElement("button");
-    btnStop.id="btn-stop-pres";
-    btnStop.title="Detener presentación";
-    btnStop.textContent="⏹";
-    btnStop.style.cssText="width:36px;height:36px;border-radius:50%;background:var(--surface2);border:1px solid var(--red);color:var(--red);font-size:16px;cursor:pointer;flex-shrink:0;transition:all .15s";
-    btnStop.addEventListener("click",()=>{
-      const r=getRoom();
-      if(!r){toast("⚠️ No hay sala configurada");return;}
-      db.ref(`rooms/${r}/currentSong`).set({
-        blank:true,stop:true,ts:Date.now()
-      });
-      presentingRef=null;
-      document.querySelectorAll(".verse-item.presenting").forEach(x=>x.classList.remove("presenting"));
-      toast("⏹ Presentación detenida");
-    });
-    document.getElementById("topbar").appendChild(btnStop);
-  }
 
 function syncChapSel(){
   const cSel=document.getElementById("chap-sel");
@@ -445,6 +574,7 @@ function syncChapSel(){
   document.getElementById("book-sel").value=bookIdx;
 }
 
+/* ── RENDER ── */
 function renderCurrentTab(){
   if(currentTab==="verses")renderVerses();
   else if(currentTab==="chapters")renderChapterGrid();
@@ -486,7 +616,7 @@ function renderChapterGrid(){
 function renderSearch(){
   const q=document.getElementById("search-inp").value.trim();
   if(!q){
-    setContent(`<div class="no-results" style="padding-top:48px">Escribí para buscar</div>`);
+    setContent(`<div class="no-results" style="padding-top:48px">Escribí para buscar en toda la Biblia</div>`);
     return;
   }
   const ql=q.toLowerCase();
@@ -506,7 +636,7 @@ function renderSearch(){
     setContent(`<div class="no-results">Sin resultados para "<b style="color:var(--text)">${escHtml(q)}</b>"</div>`);
     return;
   }
-  const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`,"gi");
+  const re=new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")})`, "gi");
   let html=`<div class="results-count">${results.length}${results.length>=300?"+":""} resultado${results.length!==1?"s":""}</div><div class="verse-list">`;
   results.forEach(r=>{
     const hi=escHtml(r.text).replace(re,`<b style="color:var(--accent)">$1</b>`);
@@ -527,37 +657,22 @@ function presentVerse(el){
   if(!r){toast("⚠️ Configurá la sala en el Admin del Cancionero");return;}
   const ref=el.dataset.ref;
   const text=el.dataset.text;
-  
-  // Leer estado de los toggles
-  const btnRef=document.getElementById("btn-toggle-ref");
-  const btnVer=document.getElementById("btn-toggle-ver");
-  const showRef=btnRef?btnRef.dataset.on==="1":true;
-  const showVer=btnVer?btnVer.dataset.on==="1":false;
-  
-  // Versión abreviada
-  let version="";
-  if(showVer){
-    version=localStorage.getItem("bible_name")||"";
-    if(!version){
-      const topbar=document.getElementById("topbar-title");
-      if(topbar&&topbar.textContent&&topbar.textContent!=="Biblia"){
-        version=topbar.textContent;
-      }
-    }
-    const words=version.split(" ");
-    if(words.length>4)version=words.slice(0,4).join(" ")+"...";
-  }
-  
+  const showCitation=document.getElementById("chk-citation")?.checked!==false;
+  const showVersion=document.getElementById("chk-version")?.checked;
+  const versionName=localStorage.getItem("bible_name")||"";
+  const citation=showCitation?(showVersion&&versionName?`${ref} — ${versionName}`:ref):"";
   db.ref(`rooms/${r}/currentSong`).set({
     type:"bible",blank:false,
-    titulo:ref,estrofa:text,
-    label:"Biblia",reference:showRef?ref:"",
-    version:version,
-    showRef:showRef,
+    titulo:ref,
+    estrofa:text,
+    citation,
+    label:"Biblia",reference:ref,
     idx:1,total:1,ts:Date.now()
   });
   presentingRef=ref;
   document.querySelectorAll(".verse-item").forEach(x=>x.classList.toggle("presenting",x.dataset.ref===ref));
+  document.getElementById("pres-bar").classList.add("visible");
+  document.getElementById("pres-bar-ref").textContent=`📺 ${ref}`;
   toast(`📺 ${ref}`);
 }
 
@@ -569,11 +684,11 @@ function setContent(html){
   document.getElementById("main-content").innerHTML=html;
 }
 
+/* ── ESCAPE ── */
 function escHtml(s){return String(s).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");}
 function escAttr(s){return String(s).replace(/"/g,"&quot;").replace(/'/g,"&#39;");}
 
-// Iniciar
-showVersionPicker();
+loadBible();
 </script>
 </body>
 </html>
