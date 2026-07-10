@@ -6,13 +6,14 @@
 <title>Cancionero</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
   --bg:#0D0D0D;--surface:#161616;--surface2:#1E1E1E;
   --accent:#F5A623;--text:#F0EDE8;--muted:#6B6560;--border:#2A2A2A;
-  --green:#4CAF7D;--red:#E05252;
+  --green:#4CAF7D;--red:#E05252;--blue:#5B9CF6;
 }
 html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-serif;min-height:100vh;-webkit-text-size-adjust:100%}
 .app{max-width:1100px;margin:0 auto;padding:0 16px 120px}
@@ -125,8 +126,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .lcard-body{display:none;border-top:1px solid var(--border)}
 .lcard.expanded .lcard-body{display:block}
 .lcard-songs{padding:8px}
-.lcsr{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:pointer}
+.lcsr{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;cursor:grab;transition:background .15s}
 .lcsr:hover{background:var(--surface2)}
+.lcsr.dragging{opacity:.5}
 .lcsn{font-size:11px;color:var(--muted);min-width:22px;text-align:right;flex-shrink:0}
 .lcsi{flex:1;min-width:0}
 .lcst{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
@@ -138,6 +140,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .exp-btn.html{background:rgba(245,166,35,.15);color:var(--accent);border:1px solid rgba(245,166,35,.3)}
 .exp-btn.pdf{background:var(--accent);color:#000}
 .exp-btn:hover{opacity:.8}
+.exp-btn.live{background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.3)}
 
 /* MODALS */
 .mov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
@@ -219,7 +222,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 /* ADMIN-ONLY: hidden until isAdmin */
 .admin-only{display:none!important}
 
-/* PRESENTER — rediseño tipo detail */
+/* PRESENTER */
 .pres-live{display:flex;align-items:center;gap:7px;margin-bottom:4px}
 .pres-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pdot 1.4s ease-in-out infinite}
 @keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
@@ -381,6 +384,45 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   </div>
 </div>
 
+<!-- MODAL: Live Editor -->
+<div class="mov" id="mov-live">
+  <div class="modal wide" style="max-height:90vh;display:flex;flex-direction:column;gap:0;padding:20px 20px 16px">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:16px;flex-shrink:0">
+      <div>
+        <div class="modal-title" style="font-size:18px">🎬 Editor en Vivo</div>
+        <div class="modal-sub" style="margin-bottom:0">Los cambios se actualizan en tiempo real</div>
+      </div>
+      <button class="mclose" id="live-close">×</button>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:10px;flex:1;overflow-y:auto;padding-right:4px">
+      <input class="minput" id="live-title" placeholder="Título del evento" style="margin-bottom:0">
+      <input class="minput" id="live-tag" placeholder="Etiqueta (ej: #Iglesia · Rosario)" style="margin-bottom:0">
+      <input class="minput" id="live-footer" placeholder="Pie de página (ej: IEMA · Rosario)" style="margin-bottom:0">
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:13px;color:var(--muted)">Logo:</span>
+        <input type="file" id="live-logo" accept="image/png" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:8px">
+        <button class="spbtn" data-lstyle="minimal">Minimalista</button>
+        <button class="spbtn" data-lstyle="aesthetic">Aesthetic</button>
+        <button class="spbtn" data-lstyle="glass">Glass</button>
+        <button class="spbtn" data-lstyle="vintage">Vintage</button>
+        <button class="spbtn" data-lstyle="neon">Neon</button>
+        <button class="spbtn" data-lstyle="nature">Naturaleza</button>
+      </div>
+      <div style="display:flex;gap:10px;align-items:center">
+        <span style="font-size:13px;color:var(--muted)">Color:</span>
+        <input type="color" id="live-color" value="#E55A00" style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
+      </div>
+      <div style="display:flex;gap:10px;flex-wrap:wrap;padding-top:8px;border-top:1px solid var(--border)">
+        <button class="mbtn pri" id="live-publish">📤 Publicar cambios</button>
+        <button class="mbtn sec" id="live-reset">↺ Restaurar</button>
+      </div>
+      <div class="mstatus" id="live-status"></div>
+    </div>
+  </div>
+</div>
+
 <!-- MODAL: Admin -->
 <div class="mov" id="mov-admin">
   <div class="modal wide">
@@ -396,6 +438,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
           <option value="export">⬇ Exportar DB</option>
           <option value="sala">📺 Sala</option>
           <option value="misc">⚙️ Misc</option>
+          <option value="live">🎬 Editor en Vivo</option>
         </select>
       </div>
     </div>
@@ -463,7 +506,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 
       <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Exportación HTML</div>
 
-      <!-- HTML toggle -->
       <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
         <div>
           <div style="font-size:13px;font-weight:500">Mostrar botón HTML</div>
@@ -479,6 +521,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
           <button class="spbtn active" data-mstyle="minimal">Minimalista</button>
           <button class="spbtn" data-mstyle="aesthetic">Aesthetic</button>
           <button class="spbtn" data-mstyle="glass">Glass</button>
+          <button class="spbtn" data-mstyle="vintage">Vintage</button>
+          <button class="spbtn" data-mstyle="neon">Neon</button>
+          <button class="spbtn" data-mstyle="nature">Naturaleza</button>
         </div>
       </div>
 
@@ -492,6 +537,34 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
       </div>
 
     </div>
+
+    <!-- LIVE EDITOR PANEL -->
+    <div class="admin-panel" id="ap-live" style="overflow-y:auto;flex:1">
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <input class="minput" id="live-title-admin" placeholder="Título del evento" style="margin-bottom:0">
+        <input class="minput" id="live-tag-admin" placeholder="Etiqueta (ej: #Iglesia · Rosario)" style="margin-bottom:0">
+        <input class="minput" id="live-footer-admin" placeholder="Pie de página" style="margin-bottom:0">
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">Logo:</span>
+          <input type="file" id="live-logo-admin" accept="image/png" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
+        </div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap">
+          <button class="spbtn" data-lstyle-admin="minimal">Minimal</button>
+          <button class="spbtn" data-lstyle-admin="aesthetic">Aesthetic</button>
+          <button class="spbtn" data-lstyle-admin="glass">Glass</button>
+          <button class="spbtn" data-lstyle-admin="vintage">Vintage</button>
+          <button class="spbtn" data-lstyle-admin="neon">Neon</button>
+          <button class="spbtn" data-lstyle-admin="nature">Nature</button>
+        </div>
+        <div style="display:flex;gap:10px;align-items:center">
+          <span style="font-size:13px;color:var(--muted)">Color:</span>
+          <input type="color" id="live-color-admin" value="#E55A00" style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
+        </div>
+        <button class="mbtn pri" id="live-publish-admin">📤 Publicar cambios</button>
+        <div class="mstatus" id="live-status-admin"></div>
+      </div>
+    </div>
+
   </div>
 </div>
 
@@ -530,13 +603,40 @@ let deleteMarked=new Set();
 let isAdmin=false;
 let deletedIds=new Set();
 
+// ── LIVE EDITOR STATE ──
+let liveConfig = {
+  title: "Cancionero",
+  tag: "#Iglesia · Rosario",
+  footer: "IEMA · Rosario",
+  style: "minimal",
+  color: "#E55A00",
+  logo: null
+};
+
+function loadLiveConfig() {
+  try {
+    const saved = localStorage.getItem("live_config");
+    if (saved) {
+      const parsed = JSON.parse(saved);
+      liveConfig = {...liveConfig, ...parsed};
+    }
+  } catch(e) {}
+}
+
+function saveLiveConfig() {
+  try {
+    localStorage.setItem("live_config", JSON.stringify(liveConfig));
+  } catch(e) {}
+}
+
+loadLiveConfig();
+
 /* ADMIN UI */
 function applyAdminUI(){
   document.querySelectorAll(".admin-only").forEach(el=>{
     el.classList.toggle("admin-only",!isAdmin);
     if(isAdmin)el.style.removeProperty("display");
   });
-  // Si recién se activó admin, re-render listas para mostrar export
   renderLists();
 }
 function updateSettingsBtn(){
@@ -610,6 +710,60 @@ function showDetail(song){
   document.getElementById("detail-ov").classList.add("open");
 }
 
+// ── DRAG & DROP para reordenar listas ──
+let dragData = null;
+
+function initDragDrop() {
+  document.addEventListener('dragstart', (e) => {
+    const row = e.target.closest('.lcsr');
+    if (!row) return;
+    const lid = row.dataset.lid;
+    const sid = parseInt(row.dataset.sid);
+    dragData = { lid, sid };
+    row.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+  });
+
+  document.addEventListener('dragend', (e) => {
+    document.querySelectorAll('.lcsr.dragging').forEach(r => r.classList.remove('dragging'));
+    dragData = null;
+  });
+
+  document.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    const row = e.target.closest('.lcsr');
+    if (row) row.style.borderTop = '2px solid var(--accent)';
+  });
+
+  document.addEventListener('dragleave', (e) => {
+    const row = e.target.closest('.lcsr');
+    if (row) row.style.borderTop = '';
+  });
+
+  document.addEventListener('drop', (e) => {
+    e.preventDefault();
+    document.querySelectorAll('.lcsr').forEach(r => r.style.borderTop = '');
+    const targetRow = e.target.closest('.lcsr');
+    if (!targetRow || !dragData) return;
+    const targetLid = targetRow.dataset.lid;
+    const targetSid = parseInt(targetRow.dataset.sid);
+    if (dragData.lid !== targetLid || dragData.sid === targetSid) return;
+
+    const list = LISTS.find(l => l.id === dragData.lid);
+    if (!list) return;
+
+    const fromIdx = list.songIds.indexOf(dragData.sid);
+    const toIdx = list.songIds.indexOf(targetSid);
+    if (fromIdx === -1 || toIdx === -1) return;
+
+    list.songIds.splice(toIdx, 0, list.songIds.splice(fromIdx, 1)[0]);
+    saveLists();
+    renderLists();
+    dragData = null;
+  });
+}
+
 /* LISTS */
 function renderLists(){
   updateBadge();
@@ -633,27 +787,31 @@ function renderLists(){
       <div class="lcard-body">
         <div class="lcard-songs">
           ${songs.length?songs.map((s,i)=>`
-            <div class="lcsr" data-sid="${s.id}" data-lid="${lst.id}">
+            <div class="lcsr" draggable="true" data-lid="${lst.id}" data-sid="${s.id}">
               <span class="lcsn">${i+1}</span>
               <div class="lcsi"><div class="lcst">${esc(s.t||"Sin título")}</div>${s.a?`<div class="lcsa">${esc(s.a)}</div>`:""}</div>
               <div style="display:flex;gap:4px;flex-shrink:0">
-  <button class="lca" onclick="event.stopPropagation();presentFromList('${lst.id}',${s.id})" title="Presentar">📺</button>
-  <button class="lcs-rm" onclick="rmFromList('${lst.id}',${s.id},event)">×</button>
-</div>
+                <button class="lca" onclick="event.stopPropagation();presentFromList('${lst.id}',${s.id})" title="Presentar">📺</button>
+                <button class="lcs-rm" onclick="rmFromList('${lst.id}',${s.id},event)">×</button>
+              </div>
             </div>`).join("")
           :`<div style="padding:16px;color:var(--muted);font-size:13px;text-align:center">Lista vacía</div>`}
         </div>
         <div class="lcard-export">
           <div class="style-pick admin-only" onclick="event.stopPropagation()">
-            <button class="spbtn${(lst.style||_htmlExportStyle||'minimal')==='minimal'?' active':''}" data-lid="${lst.id}" data-style="minimal">Minimalista</button>
-            <button class="spbtn${(lst.style||_htmlExportStyle||'minimal')==='aesthetic'?' active':''}" data-lid="${lst.id}" data-style="aesthetic">Aesthetic</button>
-            <button class="spbtn${(lst.style||_htmlExportStyle||'minimal')==='glass'?' active':''}" data-lid="${lst.id}" data-style="glass">Glass</button>
+            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='minimal'?' active':''}" data-lid="${lst.id}" data-style="minimal">Minimal</button>
+            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='aesthetic'?' active':''}" data-lid="${lst.id}" data-style="aesthetic">Aesthetic</button>
+            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='glass'?' active':''}" data-lid="${lst.id}" data-style="glass">Glass</button>
+            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='vintage'?' active':''}" data-lid="${lst.id}" data-style="vintage">Vintage</button>
+            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='neon'?' active':''}" data-lid="${lst.id}" data-style="neon">Neon</button>
+            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='nature'?' active':''}" data-lid="${lst.id}" data-style="nature">Naturaleza</button>
           </div>
           <label class="color-pick-wrap admin-only" onclick="event.stopPropagation()">
             <span class="color-pick-label">Color:</span>
-            <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||_htmlExportColor||'#E55A00'}">
+            <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||liveConfig.color||'#E55A00'}">
           </label>
           <button class="exp-btn html" onclick="exportList('${lst.id}','html')" style="display:none">⬇ HTML</button>
+          <button class="exp-btn live" onclick="exportList('${lst.id}','live')">🌐 Ver en vivo</button>
           <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 Imprimir PDF</button>
         </div>
       </div>
@@ -664,7 +822,7 @@ function renderLists(){
   });
   document.querySelectorAll(".lcsr").forEach(row=>{
     row.addEventListener("click",e=>{
-      if(e.target.closest(".lcs-rm"))return;
+      if(e.target.closest(".lcs-rm")||e.target.closest(".lca"))return;
       const song=SONGS.find(s=>s.id===Number(row.dataset.sid));
       if(song)showDetail(song);
     });
@@ -685,7 +843,18 @@ function renderLists(){
     });
   });
   applyHtmlExportToggle();
+  initDragDrop();
 }
+
+function reorderList(lid, fromIdx, toIdx) {
+  const l = LISTS.find(x => x.id === lid);
+  if (!l) return;
+  const [removed] = l.songIds.splice(fromIdx, 1);
+  l.songIds.splice(toIdx, 0, removed);
+  saveLists();
+  renderLists();
+}
+
 function addToList(listId,ids){
   const l=LISTS.find(x=>x.id===listId);if(!l)return;
   ids.forEach(id=>{if(!l.songIds.includes(id))l.songIds.push(id);});
@@ -718,7 +887,6 @@ function presentFromList(lid, sid) {
     }
   }
 
-  // Abrir el panel presentador
   _presSong = song;
   _presIdx = 0;
   _presBlank = false;
@@ -728,254 +896,263 @@ function presentFromList(lid, sid) {
   document.getElementById("mov-pres").classList.add("open");
   updateSettingsBtn();
   
-  // Cerrar el detalle si está abierto
   document.getElementById("detail-ov").classList.remove("open");
 }
 
-
-/* EXPORT LIST */
-function buildExportHTML(lst){
-  const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
-  const songsData=JSON.stringify(songs.map(s=>({
-    title:s.t||"Sin título",
-    letra:(s.p?.length?s.p.map(p=>p.x||"").join("\n\n"):s.l||""),
-    stanzas:(s.p||[]).map(p=>({d:p.d||"",x:p.x||""}))
+// ── NUEVOS ESTILOS PARA EXPORTACIÓN ──
+function buildExportHTML(lst, isLive = false) {
+  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  const songsData = JSON.stringify(songs.map(s => ({
+    title: s.t || "Sin título",
+    artist: s.a || "",
+    letra: (s.p?.length ? s.p.map(p => p.x || "").join("\n\n") : s.l || ""),
+    stanzas: (s.p || []).map(p => ({ d: p.d || "", x: p.x || "" }))
   })));
-  const hex=lst.color||_htmlExportColor||"#E55A00";
-  const r=parseInt(hex.slice(1,3),16),g=parseInt(hex.slice(3,5),16),b=parseInt(hex.slice(5,7),16);
-  const c1=`rgba(${Math.max(0,r-50)},${Math.max(0,g-40)},${b},0.6)`;
-  const c2=`rgba(${r},${g},${b},0.3)`;
-  const style=lst.style||_htmlExportStyle||"minimal";
+  
+  const hex = lst.color || liveConfig.color || "#E55A00";
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  const style = lst.style || liveConfig.style || "minimal";
+  const title = isLive ? liveConfig.title || lst.name : lst.name;
+  const tag = liveConfig.tag || "#Iglesia · Rosario";
+  const footer = liveConfig.footer || "IEMA · Rosario";
 
-  // ─── SHARED accordion script (injected into all templates) ──────────────────
-  const acScript=`<script>
-    const songs=${songsData};
-    document.addEventListener('DOMContentLoaded',()=>{
-      const list=document.getElementById('song-list');
-      songs.forEach((s,i)=>{
-        const wrap=document.createElement('div');
-        wrap.className='ac-item';
-        const stanzasHTML=s.stanzas&&s.stanzas.length
-          ?s.stanzas.map(p=>\`<div class="stanza">\${p.d?\`<div class="stanza-label">\${p.d}<\/div>\`:''}
-            <div class="stanza-text">\${p.x}<\/div><\/div>\`).join('')
-          :\`<div class="stanza"><div class="stanza-text">\${s.letra}<\/div><\/div>\`;
-        wrap.innerHTML=\`<div class="ac-hdr">
-          <span class="ac-num">\${String(i+1).padStart(2,'0')}<\/span>
-          <span class="ac-title">\${s.title}<\/span>
-          <span class="ac-icon">+<\/span>
-        <\/div>
-        <div class="ac-body"><div class="ac-inner">\${stanzasHTML}<\/div><\/div>\`;
-        wrap.querySelector('.ac-hdr').addEventListener('click',()=>{
-          const open=wrap.classList.contains('open');
-          document.querySelectorAll('.ac-item.open').forEach(x=>x.classList.remove('open'));
-          if(!open)wrap.classList.add('open');
+  // Logo base64
+  let logoSVG = '';
+  if (liveConfig.logo) {
+    logoSVG = `<img src="${liveConfig.logo}" style="max-height:40px;max-width:120px;object-fit:contain;display:block;margin:0 auto 8px">`;
+  }
+
+  // Compartir script para todos los estilos
+  const acScript = `<script>
+    const songs = ${songsData};
+    document.addEventListener('DOMContentLoaded', () => {
+      const list = document.getElementById('song-list');
+      songs.forEach((s, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'ac-item';
+        const stanzasHTML = s.stanzas && s.stanzas.length
+          ? s.stanzas.map(p => \`<div class="stanza">\${p.d ? \`<div class="stanza-label">\${p.d}</div>\` : ''}
+            <div class="stanza-text">\${p.x}</div></div>\`).join('')
+          : \`<div class="stanza"><div class="stanza-text">\${s.letra}</div></div>\`;
+        wrap.innerHTML = \`<div class="ac-hdr">
+          <span class="ac-num">\${String(i+1).padStart(2,'0')}</span>
+          <span class="ac-title">\${s.title}</span>
+          <span class="ac-icon">+</span>
+        </div>
+        <div class="ac-body"><div class="ac-inner">\${stanzasHTML}</div></div>\`;
+        wrap.querySelector('.ac-hdr').addEventListener('click', () => {
+          const open = wrap.classList.contains('open');
+          document.querySelectorAll('.ac-item.open').forEach(x => x.classList.remove('open'));
+          if (!open) wrap.classList.add('open');
         });
         list.appendChild(wrap);
       });
     });
   <\/script>`;
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // TEMPLATE 1 — MINIMALISTA
-  // ─────────────────────────────────────────────────────────────────────────────
-  if(style==="minimal") return`<!DOCTYPE html>
+  // ── ESTILO VINTAGE ──
+  if (style === "vintage") {
+    return `<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${lst.name}</title>
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--a:${hex};--bg:#080808;--tx:#DEDAD4;--mu:#444;--br:#1C1C1C}
-    html{scroll-behavior:smooth}
-    body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
-
-    /* HEADER */
-    header{padding:72px 28px 56px;max-width:680px;margin:0 auto}
-    .hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--a);margin-bottom:18px}
-    h1{font-size:clamp(36px,9vw,72px);font-weight:700;line-height:1.0;letter-spacing:-1px}
-    h1 span{color:var(--a)}
-    .hc{margin-top:14px;font-size:13px;color:var(--mu)}
-
-    /* ACCORDION */
-    main{max-width:680px;margin:0 auto;padding:0 28px 100px}
-    .ac-item{border-top:1px solid var(--br)}
-    .ac-item:last-child{border-bottom:1px solid var(--br)}
-    .ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
-    .ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
-    .ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s}
-    .ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
-    .ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
-    .ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
-    .ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
-    .ac-item.open .ac-body{max-height:3000px}
-    .ac-inner{padding:0 0 32px 40px}
-    .stanza{margin-bottom:22px}
-    .stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
-    .stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#888}
-
-    footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
-  </style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#F5F0E8;color:#3C2E22;font-family:'DM Serif Display',serif;min-height:100vh}
+.hero{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:linear-gradient(135deg,#E8DCC8 0%,#D4C4B0 100%);position:relative}
+.hero::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b8a08a' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero > *{position:relative;z-index:1}
+.hero-tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#8B7355;margin-bottom:20px}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(40px,12vw,96px);font-weight:700;line-height:1;color:#2C1F16}
+.hero-title em{font-style:italic;color:#8B7355}
+.hero-sub{margin-top:20px;font-size:14px;color:#8B7355;letter-spacing:2px}
+.v-line{width:60px;height:2px;background:#8B7355;margin:28px auto 0;opacity:.4}
+.wrap{max-width:720px;margin:0 auto;padding:60px 28px 80px}
+.sec-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#8B7355;margin-bottom:40px;padding-bottom:16px;border-bottom:2px solid #E8DCC8}
+.ac-item{border-bottom:1px solid #E8DCC8}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:22px 0;cursor:pointer;user-select:none}
+.ac-num{font-family:'Playfair Display',serif;font-size:14px;color:#8B7355;font-style:italic}
+.ac-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;transition:color .3s}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:#8B7355}
+.ac-icon{font-size:20px;color:#C4B5A0;transition:transform .3s}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:#8B7355}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 52px}
+.stanza{margin-bottom:20px}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8B7355;margin-bottom:8px;font-family:'DM Serif Display',serif;font-style:italic}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#4D3F32}
+footer{text-align:center;padding:40px 24px;color:#8B7355;font-size:12px;letter-spacing:2px;border-top:2px solid #E8DCC8}
+</style>
 </head>
 <body>
-  <header>
-    <div class="hl">Lista de canciones</div>
-    <h1>${lst.name.toUpperCase().split(" ").map((w,i)=>i===0?`<span>${w}</span>`:w).join(" ")}</h1>
-    <div class="hc">${songs.length} canciones</div>
-  </header>
-  <main id="song-list"></main>
-  <footer>IEMA · Rosario</footer>
-  ${acScript}
-</body>
-</html>`;
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title).toUpperCase().split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="v-line"></div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+  }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // TEMPLATE 2 — AESTHETIC (editorial / cálido)
-  // ─────────────────────────────────────────────────────────────────────────────
-  if(style==="aesthetic") return`<!DOCTYPE html>
+  // ── ESTILO NEON ──
+  if (style === "neon") {
+    return `<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${lst.name}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--a:${hex};--bg:#0C0A08;--tx:#EDE8E0;--mu:#5C5650;--br:#231F1B;--sur:#141210}
-    body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh}
-
-    /* HERO */
-    .hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:40px 24px}
-    .hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 80%,${c1},transparent 70%)}
-    .hero-tag{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--a);margin-bottom:28px;opacity:.8}
-    .hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,14vw,120px);font-weight:600;line-height:.95;text-align:center;letter-spacing:-2px}
-    .hero-title em{color:var(--a);font-style:italic}
-    .hero-sub{margin-top:32px;font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase}
-    .hero-line{width:1px;height:64px;background:linear-gradient(var(--a),transparent);margin:40px auto 0;opacity:.5}
-
-    /* BODY */
-    .wrap{max-width:720px;margin:0 auto;padding:80px 28px 100px}
-    .sec-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mu);margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid var(--br)}
-
-    /* ACCORDION */
-    .ac-item{border-bottom:1px solid var(--br)}
-    .ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:26px 0;cursor:pointer;user-select:none}
-    .ac-num{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--mu);font-style:italic}
-    .ac-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;transition:color .25s}
-    .ac-item.open .ac-title,.ac-item:hover .ac-title{color:var(--a)}
-    .ac-icon{width:24px;height:24px;border-radius:50%;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mu);transition:all .3s;flex-shrink:0;justify-self:end}
-    .ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg)}
-    .ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
-    .ac-item.open .ac-body{max-height:3000px}
-    .ac-inner{padding:8px 0 36px 52px}
-    .stanza{margin-bottom:24px}
-    .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a);opacity:.6;margin-bottom:10px}
-    .stanza-text{font-size:14px;line-height:2.2;white-space:pre-wrap;text-transform:uppercase;color:var(--mu)}
-
-    footer{text-align:center;padding:48px 24px;color:var(--mu);font-size:12px;letter-spacing:2px;text-transform:uppercase;border-top:1px solid var(--br)}
-  </style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A12;color:#fff;font-family:'Orbitron',monospace;min-height:100vh}
+.hero{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:radial-gradient(ellipse at center, rgba(${r},${g},${b},0.15) 0%, transparent 70%)}
+.hero-tag{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:rgba(${r},${g},${b},0.7);text-shadow:0 0 20px rgba(${r},${g},${b},0.3);margin-bottom:24px}
+.hero-title{font-size:clamp(36px,10vw,88px);font-weight:900;line-height:1;background:linear-gradient(135deg,#fff 20%,#${hex.slice(1)});-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(${r},${g},${b},0.3)}
+.hero-sub{margin-top:20px;font-size:12px;color:rgba(255,255,255,.3);letter-spacing:4px}
+.neon-line{width:80px;height:2px;background:linear-gradient(90deg,transparent,rgba(${r},${g},${b},0.5),transparent);margin:30px auto 0}
+.wrap{max-width:720px;margin:0 auto;padding:60px 28px 80px}
+.sec-label{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,.15);margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.05)}
+.ac-item{border-bottom:1px solid rgba(255,255,255,.05)}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none}
+.ac-num{font-size:11px;color:rgba(${r},${g},${b},0.5);font-variant-numeric:tabular-nums}
+.ac-title{font-size:16px;font-weight:700;letter-spacing:1px;transition:color .3s;text-transform:uppercase}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:rgb(${r},${g},${b});text-shadow:0 0 20px rgba(${r},${g},${b},0.3)}
+.ac-icon{font-size:18px;color:rgba(255,255,255,.2);transition:transform .3s}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:rgb(${r},${g},${b})}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 52px}
+.stanza{margin-bottom:20px}
+.stanza-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(${r},${g},${b},0.5);margin-bottom:8px}
+.stanza-text{font-size:12px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,.4)}
+footer{text-align:center;padding:40px 24px;color:rgba(255,255,255,.1);font-size:10px;letter-spacing:4px;border-top:1px solid rgba(255,255,255,.05)}
+</style>
 </head>
 <body>
-  <div class="hero">
-    <div class="hero-tag">#Iglesia · Rosario</div>
-    <div class="hero-title">${lst.name.split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
-    <div class="hero-sub">${songs.length} canciones</div>
-    <div class="hero-line"></div>
-  </div>
-  <div class="wrap">
-    <div class="sec-label">Lista de canciones</div>
-    <div id="song-list"></div>
-  </div>
-  <footer>IEMA · Rosario</footer>
-  ${acScript}
-</body>
-</html>`;
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title)}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="neon-line"></div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+  }
 
-  // ─────────────────────────────────────────────────────────────────────────────
-  // TEMPLATE 3 — GLASS (glassmorphism / moderno)
-  // ─────────────────────────────────────────────────────────────────────────────
-  return`<!DOCTYPE html>
+  // ── ESTILO NATURALEZA ──
+  if (style === "nature") {
+    return `<!DOCTYPE html>
 <html lang="es">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>${lst.name}</title>
-  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <style>
-    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-    :root{--a:${hex};--r:${r};--g:${g};--b:${b}}
-    body{background:#030308;color:#fff;font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
-
-    /* BG ORBS */
-    .orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
-    .orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18}
-    .orb1{width:600px;height:600px;background:${hex};top:-200px;left:-100px}
-    .orb2{width:400px;height:400px;background:rgba(${r},${g},${b},.8);bottom:-150px;right:-100px;opacity:.12}
-    .orb3{width:300px;height:300px;background:#6366f1;top:40%;left:60%;opacity:.08}
-
-    /* HERO */
-    .hero{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
-    .glass-tag{background:rgba(${r},${g},${b},.15);border:1px solid rgba(${r},${g},${b},.3);backdrop-filter:blur(12px);border-radius:999px;padding:7px 18px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a);margin-bottom:32px;display:inline-block}
-    h1{font-size:clamp(44px,12vw,110px);font-weight:700;line-height:1;letter-spacing:-2px;background:linear-gradient(135deg,#fff 30%,var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-    .hero-count{margin-top:20px;font-size:13px;color:rgba(255,255,255,.35);letter-spacing:1px}
-    .hero-arrow{margin-top:48px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:18px;animation:bob 2s ease-in-out infinite}
-    @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
-
-    /* CONTENT */
-    .content{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:80px 20px 100px}
-
-    /* ACCORDION — glass cards */
-    .ac-item{margin-bottom:8px}
-    .ac-hdr{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:background .2s,border-color .2s}
-    .ac-item:hover .ac-hdr,.ac-item.open .ac-hdr{background:rgba(${r},${g},${b},.1);border-color:rgba(${r},${g},${b},.35)}
-    .ac-num{font-size:12px;color:var(--a);font-weight:600;min-width:24px;font-variant-numeric:tabular-nums}
-    .ac-title{flex:1;font-size:15px;font-weight:500;letter-spacing:.2px}
-    .ac-icon{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.4);transition:all .3s;flex-shrink:0}
-    .ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg);box-shadow:0 0 14px rgba(${r},${g},${b},.5)}
-    .ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
-    .ac-item.open .ac-body{max-height:3000px}
-    .ac-inner{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05);border-top:none;border-radius:0 0 14px 14px;padding:24px 24px 28px;backdrop-filter:blur(8px)}
-    .stanza{margin-bottom:20px}
-    .stanza:last-child{margin-bottom:0}
-    .stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(${r},${g},${b},.7);margin-bottom:8px}
-    .stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,.45)}
-
-    footer{position:relative;z-index:1;text-align:center;padding:40px 24px;color:rgba(255,255,255,.15);font-size:12px;letter-spacing:1px}
-  </style>
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#1A241E;color:#D4C9B8;font-family:'Lora',serif;min-height:100vh}
+.hero{min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:linear-gradient(180deg,#1A241E 0%,#2A3A30 100%);position:relative}
+.hero::before{content:'🌿';position:absolute;top:20px;right:30px;font-size:36px;opacity:.1}
+.hero-tag{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#7A9A7E;margin-bottom:20px}
+.hero-title{font-family:'Lora',serif;font-size:clamp(36px,10vw,80px);font-weight:600;line-height:1;color:#E8E0D4}
+.hero-title em{color:#7A9A7E;font-style:italic}
+.hero-sub{margin-top:20px;font-size:13px;color:#7A9A7E;letter-spacing:2px}
+.nature-leaf{font-size:28px;margin-top:24px;opacity:.3}
+.wrap{max-width:720px;margin:0 auto;padding:60px 28px 80px}
+.sec-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#7A9A7E;margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid #2A3A30}
+.ac-item{border-bottom:1px solid #2A3A30}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none}
+.ac-num{font-family:'Inter',sans-serif;font-size:11px;color:#7A9A7E;font-variant-numeric:tabular-nums}
+.ac-title{font-size:18px;font-weight:600;transition:color .3s}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:#7A9A7E}
+.ac-icon{font-size:18px;color:#3A4A3E;transition:transform .3s}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:#7A9A7E}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 52px}
+.stanza{margin-bottom:20px}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#7A9A7E;margin-bottom:8px}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#A8B8A8}
+footer{text-align:center;padding:40px 24px;color:#3A4A3E;font-size:11px;letter-spacing:2px;border-top:1px solid #2A3A30}
+</style>
 </head>
 <body>
-  <div class="orbs">
-    <div class="orb orb1"></div>
-    <div class="orb orb2"></div>
-    <div class="orb orb3"></div>
-  </div>
-  <div class="hero">
-    <span class="glass-tag">#Iglesia · Rosario</span>
-    <h1>${lst.name.toUpperCase()}</h1>
-    <div class="hero-count">${songs.length} canciones</div>
-    <div class="hero-arrow">↓</div>
-  </div>
-  <div class="content" id="song-list"></div>
-  <footer>IEMA · Rosario</footer>
-  ${acScript}
-</body>
-</html>`;
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title).split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="nature-leaf">🌿</div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+  }
+
+  // ── ESTILO MINIMALISTA (default) ──
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--bg:#080808;--tx:#DEDAD4;--mu:#444;--br:#1C1C1C}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+header{padding:72px 28px 56px;max-width:680px;margin:0 auto}
+.hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--a);margin-bottom:18px}
+h1{font-size:clamp(36px,9vw,72px);font-weight:700;line-height:1.0;letter-spacing:-1px}
+h1 span{color:var(--a)}
+.hc{margin-top:14px;font-size:13px;color:var(--mu)}
+main{max-width:680px;margin:0 auto;padding:0 28px 100px}
+.ac-item{border-top:1px solid var(--br)}
+.ac-item:last-child{border-bottom:1px solid var(--br)}
+.ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
+.ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
+.ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s}
+.ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
+.ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 40px}
+.stanza{margin-bottom:22px}
+.stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#888}
+footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<header><div class="hl">${esc(tag)}</div>
+<h1>${esc(title).toUpperCase().split(" ").map((w,i)=>i===0?`<span>${w}</span>`:w).join(" ")}</h1>
+<div class="hc">${songs.length} canciones</div></header>
+<main id="song-list"></main>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
 }
 
-function exportList(lid,type){
-  const lst=LISTS.find(l=>l.id===lid);if(!lst)return;
-  if(type==="html"){
-    const html=buildExportHTML(lst);
-    const a=document.createElement("a");
-    a.href=URL.createObjectURL(new Blob([html],{type:"text/html"}));
-    a.download=lst.name.replace(/[^a-z0-9áéíóúñü ]/gi,"_")+".html";
-    a.click();URL.revokeObjectURL(a.href);
-  }else{
-    // PDF con índice en primera hoja
-    const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
-    
-    // ─── ÍNDICE (primera hoja) ───
-    const indexRows=songs.map((s,i)=>`
+function exportList(lid, type) {
+  const lst = LISTS.find(l => l.id === lid);
+  if (!lst) return;
+
+  if (type === "html") {
+    const html = buildExportHTML(lst, false);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+    a.download = lst.name.replace(/[^a-z0-9áéíóúñü ]/gi,"_") + ".html";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } else if (type === "live") {
+    // Abrir en nueva ventana con los datos en vivo
+    const html = buildExportHTML(lst, true);
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
+  } else {
+    // PDF
+    const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+    const indexRows = songs.map((s,i)=>`
       <div class="idx-row">
         <span class="idx-num">${String(i+1).padStart(2,'0')}</span>
         <div class="idx-info">
@@ -984,13 +1161,11 @@ function exportList(lid,type){
         </div>
       </div>
     `).join("");
-    
-    // ─── CANCIONES (hojas siguientes) ───
-    const songsHTML=songs.map(s=>{
-      const stanzas=s.p&&s.p.length?s.p:[{d:"",x:s.l||""}];
-      const totalChars=stanzas.reduce((n,p)=>n+(p.x||"").length,0);
-      const isLong=totalChars>500;
-      const body=stanzas.map(p=>`
+    const songsHTML = songs.map(s=>{
+      const stanzas = s.p && s.p.length ? s.p : [{d:"",x:s.l||""}];
+      const totalChars = stanzas.reduce((n,p)=>n+(p.x||"").length,0);
+      const isLong = totalChars > 500;
+      const body = stanzas.map(p=>`
         ${p.d?`<div class="slabel">${esc(p.d)}</div>`:""}
         <div class="stext">${esc(p.x||"")}</div>
       `).join('<div class="sdiv"></div>');
@@ -1003,39 +1178,33 @@ function exportList(lid,type){
       </div>`;
     }).join("");
     
-    // ─── HTML COMPLETO ───
-    const html=`<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
 <title>${esc(lst.name)}</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  @page{size:A4 portrait;margin:18mm 18mm}
-  body{font-family:system-ui,-apple-system,sans-serif;color:#111;background:#fff}
-  
-  /* ÍNDICE */
-  .idx-page{page-break-after:always;height:257mm;display:flex;flex-direction:column}
-  .idx-header{flex-shrink:0;border-bottom:3px solid #000;padding-bottom:12px;margin-bottom:16px}
-  .idx-list-title{font-size:26pt;font-weight:800;text-transform:uppercase;letter-spacing:-1px;line-height:1}
-  .idx-list-sub{font-size:10pt;color:#777;margin-top:4px;letter-spacing:2px}
-  .idx-body{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px}
-  .idx-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid #eee}
-  .idx-num{font-size:10pt;font-weight:700;color:#999;min-width:24px;text-align:right;font-variant-numeric:tabular-nums}
-  .idx-info{flex:1;min-width:0}
-  .idx-title{font-size:12pt;font-weight:600;text-transform:uppercase}
-  .idx-artist{font-size:9pt;color:#999;margin-top:1px}
-  
-  /* CANCIONES */
-  .page{page-break-after:always;page-break-inside:avoid;height:257mm;display:flex;flex-direction:column}
-  .page:last-child{page-break-after:avoid}
-  .pheader{flex-shrink:0;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:10px}
-  .ptitle{font-size:20pt;font-weight:700;text-transform:uppercase;letter-spacing:-.5px;line-height:1.1}
-  .partist{font-size:9pt;color:#777;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
-  .pbody{flex:1;overflow:hidden}
-  .pbody.two-col{column-count:2;column-gap:24pt;column-fill:auto;height:100%}
-  .slabel{font-size:7.5pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin:14px 0 4px;break-after:avoid}
-  .stext{font-size:11.5pt;line-height:1.95;text-transform:uppercase;white-space:pre-wrap;break-inside:avoid}
-  .sdiv{height:10px;break-inside:avoid}
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:A4 portrait;margin:18mm 18mm}
+body{font-family:system-ui,-apple-system,sans-serif;color:#111;background:#fff}
+.idx-page{page-break-after:always;height:257mm;display:flex;flex-direction:column}
+.idx-header{flex-shrink:0;border-bottom:3px solid #000;padding-bottom:12px;margin-bottom:16px}
+.idx-list-title{font-size:26pt;font-weight:800;text-transform:uppercase;letter-spacing:-1px;line-height:1}
+.idx-list-sub{font-size:10pt;color:#777;margin-top:4px;letter-spacing:2px}
+.idx-body{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+.idx-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid #eee}
+.idx-num{font-size:10pt;font-weight:700;color:#999;min-width:24px;text-align:right;font-variant-numeric:tabular-nums}
+.idx-info{flex:1;min-width:0}
+.idx-title{font-size:12pt;font-weight:600;text-transform:uppercase}
+.idx-artist{font-size:9pt;color:#999;margin-top:1px}
+.page{page-break-after:always;page-break-inside:avoid;height:257mm;display:flex;flex-direction:column}
+.page:last-child{page-break-after:avoid}
+.pheader{flex-shrink:0;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:10px}
+.ptitle{font-size:20pt;font-weight:700;text-transform:uppercase;letter-spacing:-.5px;line-height:1.1}
+.partist{font-size:9pt;color:#777;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+.pbody{flex:1;overflow:hidden}
+.pbody.two-col{column-count:2;column-gap:24pt;column-fill:auto;height:100%}
+.slabel{font-size:7.5pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin:14px 0 4px;break-after:avoid}
+.stext{font-size:11.5pt;line-height:1.95;text-transform:uppercase;white-space:pre-wrap;break-inside:avoid}
+.sdiv{height:10px;break-inside:avoid}
 </style></head><body>
-
 <div class="idx-page">
   <div class="idx-header">
     <div class="idx-list-title">${esc(lst.name)}</div>
@@ -1043,14 +1212,11 @@ function exportList(lid,type){
   </div>
   <div class="idx-body">${indexRows}</div>
 </div>
-
 ${songsHTML}
-
 </body></html>`;
-
-    const win=window.open("","_blank");
+    const win = window.open("","_blank");
     win.document.write(html);win.document.close();
-    win.onload=()=>setTimeout(()=>win.print(),300);
+    win.onload = () => setTimeout(() => win.print(), 300);
   }
 }
 
@@ -1339,7 +1505,135 @@ document.getElementById("misc-color-pick").addEventListener("input",e=>{
   localStorage.setItem("html_export_color",_htmlExportColor);
 });
 
-/* Update DB */
+/* ── LIVE EDITOR ── */
+function updateLiveUI() {
+  document.getElementById("live-title").value = liveConfig.title || "";
+  document.getElementById("live-tag").value = liveConfig.tag || "";
+  document.getElementById("live-footer").value = liveConfig.footer || "";
+  document.getElementById("live-color").value = liveConfig.color || "#E55A00";
+  document.querySelectorAll("#mov-live .spbtn").forEach(b => {
+    b.classList.toggle("active", b.dataset.lstyle === liveConfig.style);
+  });
+}
+
+function updateLiveAdminUI() {
+  document.getElementById("live-title-admin").value = liveConfig.title || "";
+  document.getElementById("live-tag-admin").value = liveConfig.tag || "";
+  document.getElementById("live-footer-admin").value = liveConfig.footer || "";
+  document.getElementById("live-color-admin").value = liveConfig.color || "#E55A00";
+  document.querySelectorAll("#ap-live .spbtn").forEach(b => {
+    b.classList.toggle("active", b.dataset.lstyleAdmin === liveConfig.style);
+  });
+}
+
+function openLiveEditor() {
+  updateLiveUI();
+  document.getElementById("mov-live").classList.add("open");
+  updateSettingsBtn();
+}
+
+document.getElementById("live-close").addEventListener("click", () => {
+  document.getElementById("mov-live").classList.remove("open");
+  updateSettingsBtn();
+});
+
+// Live editor events
+document.getElementById("live-title").addEventListener("input", e => {
+  liveConfig.title = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-tag").addEventListener("input", e => {
+  liveConfig.tag = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-footer").addEventListener("input", e => {
+  liveConfig.footer = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-color").addEventListener("input", e => {
+  liveConfig.color = e.target.value;
+  saveLiveConfig();
+});
+document.querySelectorAll("#mov-live .spbtn").forEach(b => {
+  b.addEventListener("click", () => {
+    liveConfig.style = b.dataset.lstyle;
+    saveLiveConfig();
+    document.querySelectorAll("#mov-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
+  });
+});
+document.getElementById("live-logo").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      liveConfig.logo = ev.target.result;
+      saveLiveConfig();
+      document.getElementById("live-status").textContent = "✓ Logo cargado";
+      document.getElementById("live-status").className = "mstatus ok";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+document.getElementById("live-publish").addEventListener("click", () => {
+  const st = document.getElementById("live-status");
+  st.textContent = "✓ Configuración publicada en vivo";
+  st.className = "mstatus ok";
+  toast("Configuración publicada ✓");
+});
+
+document.getElementById("live-reset").addEventListener("click", () => {
+  liveConfig = { title: "Cancionero", tag: "#Iglesia · Rosario", footer: "IEMA · Rosario", style: "minimal", color: "#E55A00", logo: null };
+  saveLiveConfig();
+  updateLiveUI();
+  document.getElementById("live-status").textContent = "✓ Restaurado a valores por defecto";
+  document.getElementById("live-status").className = "mstatus ok";
+});
+
+// ── ADMIN LIVE ──
+document.querySelectorAll("#ap-live .spbtn").forEach(b => {
+  b.addEventListener("click", () => {
+    liveConfig.style = b.dataset.lstyleAdmin;
+    saveLiveConfig();
+    document.querySelectorAll("#ap-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
+  });
+});
+document.getElementById("live-color-admin").addEventListener("input", e => {
+  liveConfig.color = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-title-admin").addEventListener("input", e => {
+  liveConfig.title = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-tag-admin").addEventListener("input", e => {
+  liveConfig.tag = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-footer-admin").addEventListener("input", e => {
+  liveConfig.footer = e.target.value;
+  saveLiveConfig();
+});
+document.getElementById("live-logo-admin").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      liveConfig.logo = ev.target.result;
+      saveLiveConfig();
+      document.getElementById("live-status-admin").textContent = "✓ Logo cargado";
+      document.getElementById("live-status-admin").className = "mstatus ok";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+document.getElementById("live-publish-admin").addEventListener("click", () => {
+  const st = document.getElementById("live-status-admin");
+  st.textContent = "✓ Configuración publicada en vivo";
+  st.className = "mstatus ok";
+  toast("Configuración publicada ✓");
+});
+
+// ── Update DB ──
 const adminFile=document.getElementById("admin-file");
 document.getElementById("admin-zone").addEventListener("click",()=>adminFile.click());
 adminFile.addEventListener("change",()=>{
@@ -1349,7 +1643,6 @@ adminFile.addEventListener("change",()=>{
     try{
       const raw=JSON.parse(e.target.result);
       if(!Array.isArray(raw)||(!raw[0]?.title&&!raw[0]?.t))throw new Error();
-      // MERGE: add new songs, skip deleted and already existing
       const existingIds=new Set(SONGS.map(s=>s.id));
       const newSongs=raw.map(slimSong).filter(s=>!existingIds.has(s.id)&&!deletedIds.has(s.id));
       SONGS=[...SONGS,...newSongs];
@@ -1475,7 +1768,6 @@ function presRenderUI(){
   document.getElementById("pres-artist").textContent=_presSong?.a||"";
   document.getElementById("pres-artist").style.display=_presSong?.a?"":"none";
 
-  // render stanza list
   const list=document.getElementById("pres-stanza-list");
   list.innerHTML=_presStanzas.map((p,i)=>`
     <div class="pres-stanza${i===_presIdx&&!_presBlank?" active":""}" data-pi="${i}">
@@ -1483,7 +1775,6 @@ function presRenderUI(){
       <div class="pres-stext">${esc(p.x||"")}</div>
     </div>`).join("");
 
-  // click to jump
   list.querySelectorAll(".pres-stanza").forEach(el=>{
     el.addEventListener("click",()=>{
       _presIdx=+el.dataset.pi;_presBlank=false;
@@ -1491,11 +1782,9 @@ function presRenderUI(){
     });
   });
 
-  // scroll active into view
   const active=list.querySelector(".pres-stanza.active");
   if(active)active.scrollIntoView({block:"nearest",behavior:"smooth"});
 
-  // blank btn
   document.getElementById("pres-blank").classList.toggle("on",_presBlank);
   document.getElementById("pres-blank").textContent=_presBlank?"▶ Mostrar letra":"⬜ Pantalla en blanco";
 }
@@ -1515,7 +1804,6 @@ function openPresenter(song){
   updateSettingsBtn();
 }
 
-/* presenter button events */
 document.getElementById("d-present").addEventListener("click",()=>{if(_detailSong)openPresenter(_detailSong);});
 document.getElementById("pres-close").addEventListener("click",()=>{document.getElementById("mov-pres").classList.remove("open");updateSettingsBtn();});
 document.getElementById("pres-blank").addEventListener("click",()=>{_presBlank=!_presBlank;presRenderUI();presWrite(_presBlank);});
@@ -1526,7 +1814,7 @@ document.getElementById("pres-stop").addEventListener("click",()=>{
   updateSettingsBtn();
 });
 
-/* keyboard shortcuts when presenter is open */
+/* keyboard shortcuts */
 document.addEventListener("keydown",e=>{
   if(!document.getElementById("mov-pres").classList.contains("open"))return;
   if(e.key==="ArrowRight"||e.key==="ArrowDown"){
@@ -1538,19 +1826,30 @@ document.addEventListener("keydown",e=>{
   if(e.key===" "){e.preventDefault();_presBlank=!_presBlank;presRenderUI();presWrite(_presBlank);}
 });
 
+// ── TOAST ──
+function toast(msg,ms=2200){
+  const el=document.getElementById("toast") || (()=>{
+    const t=document.createElement("div");
+    t.id="toast";
+    t.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s";
+    document.body.appendChild(t);
+    return t;
+  })();
+  el.textContent=msg;el.style.opacity="1";
+  clearTimeout(el._t);el._t=setTimeout(()=>el.style.opacity="0",ms);
+}
+
 /* ── INIT ── */
 (async()=>{
   loadLists();
   loadDeletedIds();
   let localData;
 
-  // 1. Cargar base local
   try{const s=localStorage.getItem("holyrics_db");if(s){localData=JSON.parse(s);document.getElementById("db-tag").textContent="(local)";}}catch{}
 
   if(localData)SONGS=localData.map(s=>s.title!==undefined?slimSong(s):s);
   else SONGS=[];
 
-  // 2. Intentar cargar del repo y hacer MERGE (agrega nuevas, respeta eliminadas)
   try{
     const res=await fetch("canciones.json");
     if(!res.ok)throw new Error("HTTP "+res.status);
