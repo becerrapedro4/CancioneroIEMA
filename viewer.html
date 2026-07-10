@@ -58,6 +58,18 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
   transition:opacity .3s,font-size .3s;
 }
 .ref-info.hidden{opacity:0}
+
+/* 🔥 Nueva: Cita en la parte inferior para Biblia */
+.bible-ref{
+  font-family:system-ui,-apple-system,sans-serif;
+  font-weight:400;
+  color:rgba(255,255,255,.45);
+  letter-spacing:.04em;
+  text-align:center;
+  max-width:80vw;
+  transition:opacity .3s,font-size .3s;
+}
+.bible-ref.hidden{opacity:0}
 </style>
 </head>
 <body>
@@ -72,6 +84,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
   <div class="song-title hidden" id="song-title"></div>
   <div class="lyric" id="lyric"></div>
   <div class="ref-info hidden" id="ref-info"></div>
+  <div class="bible-ref hidden" id="bible-ref"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -96,20 +109,39 @@ const stage=document.getElementById("stage");
 const lyricEl=document.getElementById("lyric");
 const titleEl=document.getElementById("song-title");
 const refInfo=document.getElementById("ref-info");
+const bibleRef=document.getElementById("bible-ref");
 
-/* ── Calcular tamaño de fuente dinámico ── */
+// ── Estado para configuraciones ──
+let config = {
+  showTitle: true,  // Mostrar título de canciones
+  bgColor: '#1a1a2e'
+};
+
+// ── Escuchar cambios en la configuración de la sala ──
+db.ref(`rooms/${room}/config`).on("value", (snap) => {
+  const data = snap.val();
+  if (data) {
+    if (data.showTitle !== undefined) {
+      config.showTitle = data.showTitle;
+    }
+    if (data.bgColor) {
+      config.bgColor = data.bgColor;
+      document.body.style.backgroundColor = config.bgColor;
+    }
+  }
+});
+
+// ── Calcular tamaño de fuente dinámico ──
 function calcFontSize(text, isTitle){
   const len=(text||"").length;
   const vw=window.innerWidth/100;
   const vh=window.innerHeight/100;
   
   if(isTitle){
-    // Título: más chico que la letra
     if(len<15)return Math.min(5*vw,6*vh)+"px";
     if(len<30)return Math.min(3.5*vw,4.5*vh)+"px";
     return Math.min(2.5*vw,3.5*vh)+"px";
   }else{
-    // Letra: se achica si es muy larga
     if(len<80)return Math.min(5.5*vw,7*vh)+"px";
     if(len<200)return Math.min(4*vw,5.5*vh)+"px";
     if(len<400)return Math.min(3*vw,4*vh)+"px";
@@ -125,62 +157,78 @@ function showLyric(data){
   }
   
   const isBible=data.type==="bible";
-  const showTitle=data.showTitle!==false&&!!data.titulo&&!isBible;
   
-  // Título
-  if(showTitle){
-    titleEl.textContent=data.titulo;
-    titleEl.style.fontSize=calcFontSize(data.titulo,false);
+  // ── TÍTULO ──
+  // 🔥 Usar showTitle de la data (enviado desde control) o del config
+  const showTitle = data.showTitle !== undefined ? data.showTitle : config.showTitle;
+  const hasTitle = data.titulo && data.titulo.trim() && !isBible;
+  
+  if(hasTitle && showTitle){
+    titleEl.textContent = data.titulo;
+    titleEl.style.fontSize = calcFontSize(data.titulo, true);
     titleEl.classList.remove("hidden");
   }else{
     titleEl.classList.add("hidden");
   }
   
-  // Letra
+  // ── LETRA ──
   lyricEl.classList.remove("in");
   lyricEl.classList.add("out");
   
   setTimeout(()=>{
-    lyricEl.textContent=data.estrofa||"";
-    lyricEl.style.fontSize=calcFontSize(data.estrofa||"",false);
+    lyricEl.textContent = data.estrofa || "";
+    lyricEl.style.fontSize = calcFontSize(data.estrofa || "", false);
     lyricEl.classList.remove("out");
     void lyricEl.offsetWidth;
     lyricEl.classList.add("in");
     stage.classList.remove("hidden");
   },200);
 
-  // Cita bíblica
-  const ref=data.reference||"";
-  const ver=data.version||"";
-  const showRef=data.showRef!==false;
+  // ── REFERENCIA / CITA ──
+  const ref = data.reference || data.citation || "";
+  const versionName = data.version || "";
+  const showRef = data.showRef !== false;
   
-  if(ref&&showRef){
-    refInfo.textContent=ver?`${ref} · ${ver}`:ref;
-    refInfo.style.fontSize=Math.min(2.5*window.innerWidth/100,3.5*window.innerHeight/100)+"px";
-    refInfo.classList.remove("hidden");
-  }else{
+  // 🔥 Si es Biblia, mostrar la cita en la parte inferior
+  if(isBible && ref && showRef){
+    const citationText = data.citation || ref;
+    bibleRef.textContent = citationText;
+    bibleRef.style.fontSize = Math.min(2.5*window.innerWidth/100, 3.5*window.innerHeight/100) + "px";
+    bibleRef.classList.remove("hidden");
     refInfo.classList.add("hidden");
+  } else if(ref && showRef) {
+    // Para canciones, mostrar referencia si existe
+    refInfo.textContent = ref;
+    refInfo.style.fontSize = Math.min(2.5*window.innerWidth/100, 3.5*window.innerHeight/100) + "px";
+    refInfo.classList.remove("hidden");
+    bibleRef.classList.add("hidden");
+  } else {
+    refInfo.classList.add("hidden");
+    bibleRef.classList.add("hidden");
   }
 }
 
-db.ref(`rooms/${room}/currentSong`).on("value",snap=>showLyric(snap.val()));
+// ── Escuchar cambios en currentSong ──
+db.ref(`rooms/${room}/currentSong`).on("value", snap => showLyric(snap.val()));
 
 // Recalcular al cambiar tamaño de ventana
-window.addEventListener("resize",()=>{
-  const currentText=lyricEl.textContent;
+window.addEventListener("resize", ()=>{
+  const currentText = lyricEl.textContent;
   if(currentText){
-    lyricEl.style.fontSize=calcFontSize(currentText,false);
+    lyricEl.style.fontSize = calcFontSize(currentText, false);
     if(!titleEl.classList.contains("hidden")){
-      titleEl.style.fontSize=calcFontSize(titleEl.textContent,true);
+      titleEl.style.fontSize = calcFontSize(titleEl.textContent, true);
     }
   }
 });
 
 // Wake lock
 if("wakeLock" in navigator){
-  const lock=()=>navigator.wakeLock.request("screen").catch(()=>{});
+  const lock = () => navigator.wakeLock.request("screen").catch(()=>{});
   lock();
-  document.addEventListener("visibilitychange",()=>{if(document.visibilityState==="visible")lock();});
+  document.addEventListener("visibilitychange", ()=>{
+    if(document.visibilityState === "visible") lock();
+  });
 }
 </script>
 </body>
