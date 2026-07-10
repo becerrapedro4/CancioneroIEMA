@@ -6,8 +6,8 @@
 <title>Cancionero</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
-<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <style>
+/* ─── TODOS LOS ESTILOS EXISTENTES (no los modifico) ─── */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -21,7 +21,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .spinner{width:36px;height:36px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
 @keyframes spin{to{transform:rotate(360deg)}}
 
-/* HEADER */
 .header{padding:32px 0 0;user-select:none;-webkit-user-select:none}
 .header-label{font-size:11px;font-weight:500;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
 .header-title{font-family:'Playfair Display',serif;font-size:clamp(28px,6vw,52px);font-weight:900;line-height:1;cursor:default}
@@ -29,17 +28,14 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .header-sub b{color:var(--accent);font-weight:500}
 .db-tag{font-size:11px;opacity:.5;margin-left:8px}
 
-/* TABS */
 .tabs{display:flex;border-bottom:1px solid var(--border);margin:20px 0 0}
 .tab{padding:12px 20px;font-size:13px;font-family:'DM Sans',sans-serif;background:none;border:none;border-bottom:2px solid transparent;color:var(--muted);cursor:pointer;margin-bottom:-1px;transition:color .15s,border-color .15s}
 .tab.active{color:var(--accent);border-bottom-color:var(--accent);font-weight:500}
 .badge{display:none;background:var(--accent);color:#000;border-radius:10px;font-size:10px;padding:1px 6px;margin-left:4px;vertical-align:middle}
 
-/* VIEWS */
 .view{display:none;padding-top:24px}
 .view.active{display:block}
 
-/* SEARCH */
 .controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
 .search-wrap{flex:1;min-width:180px;position:relative}
 .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-style:normal;font-size:15px;pointer-events:none}
@@ -51,7 +47,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .rinfo{font-size:13px;color:var(--muted);margin-bottom:12px}
 .rinfo b{color:var(--accent);font-weight:500}
 
-/* SONG ROWS */
 .song-list{display:flex;flex-direction:column;gap:1px}
 .song-row{display:flex;align-items:center;gap:12px;padding:13px 12px;border-radius:10px;cursor:pointer;border:1px solid transparent;-webkit-tap-highlight-color:rgba(245,166,35,.1);transition:background .1s}
 .song-row:active,.song-row.active{background:var(--surface2);border-color:var(--border)}
@@ -72,7 +67,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .empty-icon{font-size:36px;margin-bottom:10px}
 .empty-sub{font-size:13px;margin-top:6px}
 
-/* DESKTOP */
 @media(min-width:720px){
   .split{display:grid;grid-template-columns:1fr 380px;gap:16px;align-items:start}
   .detail-ov{position:sticky;top:16px;inset:auto;background:transparent;display:block;z-index:1;height:fit-content}
@@ -81,7 +75,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   .dhandle{display:none}
 }
 
-/* DETAIL */
 .detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:none;align-items:flex-end}
 .detail-ov.open{display:flex}
 .dsheet{background:var(--surface);border-radius:20px 20px 0 0;width:100%;max-height:88vh;display:flex;flex-direction:column;border-top:1px solid var(--border)}
@@ -98,7 +91,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .lyric-text mark{background:rgba(245,166,35,.3);color:var(--text);border-radius:2px}
 .lyric-div{border:none;border-top:1px solid var(--border);margin:14px 0}
 
-/* FLOAT BAR */
 .fbar{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(120px);background:var(--surface2);border:1px solid rgba(245,166,35,.3);border-radius:16px;padding:13px 16px;display:flex;align-items:center;gap:10px;z-index:40;box-shadow:0 8px 32px rgba(0,0,0,.7);transition:transform .3s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;flex-wrap:wrap;justify-content:center}
 .fbar.visible{transform:translateX(-50%) translateY(0)}
 .fbar-count{font-size:13px;color:var(--muted)}
@@ -108,7 +100,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .fbtn.sec{background:transparent;border:1px solid var(--border);color:var(--muted)}
 .fbtn:hover{opacity:.8}
 
-/* LISTS */
 .lists-hdr{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
 .lists-hdr-title{font-family:'Playfair Display',serif;font-size:22px;font-weight:700}
 .btn-newlist{background:var(--accent);color:#000;border:none;border-radius:9px;padding:10px 18px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer}
@@ -142,7 +133,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .exp-btn:hover{opacity:.8}
 .exp-btn.live{background:rgba(76,175,125,.15);color:var(--green);border:1px solid rgba(76,175,125,.3)}
 
-/* MODALS */
 .mov{position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:100;display:none;align-items:center;justify-content:center;padding:20px}
 .mov.open{display:flex}
 .modal{background:var(--surface);border:1px solid var(--border);border-radius:20px;padding:28px;width:100%;max-width:400px}
@@ -163,14 +153,12 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .upload-zone{border:1.5px dashed var(--border);border-radius:12px;padding:28px 20px;text-align:center;cursor:pointer;transition:border-color .15s,background .15s;margin-bottom:16px}
 .upload-zone:hover{border-color:var(--accent);background:rgba(245,166,35,.04)}
 
-/* ATL */
 .atl-list{display:flex;flex-direction:column;gap:6px;margin-bottom:16px;max-height:220px;overflow-y:auto}
 .atl-item{display:flex;align-items:center;gap:10px;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;cursor:pointer;transition:border-color .15s}
 .atl-item:hover{border-color:var(--accent)}
 .atl-name{flex:1;font-size:14px;font-weight:500}
 .atl-cnt{font-size:12px;color:var(--muted)}
 
-/* ADMIN DB EDITOR */
 .admin-select-wrap{position:relative;margin-bottom:20px}
 .admin-select-wrap::after{content:"▾";position:absolute;right:14px;top:50%;transform:translateY(-50%);color:var(--accent);pointer-events:none;font-size:14px}
 .admin-nav{width:100%;padding:11px 36px 11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);outline:none;cursor:pointer;-webkit-appearance:none;appearance:none;transition:border-color .15s}
@@ -193,36 +181,29 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .admin-sel-count{font-size:13px;color:var(--muted);flex:1}
 .admin-sel-count b{color:var(--red);font-weight:600}
 
-/* DETAIL FOOTER */
 .dfooter{display:flex;gap:8px;padding:12px 16px;border-top:1px solid var(--border);flex-shrink:0}
 .dfbtn{flex:1;padding:10px 12px;border-radius:9px;border:none;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s}
 .dfbtn.edit{background:rgba(245,166,35,.12);color:var(--accent);border:1px solid rgba(245,166,35,.25)}
 .dfbtn.del{background:rgba(224,82,82,.1);color:var(--red);border:1px solid rgba(224,82,82,.2)}
 .dfbtn:hover{opacity:.75}
 
-/* LONG PRESS feedback */
 .song-row{transition:background .1s,transform .1s}
 .song-row.pressing{background:rgba(245,166,35,.08)!important;transform:scale(.985)}
 
-/* GEAR BTN */
 #btn-settings{position:fixed;top:14px;right:14px;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
 #btn-settings:hover{border-color:var(--accent);transform:rotate(60deg)}
 
-/* COLOR PICKER */
 .color-pick-wrap{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:transparent;cursor:pointer;transition:border-color .15s}
 .color-pick-wrap:hover{border-color:var(--accent)}
 .color-pick-label{font-size:12px;color:var(--muted);white-space:nowrap}
 .list-color-pick{width:26px;height:26px;border:none;border-radius:5px;cursor:pointer;padding:0;background:none}
 
-/* STYLE PICKER */
 .style-pick{display:flex;gap:4px;flex-wrap:wrap}
 .spbtn{padding:6px 11px;border-radius:7px;border:1px solid var(--border);font-family:'DM Sans',sans-serif;font-size:12px;color:var(--muted);background:transparent;cursor:pointer;transition:all .15s;white-space:nowrap}
 .spbtn.active{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.4);color:var(--accent)}
 
-/* ADMIN-ONLY: hidden until isAdmin */
 .admin-only{display:none!important}
 
-/* PRESENTER */
 .pres-live{display:flex;align-items:center;gap:7px;margin-bottom:4px}
 .pres-dot{width:8px;height:8px;border-radius:50%;background:var(--red);animation:pdot 1.4s ease-in-out infinite}
 @keyframes pdot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.4;transform:scale(.7)}}
@@ -710,9 +691,8 @@ function showDetail(song){
   document.getElementById("detail-ov").classList.add("open");
 }
 
-// ── DRAG & DROP para reordenar listas ──
+// ── DRAG & DROP ──
 let dragData = null;
-
 function initDragDrop() {
   document.addEventListener('dragstart', (e) => {
     const row = e.target.closest('.lcsr');
@@ -723,24 +703,20 @@ function initDragDrop() {
     row.classList.add('dragging');
     e.dataTransfer.effectAllowed = 'move';
   });
-
   document.addEventListener('dragend', (e) => {
     document.querySelectorAll('.lcsr.dragging').forEach(r => r.classList.remove('dragging'));
     dragData = null;
   });
-
   document.addEventListener('dragover', (e) => {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     const row = e.target.closest('.lcsr');
     if (row) row.style.borderTop = '2px solid var(--accent)';
   });
-
   document.addEventListener('dragleave', (e) => {
     const row = e.target.closest('.lcsr');
     if (row) row.style.borderTop = '';
   });
-
   document.addEventListener('drop', (e) => {
     e.preventDefault();
     document.querySelectorAll('.lcsr').forEach(r => r.style.borderTop = '');
@@ -749,14 +725,11 @@ function initDragDrop() {
     const targetLid = targetRow.dataset.lid;
     const targetSid = parseInt(targetRow.dataset.sid);
     if (dragData.lid !== targetLid || dragData.sid === targetSid) return;
-
     const list = LISTS.find(l => l.id === dragData.lid);
     if (!list) return;
-
     const fromIdx = list.songIds.indexOf(dragData.sid);
     const toIdx = list.songIds.indexOf(targetSid);
     if (fromIdx === -1 || toIdx === -1) return;
-
     list.songIds.splice(toIdx, 0, list.songIds.splice(fromIdx, 1)[0]);
     saveLists();
     renderLists();
@@ -774,6 +747,7 @@ function renderLists(){
   }
   c.innerHTML=LISTS.map(lst=>{
     const songs=lst.songIds.map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);
+    const currentStyle = lst.style || liveConfig.style || 'minimal';
     return`<div class="lcard" id="lc-${lst.id}">
       <div class="lcard-hdr" data-lid="${lst.id}">
         <span class="lcard-chev">›</span>
@@ -799,12 +773,12 @@ function renderLists(){
         </div>
         <div class="lcard-export">
           <div class="style-pick admin-only" onclick="event.stopPropagation()">
-            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='minimal'?' active':''}" data-lid="${lst.id}" data-style="minimal">Minimal</button>
-            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='aesthetic'?' active':''}" data-lid="${lst.id}" data-style="aesthetic">Aesthetic</button>
-            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='glass'?' active':''}" data-lid="${lst.id}" data-style="glass">Glass</button>
-            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='vintage'?' active':''}" data-lid="${lst.id}" data-style="vintage">Vintage</button>
-            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='neon'?' active':''}" data-lid="${lst.id}" data-style="neon">Neon</button>
-            <button class="spbtn${(lst.style||liveConfig.style||'minimal')==='nature'?' active':''}" data-lid="${lst.id}" data-style="nature">Naturaleza</button>
+            <button class="spbtn${currentStyle==='minimal'?' active':''}" data-lid="${lst.id}" data-style="minimal">Minimal</button>
+            <button class="spbtn${currentStyle==='aesthetic'?' active':''}" data-lid="${lst.id}" data-style="aesthetic">Aesthetic</button>
+            <button class="spbtn${currentStyle==='glass'?' active':''}" data-lid="${lst.id}" data-style="glass">Glass</button>
+            <button class="spbtn${currentStyle==='vintage'?' active':''}" data-lid="${lst.id}" data-style="vintage">Vintage</button>
+            <button class="spbtn${currentStyle==='neon'?' active':''}" data-lid="${lst.id}" data-style="neon">Neon</button>
+            <button class="spbtn${currentStyle==='nature'?' active':''}" data-lid="${lst.id}" data-style="nature">Naturaleza</button>
           </div>
           <label class="color-pick-wrap admin-only" onclick="event.stopPropagation()">
             <span class="color-pick-label">Color:</span>
@@ -833,26 +807,19 @@ function renderLists(){
       if(l){l.color=inp.value;saveLists();}
     });
   });
-  document.querySelectorAll(".spbtn").forEach(btn=>{
+  document.querySelectorAll(".style-pick .spbtn").forEach(btn=>{
     btn.addEventListener("click",e=>{
       e.stopPropagation();
       const l=LISTS.find(x=>x.id===btn.dataset.lid);
       if(!l)return;
-      l.style=btn.dataset.style;saveLists();
+      l.style=btn.dataset.style;
+      saveLists();
+      // Actualizar active states en este grupo
       btn.closest(".style-pick").querySelectorAll(".spbtn").forEach(b=>b.classList.toggle("active",b===btn));
     });
   });
   applyHtmlExportToggle();
   initDragDrop();
-}
-
-function reorderList(lid, fromIdx, toIdx) {
-  const l = LISTS.find(x => x.id === lid);
-  if (!l) return;
-  const [removed] = l.songIds.splice(fromIdx, 1);
-  l.songIds.splice(toIdx, 0, removed);
-  saveLists();
-  renderLists();
 }
 
 function addToList(listId,ids){
@@ -876,7 +843,6 @@ function renameList(lid){
 function presentFromList(lid, sid) {
   const song = SONGS.find(s => s.id === sid);
   if (!song) return;
-
   if (!_presRoom) {
     _presRoom = localStorage.getItem("pres_room") || "";
     if (!_presRoom) {
@@ -886,7 +852,6 @@ function presentFromList(lid, sid) {
       localStorage.setItem("pres_room", _presRoom);
     }
   }
-
   _presSong = song;
   _presIdx = 0;
   _presBlank = false;
@@ -895,11 +860,10 @@ function presentFromList(lid, sid) {
   presWrite(false);
   document.getElementById("mov-pres").classList.add("open");
   updateSettingsBtn();
-  
   document.getElementById("detail-ov").classList.remove("open");
 }
 
-// ── NUEVOS ESTILOS PARA EXPORTACIÓN ──
+// ─── BUILD EXPORT HTML CON 6 ESTILOS ───────────────────────────────────
 function buildExportHTML(lst, isLive = false) {
   const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
   const songsData = JSON.stringify(songs.map(s => ({
@@ -916,13 +880,11 @@ function buildExportHTML(lst, isLive = false) {
   const tag = liveConfig.tag || "#Iglesia · Rosario";
   const footer = liveConfig.footer || "IEMA · Rosario";
 
-  // Logo base64
   let logoSVG = '';
   if (liveConfig.logo) {
     logoSVG = `<img src="${liveConfig.logo}" style="max-height:40px;max-width:120px;object-fit:contain;display:block;margin:0 auto 8px">`;
   }
 
-  // Compartir script para todos los estilos
   const acScript = `<script>
     const songs = ${songsData};
     document.addEventListener('DOMContentLoaded', () => {
@@ -950,11 +912,144 @@ function buildExportHTML(lst, isLive = false) {
     });
   <\/script>`;
 
-  // ── ESTILO VINTAGE ──
-  if (style === "vintage") {
-    return `<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+  // ─── ESTILO 1: MINIMALISTA (original) ─────────────────────────────────
+  if (style === "minimal") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--bg:#080808;--tx:#DEDAD4;--mu:#444;--br:#1C1C1C}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+header{padding:72px 28px 56px;max-width:680px;margin:0 auto}
+.hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--a);margin-bottom:18px}
+h1{font-size:clamp(36px,9vw,72px);font-weight:700;line-height:1.0;letter-spacing:-1px}
+h1 span{color:var(--a)}
+.hc{margin-top:14px;font-size:13px;color:var(--mu)}
+main{max-width:680px;margin:0 auto;padding:0 28px 100px}
+.ac-item{border-top:1px solid var(--br)}
+.ac-item:last-child{border-bottom:1px solid var(--br)}
+.ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
+.ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
+.ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s}
+.ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
+.ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 40px}
+.stanza{margin-bottom:22px}
+.stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#888}
+footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<header><div class="hl">${esc(tag)}</div>
+<h1>${esc(title).toUpperCase().split(" ").map((w,i)=>i===0?`<span>${w}</span>`:w).join(" ")}</h1>
+<div class="hc">${songs.length} canciones</div></header>
+<main id="song-list"></main>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // ─── ESTILO 2: AESTHETIC (original) ──────────────────────────────────
+  if (style === "aesthetic") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--bg:#0C0A08;--tx:#EDE8E0;--mu:#5C5650;--br:#231F1B;--sur:#141210}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh}
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:40px 24px}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 80%,rgba(${r},${g},${b},0.6),transparent 70%)}
+.hero-tag{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--a);margin-bottom:28px;opacity:.8}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,14vw,120px);font-weight:600;line-height:.95;text-align:center;letter-spacing:-2px}
+.hero-title em{color:var(--a);font-style:italic}
+.hero-sub{margin-top:32px;font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase}
+.hero-line{width:1px;height:64px;background:linear-gradient(var(--a),transparent);margin:40px auto 0;opacity:.5}
+.wrap{max-width:720px;margin:0 auto;padding:80px 28px 100px}
+.sec-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mu);margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid var(--br)}
+.ac-item{border-bottom:1px solid var(--br)}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:26px 0;cursor:pointer;user-select:none}
+.ac-num{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--mu);font-style:italic}
+.ac-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;transition:color .25s}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:var(--a)}
+.ac-icon{width:24px;height:24px;border-radius:50%;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mu);transition:all .3s;flex-shrink:0;justify-self:end}
+.ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:8px 0 36px 52px}
+.stanza{margin-bottom:24px}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a);opacity:.6;margin-bottom:10px}
+.stanza-text{font-size:14px;line-height:2.2;white-space:pre-wrap;text-transform:uppercase;color:var(--mu)}
+footer{text-align:center;padding:48px 24px;color:var(--mu);font-size:12px;letter-spacing:2px;text-transform:uppercase;border-top:1px solid var(--br)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title).split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="hero-line"></div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // ─── ESTILO 3: GLASS (original) ─────────────────────────────────────
+  if (style === "glass") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--r:${r};--g:${g};--b:${b}}
+body{background:#030308;color:#fff;font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18}
+.orb1{width:600px;height:600px;background:${hex};top:-200px;left:-100px}
+.orb2{width:400px;height:400px;background:rgba(${r},${g},${b},.8);bottom:-150px;right:-100px;opacity:.12}
+.orb3{width:300px;height:300px;background:#6366f1;top:40%;left:60%;opacity:.08}
+.hero{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.glass-tag{background:rgba(${r},${g},${b},.15);border:1px solid rgba(${r},${g},${b},.3);backdrop-filter:blur(12px);border-radius:999px;padding:7px 18px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a);margin-bottom:32px;display:inline-block}
+h1{font-size:clamp(44px,12vw,110px);font-weight:700;line-height:1;letter-spacing:-2px;background:linear-gradient(135deg,#fff 30%,var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-count{margin-top:20px;font-size:13px;color:rgba(255,255,255,.35);letter-spacing:1px}
+.hero-arrow{margin-top:48px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:18px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.content{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:80px 20px 100px}
+.ac-item{margin-bottom:8px}
+.ac-hdr{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:background .2s,border-color .2s}
+.ac-item:hover .ac-hdr,.ac-item.open .ac-hdr{background:rgba(${r},${g},${b},.1);border-color:rgba(${r},${g},${b},.35)}
+.ac-num{font-size:12px;color:var(--a);font-weight:600;min-width:24px;font-variant-numeric:tabular-nums}
+.ac-title{flex:1;font-size:15px;font-weight:500;letter-spacing:.2px}
+.ac-icon{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.4);transition:all .3s;flex-shrink:0}
+.ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg);box-shadow:0 0 14px rgba(${r},${g},${b},.5)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05);border-top:none;border-radius:0 0 14px 14px;padding:24px 24px 28px;backdrop-filter:blur(8px)}
+.stanza{margin-bottom:20px}
+.stanza:last-child{margin-bottom:0}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(${r},${g},${b},.7);margin-bottom:8px}
+.stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,.45)}
+footer{position:relative;z-index:1;text-align:center;padding:40px 24px;color:rgba(255,255,255,.15);font-size:12px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+<div class="hero">
+  <span class="glass-tag">${esc(tag)}</span>
+  <h1>${esc(title).toUpperCase()}</h1>
+  <div class="hero-count">${songs.length} canciones</div>
+  <div class="hero-arrow">↓</div>
+</div>
+<div class="content" id="song-list"></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // ─── ESTILO 4: VINTAGE ──────────────────────────────────────────────
+  if (style === "vintage") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -996,13 +1091,10 @@ footer{text-align:center;padding:40px 24px;color:#8B7355;font-size:12px;letter-s
 <footer>${esc(footer)}</footer>
 ${acScript}
 </body></html>`;
-  }
 
-  // ── ESTILO NEON ──
-  if (style === "neon") {
-    return `<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+  // ─── ESTILO 5: NEON ──────────────────────────────────────────────────
+  if (style === "neon") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1041,13 +1133,10 @@ footer{text-align:center;padding:40px 24px;color:rgba(255,255,255,.1);font-size:
 <footer>${esc(footer)}</footer>
 ${acScript}
 </body></html>`;
-  }
 
-  // ── ESTILO NATURALEZA ──
-  if (style === "nature") {
-    return `<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+  // ─── ESTILO 6: NATURALEZA ────────────────────────────────────────────
+  if (style === "nature") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
 <link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -1088,48 +1177,12 @@ footer{text-align:center;padding:40px 24px;color:#3A4A3E;font-size:11px;letter-s
 <footer>${esc(footer)}</footer>
 ${acScript}
 </body></html>`;
-  }
 
-  // ── ESTILO MINIMALISTA (default) ──
+  // Fallback: minimal
   return `<!DOCTYPE html>
-<html lang="es">
-<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
-<style>
-*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-:root{--a:${hex};--bg:#080808;--tx:#DEDAD4;--mu:#444;--br:#1C1C1C}
-html{scroll-behavior:smooth}
-body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
-header{padding:72px 28px 56px;max-width:680px;margin:0 auto}
-.hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--a);margin-bottom:18px}
-h1{font-size:clamp(36px,9vw,72px);font-weight:700;line-height:1.0;letter-spacing:-1px}
-h1 span{color:var(--a)}
-.hc{margin-top:14px;font-size:13px;color:var(--mu)}
-main{max-width:680px;margin:0 auto;padding:0 28px 100px}
-.ac-item{border-top:1px solid var(--br)}
-.ac-item:last-child{border-bottom:1px solid var(--br)}
-.ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
-.ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
-.ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s}
-.ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
-.ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
-.ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
-.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
-.ac-item.open .ac-body{max-height:3000px}
-.ac-inner{padding:0 0 32px 40px}
-.stanza{margin-bottom:22px}
-.stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
-.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#888}
-footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
-</style>
-</head>
-<body>
-<header><div class="hl">${esc(tag)}</div>
-<h1>${esc(title).toUpperCase().split(" ").map((w,i)=>i===0?`<span>${w}</span>`:w).join(" ")}</h1>
-<div class="hc">${songs.length} canciones</div></header>
-<main id="song-list"></main>
-<footer>${esc(footer)}</footer>
-${acScript}
-</body></html>`;
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<style>body{font-family:system-ui;background:#080808;color:#DEDAD4;padding:20px}</style>
+</head><body><h1>${esc(title)}</h1><p>Error: estilo no encontrado</p></body></html>`;
 }
 
 function exportList(lid, type) {
@@ -1144,7 +1197,6 @@ function exportList(lid, type) {
     a.click();
     URL.revokeObjectURL(a.href);
   } else if (type === "live") {
-    // Abrir en nueva ventana con los datos en vivo
     const html = buildExportHTML(lst, true);
     const win = window.open("", "_blank");
     win.document.write(html);
@@ -1505,7 +1557,7 @@ document.getElementById("misc-color-pick").addEventListener("input",e=>{
   localStorage.setItem("html_export_color",_htmlExportColor);
 });
 
-/* ── LIVE EDITOR ── */
+// ── LIVE EDITOR ──
 function updateLiveUI() {
   document.getElementById("live-title").value = liveConfig.title || "";
   document.getElementById("live-tag").value = liveConfig.tag || "";
@@ -1515,7 +1567,6 @@ function updateLiveUI() {
     b.classList.toggle("active", b.dataset.lstyle === liveConfig.style);
   });
 }
-
 function updateLiveAdminUI() {
   document.getElementById("live-title-admin").value = liveConfig.title || "";
   document.getElementById("live-tag-admin").value = liveConfig.tag || "";
@@ -1525,13 +1576,11 @@ function updateLiveAdminUI() {
     b.classList.toggle("active", b.dataset.lstyleAdmin === liveConfig.style);
   });
 }
-
 function openLiveEditor() {
   updateLiveUI();
   document.getElementById("mov-live").classList.add("open");
   updateSettingsBtn();
 }
-
 document.getElementById("live-close").addEventListener("click", () => {
   document.getElementById("mov-live").classList.remove("open");
   updateSettingsBtn();
@@ -1580,7 +1629,6 @@ document.getElementById("live-publish").addEventListener("click", () => {
   st.className = "mstatus ok";
   toast("Configuración publicada ✓");
 });
-
 document.getElementById("live-reset").addEventListener("click", () => {
   liveConfig = { title: "Cancionero", tag: "#Iglesia · Rosario", footer: "IEMA · Rosario", style: "minimal", color: "#E55A00", logo: null };
   saveLiveConfig();
@@ -1589,7 +1637,7 @@ document.getElementById("live-reset").addEventListener("click", () => {
   document.getElementById("live-status").className = "mstatus ok";
 });
 
-// ── ADMIN LIVE ──
+// Admin live
 document.querySelectorAll("#ap-live .spbtn").forEach(b => {
   b.addEventListener("click", () => {
     liveConfig.style = b.dataset.lstyleAdmin;
@@ -1826,7 +1874,6 @@ document.addEventListener("keydown",e=>{
   if(e.key===" "){e.preventDefault();_presBlank=!_presBlank;presRenderUI();presWrite(_presBlank);}
 });
 
-// ── TOAST ──
 function toast(msg,ms=2200){
   const el=document.getElementById("toast") || (()=>{
     const t=document.createElement("div");
