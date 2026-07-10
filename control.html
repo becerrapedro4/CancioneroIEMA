@@ -6,31 +6,131 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Control - Cancionero en Tiempo Real</title>
     <link rel="stylesheet" href="css/styles.css">
+    <style>
+        /* Estilos adicionales para el control */
+        .control-container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .toggle-section {
+            background: #f5f5f5;
+            padding: 15px 20px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+        .toggle-label {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .toggle-label input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+        }
+        .toggle-status {
+            font-size: 14px;
+            color: #666;
+            margin-left: auto;
+        }
+        .toggle-status.active {
+            color: #2e7d32;
+        }
+        .toggle-status.inactive {
+            color: #c62828;
+        }
+        .room-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 15px 0;
+        }
+        .room-info p {
+            margin: 5px 0;
+        }
+        #viewer-url {
+            word-break: break-all;
+            font-size: 14px;
+        }
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            margin: 5px 5px 5px 0;
+        }
+        #copy-url-btn {
+            background: #1976d2;
+            color: white;
+        }
+        #send-song-btn {
+            background: #2e7d32;
+            color: white;
+        }
+        #apply-color-btn {
+            background: #6a1b9a;
+            color: white;
+        }
+        #logout-btn {
+            background: #c62828;
+            color: white;
+            margin-top: 20px;
+        }
+        select, input[type="color"] {
+            padding: 8px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 14px;
+        }
+        .song-selector {
+            margin: 20px 0;
+        }
+        .color-picker {
+            margin: 20px 0;
+        }
+    </style>
 </head>
 <body>
     <div class="control-container">
-        <h1>Panel de Control</h1>
+        <h1>🎵 Panel de Control</h1>
         <div class="room-info">
             <p><strong>Sala:</strong> <span id="room-name"></span></p>
             <p><strong>URL del Viewer:</strong> <span id="viewer-url"></span></p>
-            <button id="copy-url-btn">Copiar URL</button>
+            <button id="copy-url-btn">📋 Copiar URL</button>
         </div>
         
         <div class="song-selector">
-            <h2>Seleccionar Canción</h2>
+            <h2>📝 Seleccionar Canción</h2>
             <select id="song-select">
                 <option value="">-- Elegí una canción --</option>
             </select>
-            <button id="send-song-btn">Enviar al Viewer</button>
+            <button id="send-song-btn">📤 Enviar al Viewer</button>
+        </div>
+
+        <!-- 🔥 NUEVA SECCIÓN: MOSTRAR/OCULTAR TÍTULO -->
+        <div class="toggle-section">
+            <h2>⚙️ Opciones de Visualización</h2>
+            <label class="toggle-label">
+                <input type="checkbox" id="toggle-title" checked>
+                <span>Mostrar título de la canción</span>
+                <span class="toggle-status active" id="title-status">✅ Activado</span>
+            </label>
+            <p style="font-size:13px;color:#666;margin-top:8px;">
+                Al desactivar, el viewer mostrará solo la letra sin el título.
+            </p>
         </div>
         
         <div class="color-picker">
-            <h2>Color de Fondo del Viewer</h2>
+            <h2>🎨 Color de Fondo del Viewer</h2>
             <input type="color" id="bg-color" value="#1a1a2e">
             <button id="apply-color-btn">Aplicar Color</button>
         </div>
         
-        <button id="logout-btn">Cerrar sesión</button>
+        <button id="logout-btn">🚪 Cerrar sesión</button>
     </div>
 
     <script type="module">
@@ -86,7 +186,36 @@
             songSelect.appendChild(option);
         });
 
-        // Enviar canción seleccionada
+        // ── TOGGLE: Mostrar/Ocultar Título ──
+        const toggleTitle = document.getElementById('toggle-title');
+        const titleStatus = document.getElementById('title-status');
+
+        // Cargar estado guardado
+        const savedShowTitle = localStorage.getItem('show_title');
+        if (savedShowTitle !== null) {
+            const show = savedShowTitle === 'true';
+            toggleTitle.checked = show;
+            updateTitleStatus(show);
+        }
+
+        // Guardar estado al cambiar
+        toggleTitle.addEventListener('change', () => {
+            const show = toggleTitle.checked;
+            localStorage.setItem('show_title', show);
+            updateTitleStatus(show);
+            
+            // Guardar en Firebase para que el viewer lo sepa
+            update(ref(db, `rooms/${roomId}/config`), { showTitle: show })
+                .then(() => console.log('Configuración showTitle:', show))
+                .catch(err => console.error('Error al guardar configuración:', err));
+        });
+
+        function updateTitleStatus(show) {
+            titleStatus.textContent = show ? '✅ Activado' : '❌ Desactivado';
+            titleStatus.className = `toggle-status ${show ? 'active' : 'inactive'}`;
+        }
+
+        // ── Enviar canción ──
         document.getElementById('send-song-btn').addEventListener('click', () => {
             const songId = parseInt(songSelect.value);
             if (!songId) {
@@ -95,19 +224,22 @@
             }
             const song = songs.find(s => s.id === songId);
             if (song) {
+                // 🔥 Incluir la configuración showTitle en el envío
+                const showTitle = toggleTitle.checked;
                 const songData = {
                     id: song.id,
                     titulo: song.titulo,
                     letra: song.letra,
+                    showTitle: showTitle, // 🔥 Flag para mostrar/ocultar título
                     timestamp: Date.now()
                 };
                 set(ref(db, `rooms/${roomId}/currentSong`), songData)
-                    .then(() => console.log('Canción enviada:', song.titulo))
+                    .then(() => console.log('Canción enviada:', song.titulo, 'showTitle:', showTitle))
                     .catch(err => console.error('Error al enviar canción:', err));
             }
         });
 
-        // Aplicar color de fondo
+        // ── Aplicar color de fondo ──
         document.getElementById('apply-color-btn').addEventListener('click', () => {
             const color = document.getElementById('bg-color').value;
             update(ref(db, `rooms/${roomId}/config`), { bgColor: color })
@@ -115,16 +247,25 @@
                 .catch(err => console.error('Error al aplicar color:', err));
         });
 
-        // Cargar configuración actual al iniciar
+        // ── Cargar configuración actual al iniciar ──
         const roomRef = ref(db, `rooms/${roomId}`);
         onValue(roomRef, (snapshot) => {
             const data = snapshot.val();
-            if (data && data.config && data.config.bgColor) {
-                document.getElementById('bg-color').value = data.config.bgColor;
+            if (data && data.config) {
+                // Color de fondo
+                if (data.config.bgColor) {
+                    document.getElementById('bg-color').value = data.config.bgColor;
+                }
+                // Estado del título
+                if (data.config.showTitle !== undefined) {
+                    toggleTitle.checked = data.config.showTitle;
+                    updateTitleStatus(data.config.showTitle);
+                    localStorage.setItem('show_title', data.config.showTitle);
+                }
             }
         });
 
-        // Logout
+        // ── Logout ──
         document.getElementById('logout-btn').addEventListener('click', () => {
             localStorage.removeItem('cancionero_username');
             localStorage.removeItem('cancionero_room');
