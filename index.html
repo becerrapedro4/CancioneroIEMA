@@ -297,12 +297,12 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 
   <!-- MENSAJES VIEW -->
   <div class="view" id="view-messages">
-    <div style="display:flex; gap:10px; margin-bottom:16px;">
-      <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1;">
-      <button class="mbtn pri" id="msg-send" style="flex:0">Enviar</button>
+    <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
+        <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1; min-width:150px;">
+        <button class="mbtn pri" id="msg-send" style="flex:0;">Enviar</button>
+        <button class="mbtn sec" id="msg-clear" style="flex:0;">🗑 Limpiar</button>
     </div>
     <div id="msg-history" style="max-height:400px; overflow-y:auto; background:var(--surface); border-radius:12px; padding:12px;"></div>
-  </div>
 </div>
 
 <!-- FLOAT BAR -->
@@ -1387,6 +1387,20 @@ document.getElementById('msg-send').addEventListener('click', () => {
 });
 document.getElementById('msg-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('msg-send').click();
+});
+
+// 🔥 BOTÓN LIMPIAR MENSAJES
+document.getElementById('msg-clear').addEventListener('click', function() {
+  const room = getRoom();
+  const db = getFirebaseDb();
+  if (!db) { toast("⚠️ Conexión a Firebase no disponible"); return; }
+  if (!confirm("¿Eliminar todos los mensajes de esta sala?")) return;
+  db.ref(`rooms/${room}/messages`).remove()
+    .then(() => {
+      document.getElementById('msg-history').innerHTML = '';
+      toast("🗑 Mensajes eliminados");
+    })
+    .catch(err => toast("❌ Error al eliminar: " + err.message));
 });
 
 function loadMessages() {
