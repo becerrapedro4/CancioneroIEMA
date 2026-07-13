@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Stage - Presentador</title>
     <style>
-        /* ===== ESTILOS TOMADOS DE VIEWER.HTML ===== */
         *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
         html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 
+        /* ===== FONDO GRADIENTE ANIMADO (igual que viewer.html) ===== */
         .orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
         .orb{position:absolute;border-radius:50%;filter:blur(90px);animation:drift 18s ease-in-out infinite}
         .orb1{width:70vw;height:70vw;background:#F5A623;opacity:.18;top:-15%;left:-15%;animation-delay:0s}
@@ -26,20 +26,21 @@
         }
         .stage.hidden{opacity:0;pointer-events:none}
 
+        /* ===== TÍTULO (más pequeño) ===== */
         .song-title{
             font-family:system-ui,-apple-system,sans-serif;
-            font-weight:700;
-            line-height:1.1;
+            font-weight:500;
+            line-height:1.2;
             text-transform:uppercase;
-            letter-spacing:-.02em;
-            margin-bottom:2vh;
-            opacity:.7;
-            transition:font-size .3s;
-            font-size:clamp(1.8rem,4vw,4rem);
+            letter-spacing:.04em;
+            margin-bottom:1.5vh;
+            opacity:.5;
+            font-size:clamp(1rem,2vw,2rem);  /* más pequeño */
         }
         .song-title.hidden{display:none}
 
-        .current{
+        /* ===== ESTROFA ACTUAL Y SIGUIENTE (mismo tamaño y legibilidad) ===== */
+        .current, .next{
             font-family:system-ui,-apple-system,sans-serif;
             font-weight:600;
             line-height:1.4;
@@ -47,7 +48,7 @@
             letter-spacing:.02em;
             white-space:pre-wrap;
             max-width:94vw;
-            font-size:clamp(3rem,8vw,8rem);
+            font-size:clamp(3rem,8vw,8rem);  /* mismo tamaño para ambas */
             padding:1vh 2vw;
             background:rgba(255,255,255,0.04);
             border-radius:20px;
@@ -63,26 +64,25 @@
         .current.out{opacity:0;transform:translateY(14px)}
         .current.in{animation:lyricIn .35s ease forwards}
 
+        /* Estrofa siguiente: mismo tamaño y opacidad, solo un toque más tenue */
         .next{
-            font-family:system-ui,-apple-system,sans-serif;
-            font-weight:400;
-            line-height:1.4;
-            text-transform:uppercase;
-            letter-spacing:.02em;
-            white-space:pre-wrap;
-            max-width:80vw;
-            font-size:clamp(1.2rem,2.5vw,2.5rem);
-            color:rgba(255,255,255,0.35);
             margin-top:3vh;
             padding-top:2vh;
-            border-top:1px solid rgba(255,255,255,0.06);
-            min-height:8vh;
-            transition:opacity .2s;
+            border-top:1px solid rgba(255,255,255,0.08);
+            color:rgba(255,255,255,0.6);  /* ligeramente más tenue pero legible */
+            font-weight:500;
+            min-height:auto;
+            font-size:clamp(3rem,8vw,8rem); /* mismo tamaño */
         }
-        .next.empty{opacity:0.2;font-style:italic}
+        .next.empty{
+            color:rgba(255,255,255,0.15);
+            font-style:italic;
+            font-weight:300;
+        }
 
         @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 
+        /* ===== REFERENCIA (opcional) ===== */
         .ref-info{
             position:absolute;bottom:5vh;left:50%;transform:translateX(-50%);
             font-family:system-ui,-apple-system,sans-serif;
@@ -95,7 +95,7 @@
         }
         .ref-info.hidden{opacity:0}
 
-        /* Mensajes (notificaciones) */
+        /* ===== MENSAJES (notificaciones) ===== */
         #messages{
             position:fixed;bottom:2vh;right:2vw;
             background:rgba(0,0,0,0.7);
@@ -108,6 +108,187 @@
             overflow-y:auto;
             font-size:0.9rem;
             color:rgba(255,255,255,0.7);
+            display:none;
+            transition:opacity 0.3s;
+            z-index:10;
+        }
+        #messages.visible{display:block}
+        .msg-item{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem}
+        .msg-time{color:rgba(255,255,255,0.25);font-size:0.7rem;margin-right:8px}
+        #info{
+            position:fixed;bottom:2vh;left:2vw;
+            font-size:0.7rem;
+            color:rgba(255,255,255,0.15);
+            letter-spacing:1px;
+        }
+        #status-dot{
+            width:10px;height:10px;border-radius:50%;
+            display:inline-block;margin-right:6px;
+        }
+        .on{background:#00ff88;box-shadow:0 0 12px #00ff88}
+        .off{background:#ff2244;box-shadow:0 0 8px rgba(255,34,68,0.4)}
+    </style>
+</head>
+<body>
+
+    <div class="orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+
+    <div class="stage hidden" id="stage">
+        <div class="song-title hidden" id="song-title"></div>
+        <div class="current" id="current"></div>
+        <div class="next" id="next">⬇ Siguiente</div>
+        <div class="ref-info hidden" id="ref-info"></div>
+    </div>
+
+    <div id="messages"></div>
+    <div id="info">Sala: <span id="room-name">—</span> <span id="status-dot" class="off"></span></div>
+
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
+    <script>
+        // ─── FIREBASE ──────────────────────────────────────────────────────
+        firebase.initializeApp({
+            apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
+            authDomain: "browser-songs.firebaseapp.com",
+            databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
+            projectId: "browser-songs"
+        });
+        const db = firebase.database();
+
+        // ─── PARÁMETROS DE URL ──────────────────────────────────────────
+        const params = new URLSearchParams(location.search);
+        const room = params.get('room') || 'iglesia';
+        const offset = parseInt(params.get('offset')) || 0;
+        document.getElementById('room-name').textContent = room;
+
+        // ─── ELEMENTOS ──────────────────────────────────────────────────
+        const stageEl = document.getElementById('stage');
+        const titleEl = document.getElementById('song-title');
+        const currentEl = document.getElementById('current');
+        const nextEl = document.getElementById('next');
+        const refInfo = document.getElementById('ref-info');
+        const messagesEl = document.getElementById('messages');
+        const dot = document.getElementById('status-dot');
+
+        let currentData = null;
+        let messageTimer = null;
+
+        // ─── FUNCIÓN PARA MOSTRAR DATOS (con corrección automática de desfase) ──
+        function showLyric(data) {
+            if (!data || data.blank || data.stop) {
+                stageEl.classList.add('hidden');
+                dot.className = 'off';
+                return;
+            }
+
+            let estrofas = data.estrofas || [data.estrofa];
+            let idx = data.idx || 0;
+
+            // 🔥 CORRECCIÓN DE DESFASE AUTOMÁTICA
+            // Si el índice parece estar en base 1 (idx > 0 y la primera estrofa no está vacía),
+            // y el texto de la estrofa actual no coincide con estrofas[idx], restamos 1.
+            let corrected = false;
+            if (estrofas.length > 1 && idx > 0 && idx < estrofas.length) {
+                const expected = data.estrofa || '';
+                const actual = estrofas[idx] || '';
+                if (expected && actual && expected !== actual) {
+                    // Si el texto no coincide, probamos con idx-1
+                    const prevActual = estrofas[idx - 1] || '';
+                    if (expected === prevActual) {
+                        idx = idx - 1;
+                        corrected = true;
+                    }
+                }
+            }
+
+            // Aplicar offset manual (por si se necesita)
+            idx = idx + offset;
+            if (idx < 0) idx = 0;
+            if (idx >= estrofas.length) idx = estrofas.length - 1;
+
+            if (corrected) {
+                console.log('✅ Desfase corregido automáticamente. Nuevo idx:', idx);
+            }
+
+            const currentText = estrofas[idx] || data.estrofa || '';
+            const nextText = (idx + 1 < estrofas.length) ? estrofas[idx + 1] : '';
+
+            // ── TÍTULO (más pequeño) ──
+            const showTitle = data.showTitle !== false && data.titulo && data.titulo.trim();
+            if (showTitle) {
+                titleEl.textContent = data.titulo;
+                titleEl.classList.remove('hidden');
+            } else {
+                titleEl.classList.add('hidden');
+            }
+
+            // ── ESTROFA ACTUAL (con animación) ──
+            currentEl.classList.remove('in', 'out');
+            currentEl.classList.add('out');
+            setTimeout(() => {
+                currentEl.textContent = currentText || ' ';
+                currentEl.classList.remove('out');
+                void currentEl.offsetWidth;
+                currentEl.classList.add('in');
+            }, 180);
+
+            // ── SIGUIENTE ESTROFA (mismo tamaño y legibilidad) ──
+            if (nextText) {
+                nextEl.textContent = nextText;
+                nextEl.classList.remove('empty');
+            } else {
+                nextEl.textContent = '⬇ Fin de la canción';
+                nextEl.classList.add('empty');
+            }
+
+            // ── REFERENCIA ──
+            const ref = data.reference || data.citation || '';
+            if (ref) {
+                refInfo.textContent = ref;
+                refInfo.classList.remove('hidden');
+            } else {
+                refInfo.classList.add('hidden');
+            }
+
+            stageEl.classList.remove('hidden');
+            dot.className = 'on';
+        }
+
+        // ─── ESCUCHAR CANCIÓN ──────────────────────────────────────────
+        db.ref(`rooms/${room}/currentSong`).on('value', (snap) => {
+            const data = snap.val();
+            currentData = data;
+            showLyric(data);
+        });
+
+        // ─── ESCUCHAR MENSAJES ──────────────────────────────────────────
+        db.ref(`rooms/${room}/messages`).on('child_added', (snap) => {
+            const msg = snap.val();
+            if (!msg) return;
+            const text = msg.texto || msg;
+            const item = document.createElement('div');
+            item.className = 'msg-item';
+            const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
+            item.innerHTML = `<span class="msg-time">${time}</span>${text}`;
+            messagesEl.appendChild(item);
+            messagesEl.classList.add('visible');
+            clearTimeout(messageTimer);
+            messageTimer = setTimeout(() => {
+                messagesEl.classList.remove('visible');
+            }, 5000);
+        });
+
+        // ─── INFORMACIÓN ────────────────────────────────────────────────
+        console.log('🎤 Stage iniciado. Sala:', room);
+        console.log('💡 Si ves desfase, usa ?offset=-1 en la URL');
+    </script>
+</body>
+</html>            color:rgba(255,255,255,0.7);
             display:none;
             transition:opacity 0.3s;
             z-index:10;
