@@ -2,119 +2,157 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
     <title>Stage - Presentador</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body {
-            background: #0a0a0f;
-            color: #f0ede8;
-            font-family: 'DM Sans', system-ui, sans-serif;
-            height: 100vh;
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            padding: 2vh 2vw;
+        /* ===== ESTILOS TOMADOS DE VIEWER.HTML ===== */
+        *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+        html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
+
+        .orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+        .orb{position:absolute;border-radius:50%;filter:blur(90px);animation:drift 18s ease-in-out infinite}
+        .orb1{width:70vw;height:70vw;background:#F5A623;opacity:.18;top:-15%;left:-15%;animation-delay:0s}
+        .orb2{width:50vw;height:50vw;background:#F5A623;opacity:.10;bottom:-10%;right:-10%;animation-delay:-7s}
+        .orb3{width:35vw;height:35vw;background:#fff;opacity:.04;top:40%;left:55%;animation-delay:-13s}
+        @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4%,6%) scale(1.05)}66%{transform:translate(-3%,3%) scale(.97)}}
+
+        .stage{
+            position:fixed;inset:0;z-index:1;
+            display:flex;flex-direction:column;
+            align-items:center;justify-content:center;
+            padding:4vh 6vw;
+            text-align:center;
+            transition:opacity .4s;
         }
-        #title {
-            font-size: clamp(1.8rem, 4vw, 4rem);
-            font-weight: 700;
-            letter-spacing: -0.02em;
-            margin-bottom: 2vh;
-            opacity: 0.8;
-            text-align: center;
-            text-transform: uppercase;
+        .stage.hidden{opacity:0;pointer-events:none}
+
+        .song-title{
+            font-family:system-ui,-apple-system,sans-serif;
+            font-weight:700;
+            line-height:1.1;
+            text-transform:uppercase;
+            letter-spacing:-.02em;
+            margin-bottom:2vh;
+            opacity:.7;
+            transition:font-size .3s;
+            font-size:clamp(1.8rem,4vw,4rem);
         }
-        #current {
-            font-size: clamp(3rem, 8vw, 8rem);
-            font-weight: 600;
-            line-height: 1.3;
-            text-align: center;
-            white-space: pre-wrap;
-            max-width: 90vw;
-            padding: 2vh 2vw;
-            background: rgba(255,255,255,0.04);
-            border-radius: 20px;
-            border: 1px solid rgba(255,255,255,0.06);
-            backdrop-filter: blur(10px);
-            min-height: 20vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
+        .song-title.hidden{display:none}
+
+        .current{
+            font-family:system-ui,-apple-system,sans-serif;
+            font-weight:600;
+            line-height:1.4;
+            text-transform:uppercase;
+            letter-spacing:.02em;
+            white-space:pre-wrap;
+            max-width:94vw;
+            font-size:clamp(3rem,8vw,8rem);
+            padding:1vh 2vw;
+            background:rgba(255,255,255,0.04);
+            border-radius:20px;
+            border:1px solid rgba(255,255,255,0.06);
+            backdrop-filter:blur(10px);
+            min-height:20vh;
+            display:flex;
+            align-items:center;
+            justify-content:center;
+            width:100%;
+            transition:opacity .2s,transform .2s;
         }
-        #next {
-            font-size: clamp(1.2rem, 2.5vw, 2.5rem);
-            font-weight: 400;
-            color: rgba(255,255,255,0.3);
-            text-align: center;
-            white-space: pre-wrap;
-            margin-top: 3vh;
-            padding: 1.5vh 2vw;
-            border-top: 1px solid rgba(255,255,255,0.06);
-            max-width: 80vw;
-            min-height: 8vh;
+        .current.out{opacity:0;transform:translateY(14px)}
+        .current.in{animation:lyricIn .35s ease forwards}
+
+        .next{
+            font-family:system-ui,-apple-system,sans-serif;
+            font-weight:400;
+            line-height:1.4;
+            text-transform:uppercase;
+            letter-spacing:.02em;
+            white-space:pre-wrap;
+            max-width:80vw;
+            font-size:clamp(1.2rem,2.5vw,2.5rem);
+            color:rgba(255,255,255,0.35);
+            margin-top:3vh;
+            padding-top:2vh;
+            border-top:1px solid rgba(255,255,255,0.06);
+            min-height:8vh;
+            transition:opacity .2s;
         }
-        #messages {
-            position: fixed;
-            bottom: 2vh;
-            right: 2vw;
-            background: rgba(0,0,0,0.7);
-            backdrop-filter: blur(12px);
-            border: 1px solid rgba(255,255,255,0.08);
-            border-radius: 12px;
-            padding: 12px 18px;
-            max-width: 40vw;
-            max-height: 30vh;
-            overflow-y: auto;
-            font-size: 0.9rem;
-            color: rgba(255,255,255,0.7);
-            display: none;
-            transition: opacity 0.3s;
-            z-index: 10;
+        .next.empty{opacity:0.2;font-style:italic}
+
+        @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+
+        .ref-info{
+            position:absolute;bottom:5vh;left:50%;transform:translateX(-50%);
+            font-family:system-ui,-apple-system,sans-serif;
+            font-weight:400;
+            color:rgba(255,255,255,.45);
+            letter-spacing:.04em;
+            text-align:center;
+            max-width:80vw;
+            transition:opacity .3s,font-size .3s;
         }
-        #messages.visible { display: block; }
-        .msg-item {
-            padding: 4px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            font-size: 0.85rem;
+        .ref-info.hidden{opacity:0}
+
+        /* Mensajes (notificaciones) */
+        #messages{
+            position:fixed;bottom:2vh;right:2vw;
+            background:rgba(0,0,0,0.7);
+            backdrop-filter:blur(12px);
+            border:1px solid rgba(255,255,255,0.08);
+            border-radius:12px;
+            padding:12px 18px;
+            max-width:40vw;
+            max-height:30vh;
+            overflow-y:auto;
+            font-size:0.9rem;
+            color:rgba(255,255,255,0.7);
+            display:none;
+            transition:opacity 0.3s;
+            z-index:10;
         }
-        .msg-time {
-            color: rgba(255,255,255,0.25);
-            font-size: 0.7rem;
-            margin-right: 8px;
+        #messages.visible{display:block}
+        .msg-item{padding:4px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:0.85rem}
+        .msg-time{color:rgba(255,255,255,0.25);font-size:0.7rem;margin-right:8px}
+        #info{
+            position:fixed;bottom:2vh;left:2vw;
+            font-size:0.7rem;
+            color:rgba(255,255,255,0.15);
+            letter-spacing:1px;
         }
-        #info {
-            position: fixed;
-            bottom: 2vh;
-            left: 2vw;
-            font-size: 0.7rem;
-            color: rgba(255,255,255,0.15);
-            letter-spacing: 1px;
+        #status-dot{
+            width:10px;height:10px;border-radius:50%;
+            display:inline-block;margin-right:6px;
         }
-        #status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            display: inline-block;
-            margin-right: 6px;
-        }
-        .on { background: #00ff88; box-shadow: 0 0 12px #00ff88; }
-        .off { background: #ff2244; box-shadow: 0 0 8px rgba(255,34,68,0.4); }
+        .on{background:#00ff88;box-shadow:0 0 12px #00ff88}
+        .off{background:#ff2244;box-shadow:0 0 8px rgba(255,34,68,0.4)}
     </style>
 </head>
 <body>
-    <div id="title">—</div>
-    <div id="current">Esperando datos...</div>
-    <div id="next">⬇ Siguiente</div>
+
+    <!-- ORBS (fondo animado) -->
+    <div class="orbs">
+        <div class="orb orb1"></div>
+        <div class="orb orb2"></div>
+        <div class="orb orb3"></div>
+    </div>
+
+    <div class="stage hidden" id="stage">
+        <div class="song-title hidden" id="song-title"></div>
+        <div class="current" id="current"></div>
+        <div class="next" id="next">⬇ Siguiente</div>
+        <div class="ref-info hidden" id="ref-info"></div>
+    </div>
+
     <div id="messages"></div>
     <div id="info">Sala: <span id="room-name">—</span> <span id="status-dot" class="off"></span></div>
 
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+
     <script>
+        // ─── FIREBASE ──────────────────────────────────────────────────────
         firebase.initializeApp({
             apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
             authDomain: "browser-songs.firebaseapp.com",
@@ -123,56 +161,115 @@
         });
         const db = firebase.database();
 
+        // ─── PARÁMETROS DE URL ──────────────────────────────────────────
         const params = new URLSearchParams(location.search);
         const room = params.get('room') || 'iglesia';
+        const offset = parseInt(params.get('offset')) || 0; // Permite ajustar manualmente
         document.getElementById('room-name').textContent = room;
 
-        const titleEl = document.getElementById('title');
+        // ─── ELEMENTOS ──────────────────────────────────────────────────
+        const stageEl = document.getElementById('stage');
+        const titleEl = document.getElementById('song-title');
         const currentEl = document.getElementById('current');
         const nextEl = document.getElementById('next');
+        const refInfo = document.getElementById('ref-info');
         const messagesEl = document.getElementById('messages');
         const dot = document.getElementById('status-dot');
 
+        // ─── ESTADO ──────────────────────────────────────────────────────
         let currentData = null;
         let messageTimer = null;
 
-        db.ref(`rooms/${room}/currentSong`).on('value', (snap) => {
-            const data = snap.val();
+        // ─── FUNCIÓN PARA MOSTRAR DATOS ──────────────────────────────
+        function showLyric(data) {
             if (!data || data.blank || data.stop) {
-                titleEl.textContent = '—';
-                currentEl.textContent = 'Esperando canción...';
-                nextEl.textContent = '⬇ Siguiente';
+                stageEl.classList.add('hidden');
                 dot.className = 'off';
                 return;
             }
 
-            currentData = data;
-            dot.className = 'on';
+            // Extraer estrofas y índice (corrigiendo desfase)
+            let estrofas = data.estrofas || [data.estrofa];
+            let idx = data.idx || 0;
 
-            titleEl.textContent = data.titulo || 'Sin título';
+            // 🔥 CORRECCIÓN DE DESFASE: Si el índice parece estar en base 1
+            // y hay más de una estrofa, restamos 1.
+            if (estrofas.length > 1 && idx > 0 && idx < estrofas.length) {
+                // Verificamos si el texto de la estrofa idx (base 0) coincide con la estrofa actual
+                // que recibimos en data.estrofa (si viene separado)
+                const expected = data.estrofa || '';
+                const actual = estrofas[idx] || '';
+                // Si no coinciden, es probable que el índice esté corrido
+                if (expected && actual && expected !== actual) {
+                    // Intentamos restar 1
+                    idx = idx - 1;
+                }
+            }
+            // Aplicar offset manual (por si se necesita)
+            idx = idx + offset;
+            // Asegurar que no se salga del rango
+            if (idx < 0) idx = 0;
+            if (idx >= estrofas.length) idx = estrofas.length - 1;
 
-            const estrofas = data.estrofas || [data.estrofa];
-            const idx = data.idx || 0;
             const currentText = estrofas[idx] || data.estrofa || '';
-            currentEl.textContent = currentText;
+            const nextText = (idx + 1 < estrofas.length) ? estrofas[idx + 1] : '';
 
-            if (idx + 1 < estrofas.length) {
-                nextEl.textContent = estrofas[idx + 1] || '⬇ Siguiente';
+            // ── TÍTULO ──
+            const showTitle = data.showTitle !== false && data.titulo && data.titulo.trim();
+            if (showTitle) {
+                titleEl.textContent = data.titulo;
+                titleEl.classList.remove('hidden');
+            } else {
+                titleEl.classList.add('hidden');
+            }
+
+            // ── ESTROFA ACTUAL (con animación) ──
+            currentEl.classList.remove('in', 'out');
+            currentEl.classList.add('out');
+            setTimeout(() => {
+                currentEl.textContent = currentText || ' ';
+                currentEl.classList.remove('out');
+                void currentEl.offsetWidth;
+                currentEl.classList.add('in');
+            }, 180);
+
+            // ── SIGUIENTE ESTROFA ──
+            if (nextText) {
+                nextEl.textContent = nextText;
+                nextEl.classList.remove('empty');
             } else {
                 nextEl.textContent = '⬇ Fin de la canción';
+                nextEl.classList.add('empty');
             }
+
+            // ── REFERENCIA / CITA (opcional) ──
+            const ref = data.reference || data.citation || '';
+            if (ref) {
+                refInfo.textContent = ref;
+                refInfo.classList.remove('hidden');
+            } else {
+                refInfo.classList.add('hidden');
+            }
+
+            stageEl.classList.remove('hidden');
+            dot.className = 'on';
+        }
+
+        // ─── ESCUCHAR CANCIÓN EN TIEMPO REAL ──────────────────────────
+        db.ref(`rooms/${room}/currentSong`).on('value', (snap) => {
+            const data = snap.val();
+            currentData = data;
+            showLyric(data);
         });
 
+        // ─── ESCUCHAR MENSAJES ──────────────────────────────────────────
         db.ref(`rooms/${room}/messages`).on('child_added', (snap) => {
             const msg = snap.val();
             if (!msg) return;
-            showMessage(msg.texto || msg);
-        });
-
-        function showMessage(text) {
+            const text = msg.texto || msg;
             const item = document.createElement('div');
             item.className = 'msg-item';
-            const time = new Date().toLocaleTimeString();
+            const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
             item.innerHTML = `<span class="msg-time">${time}</span>${text}`;
             messagesEl.appendChild(item);
             messagesEl.classList.add('visible');
@@ -180,7 +277,20 @@
             messageTimer = setTimeout(() => {
                 messagesEl.classList.remove('visible');
             }, 5000);
+        });
+
+        // ─── RECALCULAR TAMAÑO DE FUENTE (opcional) ──────────────────
+        // No es necesario porque usamos clamp, pero podemos ajustar
+        // si el texto es muy largo.
+        function adjustFontSize() {
+            // El tamaño ya es responsivo con clamp
         }
+        window.addEventListener('resize', adjustFontSize);
+
+        // ─── MOSTRAR VERSIÓN DEL SISTEMA ──────────────────────────────
+        console.log('Stage iniciado - sala:', room);
+        console.log('Offset aplicado:', offset);
+        console.log('Si ves desfase, ajusta con ?offset=-1 en la URL');
     </script>
 </body>
 </html>
