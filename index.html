@@ -7,7 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <style>
-/* ===== TODOS LOS ESTILOS (los mismos que antes) ===== */
+/* ===== TODOS LOS ESTILOS ===== */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -190,7 +190,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .song-row{transition:background .1s,transform .1s}
 .song-row.pressing{background:rgba(245,166,35,.08)!important;transform:scale(.985)}
 
-#btn-settings{position:fixed;top:14px;right:14px;z-index:30;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
+#btn-settings{position:fixed;top:14px;right:14px;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
 #btn-settings:hover{border-color:var(--accent);transform:rotate(60deg)}
 
 .color-pick-wrap{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:transparent;cursor:pointer;transition:border-color .15s}
@@ -296,10 +296,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 
   <!-- MENSAJES VIEW -->
   <div class="view" id="view-messages">
-    <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-      <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1; min-width:150px;">
-      <button class="mbtn pri" id="msg-send" style="flex:0;">Enviar</button>
-      <button class="mbtn sec" id="msg-clear" style="flex:0;">🗑 Limpiar</button>
+    <div style="display:flex; gap:10px; margin-bottom:16px;">
+      <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1;">
+      <button class="mbtn pri" id="msg-send" style="flex:0">Enviar</button>
     </div>
     <div id="msg-history" style="max-height:400px; overflow-y:auto; background:var(--surface); border-radius:12px; padding:12px;"></div>
   </div>
@@ -491,6 +490,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
     <!-- MISC PANEL -->
     <div class="admin-panel" id="ap-misc" style="overflow-y:auto;flex:1">
       <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Exportación HTML</div>
+
       <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
         <div>
           <div style="font-size:13px;font-weight:500">Mostrar botón HTML</div>
@@ -498,6 +498,8 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
         </div>
         <button id="btn-html-toggle" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;min-width:70px;transition:all .2s">Oculto</button>
       </div>
+
+      <!-- Style picker -->
       <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
         <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Diseño de portada</div>
         <div style="display:flex;gap:6px;flex-wrap:wrap" id="misc-style-pick">
@@ -509,6 +511,8 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
           <button class="spbtn" data-mstyle="nature">Naturaleza</button>
         </div>
       </div>
+
+      <!-- Color picker -->
       <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
         <div>
           <div style="font-size:13px;font-weight:500">Color de acento</div>
@@ -562,16 +566,39 @@ const db = firebase.database();
 // ============================================================
 // FUNCIONES DE AYUDA
 // ============================================================
-function getRoom() {
-  return localStorage.getItem('pres_room') || 'iglesia';
-}
-function getFirebaseDb() { return db; }
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&','<':'<','>':'>','"':'&quot;'}[c]));}
 function hlHtml(text,q){ if(!q||q.length<2)return esc(text); const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"); return esc(text).replace(re,m=>`<mark>${m}</mark>`); }
 function snip(text,q){ if(!q||q.length<2||!text)return null; const i=text.toLowerCase().indexOf(q.toLowerCase()); if(i===-1)return null; const s=Math.max(0,i-25),e=Math.min(text.length,i+q.length+45); return(s>0?"…":"")+text.slice(s,e)+(e<text.length?"…":""); }
 function slimSong(s){ return{id:s.id,t:s.title||s.t||"",a:s.artist||s.a||"", l:s.lyrics?.full_text||s.l||"", p:s.lyrics?.paragraphs?.map(p=>({d:p.description||p.d||"",x:p.text||p.x||""}))||s.p||[]}; }
 function toHolyricsFormat(s){ return{id:s.id,title:s.t,artist:s.a,author:"",note:"",copyright:"",language:"",key:"",bpm:0.0,time_sig:"",midi:null,order:"",arrangements:[], lyrics:{full_text:s.l,full_text_with_comment:null, paragraphs:s.p.map((par,i)=>({number:i+1,description:par.d,text:par.x,text_with_comment:null,translations:null}))}, streaming:null,extras:null}; }
 function uid(){return Date.now()+"_"+Math.random().toString(36).slice(2,7);}
+
+function getRoom() {
+  return localStorage.getItem('pres_room') || 'iglesia';
+}
+
+function getFirebaseDb() {
+  try {
+    return db;
+  } catch(e) {
+    console.error("Error obteniendo Firebase DB:", e);
+    return null;
+  }
+}
+
+function toast(msg, ms=2200) {
+  const el = document.getElementById("toast") || (()=>{
+    const t=document.createElement("div");
+    t.id="toast";
+    t.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s";
+    document.body.appendChild(t);
+    return t;
+  })();
+  el.textContent = msg;
+  el.style.opacity = "1";
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = "0", ms);
+}
 
 // ============================================================
 // STATE
@@ -726,10 +753,9 @@ function initDragDrop() {
 }
 
 // ============================================================
-// LISTS (con logs y manejo de errores)
+// LISTS
 // ============================================================
 function renderLists(){
-  console.log('📋 Renderizando listas...', LISTS);
   updateBadge();
   const c=document.getElementById("lists-con");
   if(!LISTS.length){
@@ -775,7 +801,7 @@ function renderLists(){
             <span class="color-pick-label">Color:</span>
             <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||liveConfig.color||'#E55A00'}">
           </label>
-          <button class="exp-btn html" onclick="exportList('${lst.id}','html')" style="display:${_showHtmlExport ? 'block' : 'none'}">⬇ HTML</button>
+          <button class="exp-btn html" onclick="exportList('${lst.id}','html')" style="display:none">⬇ HTML</button>
           <button class="exp-btn live" onclick="exportList('${lst.id}','live')">🌐 Ver en vivo</button>
           <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 Imprimir PDF</button>
         </div>
@@ -830,14 +856,9 @@ function renameList(lid){
   const l=LISTS.find(x=>x.id===lid);if(!l)return;
   openNameModal(l.name,n=>{l.name=n;saveLists();renderLists();});
 }
-function presentFromList(lid, sid) {
-  const song = SONGS.find(s => s.id === sid);
-  if (!song) return;
-  presentSong(song);
-}
 
 // ============================================================
-// PRESENT SONG
+// PRESENT SONG (envía todas las estrofas a Firebase)
 // ============================================================
 function presentSong(song) {
   const room = getRoom();
@@ -874,7 +895,423 @@ function presentSong(song) {
       toast("❌ Error al presentar: " + err.message);
     });
 
+  // Abrir panel presentador
   openPresenter(song);
+}
+
+function presentFromList(lid, sid) {
+  const song = SONGS.find(s => s.id === sid);
+  if (!song) return;
+  presentSong(song);
+}
+
+// ============================================================
+// EXPORT LIST
+// ============================================================
+function buildExportHTML(lst, isLive = false) {
+  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  const songsData = JSON.stringify(songs.map(s => ({
+    title: s.t || "Sin título",
+    artist: s.a || "",
+    letra: (s.p?.length ? s.p.map(p => p.x || "").join("\n\n") : s.l || ""),
+    stanzas: (s.p || []).map(p => ({ d: p.d || "", x: p.x || "" }))
+  })));
+  const hex = lst.color || liveConfig.color || "#E55A00";
+  const r = parseInt(hex.slice(1,3), 16), g = parseInt(hex.slice(3,5), 16), b = parseInt(hex.slice(5,7), 16);
+  const style = lst.style || liveConfig.style || "minimal";
+  const title = isLive ? liveConfig.title || lst.name : lst.name;
+  const tag = liveConfig.tag || "#Iglesia · Rosario";
+  const footer = liveConfig.footer || "IEMA · Rosario";
+
+  let logoSVG = '';
+  if (liveConfig.logo) {
+    logoSVG = `<img src="${liveConfig.logo}" style="max-height:40px;max-width:120px;object-fit:contain;display:block;margin:0 auto 8px">`;
+  }
+
+  const acScript = `<script>
+    const songs = ${songsData};
+    document.addEventListener('DOMContentLoaded', () => {
+      const list = document.getElementById('song-list');
+      songs.forEach((s, i) => {
+        const wrap = document.createElement('div');
+        wrap.className = 'ac-item';
+        const stanzasHTML = s.stanzas && s.stanzas.length
+          ? s.stanzas.map(p => \`<div class="stanza">\${p.d ? \`<div class="stanza-label">\${p.d}</div>\` : ''}
+            <div class="stanza-text">\${p.x}</div></div>\`).join('')
+          : \`<div class="stanza"><div class="stanza-text">\${s.letra}</div></div>\`;
+        wrap.innerHTML = \`<div class="ac-hdr">
+          <span class="ac-num">\${String(i+1).padStart(2,'0')}</span>
+          <span class="ac-title">\${s.title}</span>
+          <span class="ac-icon">+</span>
+        </div>
+        <div class="ac-body"><div class="ac-inner">\${stanzasHTML}</div></div>\`;
+        wrap.querySelector('.ac-hdr').addEventListener('click', () => {
+          const open = wrap.classList.contains('open');
+          document.querySelectorAll('.ac-item.open').forEach(x => x.classList.remove('open'));
+          if (!open) wrap.classList.add('open');
+        });
+        list.appendChild(wrap);
+      });
+    });
+  <\/script>`;
+
+  // Estilo minimalista
+  if (style === "minimal") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--bg:#080808;--tx:#DEDAD4;--mu:#444;--br:#1C1C1C}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--tx);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+header{padding:72px 28px 56px;max-width:680px;margin:0 auto}
+.hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--a);margin-bottom:18px}
+h1{font-size:clamp(36px,9vw,72px);font-weight:700;line-height:1.0;letter-spacing:-1px}
+h1 span{color:var(--a)}
+.hc{margin-top:14px;font-size:13px;color:var(--mu)}
+main{max-width:680px;margin:0 auto;padding:0 28px 100px}
+.ac-item{border-top:1px solid var(--br)}
+.ac-item:last-child{border-bottom:1px solid var(--br)}
+.ac-hdr{display:flex;align-items:center;gap:18px;padding:22px 0;cursor:pointer;user-select:none}
+.ac-num{font-size:11px;color:var(--mu);min-width:22px;font-variant-numeric:tabular-nums}
+.ac-title{flex:1;font-size:16px;font-weight:500;transition:color .2s;color:#DEDAD4}
+.ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--a)}
+.ac-icon{font-size:22px;color:var(--mu);transition:transform .3s,color .2s;line-height:1}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:var(--a)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 40px}
+.stanza{margin-bottom:22px}
+.stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--mu);margin-bottom:8px}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(222,218,212,0.9)}
+footer{text-align:center;padding:32px;color:var(--mu);font-size:12px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<header><div class="hl">${esc(tag)}</div>
+<h1>${esc(title).toUpperCase().split(" ").map((w,i)=>i===0?`<span>${w}</span>`:w).join(" ")}</h1>
+<div class="hc">${songs.length} canciones</div></header>
+<main id="song-list"></main>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // Estilo aesthetic
+  if (style === "aesthetic") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--bg:#0C0A08;--tx:#EDE8E0;--mu:#5C5650;--br:#231F1B;--sur:#141210}
+body{background:var(--bg);color:var(--tx);font-family:'DM Sans',sans-serif;min-height:100vh}
+.hero{min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;position:relative;overflow:hidden;padding:40px 24px}
+.hero::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 80%,rgba(${r},${g},${b},0.6),transparent 70%)}
+.hero-tag{font-size:11px;letter-spacing:5px;text-transform:uppercase;color:var(--a);margin-bottom:28px;opacity:.8}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(48px,14vw,120px);font-weight:600;line-height:.95;text-align:center;letter-spacing:-2px}
+.hero-title em{color:var(--a);font-style:italic}
+.hero-sub{margin-top:32px;font-size:13px;color:var(--mu);letter-spacing:2px;text-transform:uppercase}
+.hero-line{width:1px;height:64px;background:linear-gradient(var(--a),transparent);margin:40px auto 0;opacity:.5}
+.wrap{max-width:720px;margin:0 auto;padding:80px 28px 100px}
+.sec-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--mu);margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid var(--br)}
+.ac-item{border-bottom:1px solid var(--br)}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:26px 0;cursor:pointer;user-select:none}
+.ac-num{font-family:'Cormorant Garamond',serif;font-size:13px;color:var(--mu);font-style:italic}
+.ac-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:600;transition:color .25s;color:#EDE8E0}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:var(--a)}
+.ac-icon{width:24px;height:24px;border-radius:50%;border:1px solid var(--br);display:flex;align-items:center;justify-content:center;font-size:14px;color:var(--mu);transition:all .3s;flex-shrink:0;justify-self:end}
+.ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:8px 0 36px 52px}
+.stanza{margin-bottom:24px}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--a);opacity:.6;margin-bottom:10px}
+.stanza-text{font-size:14px;line-height:2.2;white-space:pre-wrap;text-transform:uppercase;color:rgba(237,232,224,0.9)}
+footer{text-align:center;padding:48px 24px;color:var(--mu);font-size:12px;letter-spacing:2px;text-transform:uppercase;border-top:1px solid var(--br)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title).split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="hero-line"></div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // Estilo glass
+  if (style === "glass") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--a:${hex};--r:${r};--g:${g};--b:${b}}
+body{background:#030308;color:#fff;font-family:'Inter',system-ui,sans-serif;min-height:100vh;overflow-x:hidden}
+.orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
+.orb{position:absolute;border-radius:50%;filter:blur(80px);opacity:.18}
+.orb1{width:600px;height:600px;background:${hex};top:-200px;left:-100px}
+.orb2{width:400px;height:400px;background:rgba(${r},${g},${b},.8);bottom:-150px;right:-100px;opacity:.12}
+.orb3{width:300px;height:300px;background:#6366f1;top:40%;left:60%;opacity:.08}
+.hero{position:relative;z-index:1;min-height:100svh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:40px 24px;text-align:center}
+.glass-tag{background:rgba(${r},${g},${b},.15);border:1px solid rgba(${r},${g},${b},.3);backdrop-filter:blur(12px);border-radius:999px;padding:7px 18px;font-size:11px;letter-spacing:3px;text-transform:uppercase;color:var(--a);margin-bottom:32px;display:inline-block}
+h1{font-size:clamp(44px,12vw,110px);font-weight:700;line-height:1;letter-spacing:-2px;background:linear-gradient(135deg,#fff 30%,var(--a));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-count{margin-top:20px;font-size:13px;color:rgba(255,255,255,.35);letter-spacing:1px}
+.hero-arrow{margin-top:48px;width:40px;height:40px;border-radius:50%;border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.3);font-size:18px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(6px)}}
+.content{position:relative;z-index:1;max-width:740px;margin:0 auto;padding:80px 20px 100px}
+.ac-item{margin-bottom:8px}
+.ac-hdr{display:flex;align-items:center;gap:14px;padding:18px 20px;cursor:pointer;user-select:none;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.07);backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);transition:background .2s,border-color .2s}
+.ac-item:hover .ac-hdr,.ac-item.open .ac-hdr{background:rgba(${r},${g},${b},.1);border-color:rgba(${r},${g},${b},.35)}
+.ac-num{font-size:12px;color:var(--a);font-weight:600;min-width:24px;font-variant-numeric:tabular-nums}
+.ac-title{flex:1;font-size:15px;font-weight:500;letter-spacing:.2px;color:#fff}
+.ac-icon{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:14px;color:rgba(255,255,255,.4);transition:all .3s;flex-shrink:0}
+.ac-item.open .ac-icon{background:var(--a);border-color:var(--a);color:#000;transform:rotate(45deg);box-shadow:0 0 14px rgba(${r},${g},${b},.5)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .45s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.05);border-top:none;border-radius:0 0 14px 14px;padding:24px 24px 28px;backdrop-filter:blur(8px)}
+.stanza{margin-bottom:20px}
+.stanza:last-child{margin-bottom:0}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:rgba(${r},${g},${b},.7);margin-bottom:8px}
+.stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,0.9)}
+footer{position:relative;z-index:1;text-align:center;padding:40px 24px;color:rgba(255,255,255,.15);font-size:12px;letter-spacing:1px}
+</style>
+</head>
+<body>
+<div class="orbs"><div class="orb orb1"></div><div class="orb orb2"></div><div class="orb orb3"></div></div>
+<div class="hero">
+  <span class="glass-tag">${esc(tag)}</span>
+  <h1>${esc(title).toUpperCase()}</h1>
+  <div class="hero-count">${songs.length} canciones</div>
+  <div class="hero-arrow">↓</div>
+</div>
+<div class="content" id="song-list"></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // Estilo vintage
+  if (style === "vintage") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,400&family=DM+Serif+Display:ital@0;1&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#F5F0E8;color:#3C2E22;font-family:'DM Serif Display',serif;min-height:100vh}
+.hero{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:linear-gradient(135deg,#E8DCC8 0%,#D4C4B0 100%);position:relative}
+.hero::after{content:'';position:absolute;inset:0;background:url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23b8a08a' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E")}
+.hero > *{position:relative;z-index:1}
+.hero-tag{font-size:11px;letter-spacing:4px;text-transform:uppercase;color:#8B7355;margin-bottom:20px}
+.hero-title{font-family:'Playfair Display',serif;font-size:clamp(40px,12vw,96px);font-weight:700;line-height:1;color:#2C1F16}
+.hero-title em{font-style:italic;color:#8B7355}
+.hero-sub{margin-top:20px;font-size:14px;color:#8B7355;letter-spacing:2px}
+.v-line{width:60px;height:2px;background:#8B7355;margin:28px auto 0;opacity:.4}
+.wrap{max-width:720px;margin:0 auto;padding:60px 28px 80px}
+.sec-label{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#8B7355;margin-bottom:40px;padding-bottom:16px;border-bottom:2px solid #E8DCC8}
+.ac-item{border-bottom:1px solid #E8DCC8}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:22px 0;cursor:pointer;user-select:none}
+.ac-num{font-family:'Playfair Display',serif;font-size:14px;color:#8B7355;font-style:italic}
+.ac-title{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;transition:color .3s;color:#2C1F16}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:#8B7355}
+.ac-icon{font-size:20px;color:#C4B5A0;transition:transform .3s}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:#8B7355}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 52px}
+.stanza{margin-bottom:20px}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#8B7355;margin-bottom:8px;font-family:'DM Serif Display',serif;font-style:italic}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:#4D3F32}
+footer{text-align:center;padding:40px 24px;color:#8B7355;font-size:12px;letter-spacing:2px;border-top:2px solid #E8DCC8}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title).toUpperCase().split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="v-line"></div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // Estilo neon
+  if (style === "neon") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#0A0A12;color:#fff;font-family:'Orbitron',monospace;min-height:100vh}
+.hero{min-height:60vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:radial-gradient(ellipse at center, rgba(${r},${g},${b},0.15) 0%, transparent 70%)}
+.hero-tag{font-size:10px;letter-spacing:6px;text-transform:uppercase;color:rgba(${r},${g},${b},0.7);text-shadow:0 0 20px rgba(${r},${g},${b},0.3);margin-bottom:24px}
+.hero-title{font-size:clamp(36px,10vw,88px);font-weight:900;line-height:1;background:linear-gradient(135deg,#fff 20%,#${hex.slice(1)});-webkit-background-clip:text;-webkit-text-fill-color:transparent;text-shadow:0 0 40px rgba(${r},${g},${b},0.3)}
+.hero-sub{margin-top:20px;font-size:12px;color:rgba(255,255,255,.3);letter-spacing:4px}
+.neon-line{width:80px;height:2px;background:linear-gradient(90deg,transparent,rgba(${r},${g},${b},0.5),transparent);margin:30px auto 0}
+.wrap{max-width:720px;margin:0 auto;padding:60px 28px 80px}
+.sec-label{font-size:9px;letter-spacing:6px;text-transform:uppercase;color:rgba(255,255,255,.15);margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid rgba(255,255,255,.05)}
+.ac-item{border-bottom:1px solid rgba(255,255,255,.05)}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none}
+.ac-num{font-size:11px;color:rgba(${r},${g},${b},0.5);font-variant-numeric:tabular-nums}
+.ac-title{font-size:16px;font-weight:700;letter-spacing:1px;transition:color .3s;text-transform:uppercase;color:#fff}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:rgb(${r},${g},${b});text-shadow:0 0 20px rgba(${r},${g},${b},0.3)}
+.ac-icon{font-size:18px;color:rgba(255,255,255,.2);transition:transform .3s}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:rgb(${r},${g},${b})}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 52px}
+.stanza{margin-bottom:20px}
+.stanza-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:rgba(${r},${g},${b},0.5);margin-bottom:8px}
+.stanza-text{font-size:12px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(255,255,255,0.9)}
+footer{text-align:center;padding:40px 24px;color:rgba(255,255,255,.1);font-size:10px;letter-spacing:4px;border-top:1px solid rgba(255,255,255,.05)}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title)}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="neon-line"></div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // Estilo nature
+  if (style === "nature") return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<link href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{background:#1A241E;color:#D4C9B8;font-family:'Lora',serif;min-height:100vh}
+.hero{min-height:50vh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:60px 24px;text-align:center;background:linear-gradient(180deg,#1A241E 0%,#2A3A30 100%);position:relative}
+.hero::before{content:'🌿';position:absolute;top:20px;right:30px;font-size:36px;opacity:.1}
+.hero-tag{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:#7A9A7E;margin-bottom:20px}
+.hero-title{font-family:'Lora',serif;font-size:clamp(36px,10vw,80px);font-weight:600;line-height:1;color:#E8E0D4}
+.hero-title em{color:#7A9A7E;font-style:italic}
+.hero-sub{margin-top:20px;font-size:13px;color:#7A9A7E;letter-spacing:2px}
+.nature-leaf{font-size:28px;margin-top:24px;opacity:.3}
+.wrap{max-width:720px;margin:0 auto;padding:60px 28px 80px}
+.sec-label{font-size:9px;letter-spacing:4px;text-transform:uppercase;color:#7A9A7E;margin-bottom:40px;padding-bottom:16px;border-bottom:1px solid #2A3A30}
+.ac-item{border-bottom:1px solid #2A3A30}
+.ac-hdr{display:grid;grid-template-columns:36px 1fr 24px;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none}
+.ac-num{font-family:'Inter',sans-serif;font-size:11px;color:#7A9A7E;font-variant-numeric:tabular-nums}
+.ac-title{font-size:18px;font-weight:600;transition:color .3s;color:#D4C9B8}
+.ac-item.open .ac-title,.ac-item:hover .ac-title{color:#7A9A7E}
+.ac-icon{font-size:18px;color:#3A4A3E;transition:transform .3s}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:#7A9A7E}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 32px 52px}
+.stanza{margin-bottom:20px}
+.stanza-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:#7A9A7E;margin-bottom:8px}
+.stanza-text{font-size:14px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(212,201,184,0.9)}
+footer{text-align:center;padding:40px 24px;color:#3A4A3E;font-size:11px;letter-spacing:2px;border-top:1px solid #2A3A30}
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="hero-tag">${esc(tag)}</div>
+  <div class="hero-title">${esc(title).split(" ").map((w,i)=>i%2===1?`<em>${w}</em>`:w).join(" ")}</div>
+  <div class="hero-sub">${songs.length} canciones</div>
+  <div class="nature-leaf">🌿</div>
+</div>
+<div class="wrap"><div class="sec-label">Lista de canciones</div><div id="song-list"></div></div>
+<footer>${esc(footer)}</footer>
+${acScript}
+</body></html>`;
+
+  // Fallback minimal
+  return `<!DOCTYPE html>
+<html lang="es"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>${esc(title)}</title>
+<style>body{font-family:system-ui;background:#080808;color:#DEDAD4;padding:20px}</style>
+</head><body><h1>${esc(title)}</h1><p>Error: estilo no encontrado</p></body></html>`;
+}
+
+function exportList(lid, type) {
+  const lst = LISTS.find(l => l.id === lid);
+  if (!lst) return;
+
+  if (type === "html") {
+    const html = buildExportHTML(lst, false);
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(new Blob([html], { type: "text/html;charset=utf-8" }));
+    a.download = lst.name.replace(/[^a-z0-9áéíóúñü ]/gi,"_") + ".html";
+    a.click();
+    URL.revokeObjectURL(a.href);
+  } else if (type === "live") {
+    const html = buildExportHTML(lst, true);
+    const win = window.open("", "_blank");
+    win.document.write(html);
+    win.document.close();
+  } else {
+    // PDF
+    const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+    const indexRows = songs.map((s,i)=>`
+      <div class="idx-row">
+        <span class="idx-num">${String(i+1).padStart(2,'0')}</span>
+        <div class="idx-info">
+          <div class="idx-title">${esc(s.t||"Sin título")}</div>
+          ${s.a?`<div class="idx-artist">${esc(s.a)}</div>`:""}
+        </div>
+      </div>
+    `).join("");
+    const songsHTML = songs.map(s=>{
+      const stanzas = s.p && s.p.length ? s.p : [{d:"",x:s.l||""}];
+      const totalChars = stanzas.reduce((n,p)=>n+(p.x||"").length,0);
+      const isLong = totalChars > 500;
+      const body = stanzas.map(p=>`
+        ${p.d?`<div class="slabel">${esc(p.d)}</div>`:""}
+        <div class="stext">${esc(p.x||"")}</div>
+      `).join('<div class="sdiv"></div>');
+      return `<div class="page">
+        <div class="pheader">
+          <div class="ptitle">${esc(s.t||"Sin título")}</div>
+          ${s.a?`<div class="partist">${esc(s.a)}</div>`:""}
+        </div>
+        <div class="pbody${isLong?" two-col":""}">${body}</div>
+      </div>`;
+    }).join("");
+    const html = `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8">
+<title>${esc(lst.name)}</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:A4 portrait;margin:18mm 18mm}
+body{font-family:system-ui,-apple-system,sans-serif;color:#111;background:#fff}
+.idx-page{page-break-after:always;height:257mm;display:flex;flex-direction:column}
+.idx-header{flex-shrink:0;border-bottom:3px solid #000;padding-bottom:12px;margin-bottom:16px}
+.idx-list-title{font-size:26pt;font-weight:800;text-transform:uppercase;letter-spacing:-1px;line-height:1}
+.idx-list-sub{font-size:10pt;color:#777;margin-top:4px;letter-spacing:2px}
+.idx-body{flex:1;overflow:hidden;display:flex;flex-direction:column;gap:4px}
+.idx-row{display:flex;align-items:baseline;gap:10px;padding:6px 0;border-bottom:1px solid #eee}
+.idx-num{font-size:10pt;font-weight:700;color:#999;min-width:24px;text-align:right;font-variant-numeric:tabular-nums}
+.idx-info{flex:1;min-width:0}
+.idx-title{font-size:12pt;font-weight:600;text-transform:uppercase}
+.idx-artist{font-size:9pt;color:#999;margin-top:1px}
+.page{page-break-after:always;page-break-inside:avoid;height:257mm;display:flex;flex-direction:column}
+.page:last-child{page-break-after:avoid}
+.pheader{flex-shrink:0;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:10px}
+.ptitle{font-size:20pt;font-weight:700;text-transform:uppercase;letter-spacing:-.5px;line-height:1.1}
+.partist{font-size:9pt;color:#777;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
+.pbody{flex:1;overflow:hidden}
+.pbody.two-col{column-count:2;column-gap:24pt;column-fill:auto;height:100%}
+.slabel{font-size:7.5pt;font-weight:700;letter-spacing:3px;text-transform:uppercase;color:#999;margin:14px 0 4px;break-after:avoid}
+.stext{font-size:11.5pt;line-height:1.95;text-transform:uppercase;white-space:pre-wrap;break-inside:avoid}
+.sdiv{height:10px;break-inside:avoid}
+</style></head><body>
+<div class="idx-page">
+  <div class="idx-header">
+    <div class="idx-list-title">${esc(lst.name)}</div>
+    <div class="idx-list-sub">${songs.length} canciones · Lista de contenido</div>
+  </div>
+  <div class="idx-body">${indexRows}</div>
+</div>
+${songsHTML}
+</body></html>`;
+    const win = window.open("","_blank");
+    win.document.write(html);win.document.close();
+    win.onload = () => setTimeout(() => win.print(), 300);
+  }
 }
 
 // ============================================================
@@ -943,7 +1380,7 @@ function switchTab(id){
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.view)));
 
 // ============================================================
-// NEW LIST
+// NEW LIST FROM LISTS TAB
 // ============================================================
 document.getElementById("btn-newlist").addEventListener("click",()=>{
   openNameModal("",name=>{LISTS.push({id:uid(),name,songIds:[]});saveLists();renderLists();});
@@ -1118,6 +1555,7 @@ document.getElementById("btn-sala-save").addEventListener("click",()=>{
   localStorage.setItem("pres_room",val);
   st.textContent=`✓ Sala guardada: "${val}"`;st.className="mstatus ok";
   updateSalaUrl(val);
+  // Recargar mensajes con nueva sala
   loadMessages();
 });
 
@@ -1153,11 +1591,12 @@ document.getElementById("new-save").addEventListener("click",()=>{
 // ============================================================
 // HTML EXPORT TOGGLE
 // ============================================================
-let _showHtmlExport = localStorage.getItem("show_html_export") === "1";
-if (_showHtmlExport === null) _showHtmlExport = true; // Por defecto visible
+let _showHtmlExport=localStorage.getItem("show_html_export")==="1";
+let _htmlExportStyle=localStorage.getItem("html_export_style")||"minimal";
+let _htmlExportColor=localStorage.getItem("html_export_color")||"#E55A00";
 
 function applyHtmlExportToggle(){
-  document.querySelectorAll(".exp-btn.html").forEach(b=>{ b.style.display=_showHtmlExport?"block":"none"; });
+  document.querySelectorAll(".exp-btn.html").forEach(b=>{ b.style.display=_showHtmlExport?"":"none"; });
   const btn=document.getElementById("btn-html-toggle");
   if(btn){btn.textContent=_showHtmlExport?"Visible":"Oculto";btn.style.color=_showHtmlExport?"var(--accent)":"var(--muted)";}
 }
@@ -1170,125 +1609,195 @@ document.getElementById("btn-html-toggle").addEventListener("click",()=>{
   localStorage.setItem("show_html_export",_showHtmlExport?"1":"0");
   renderLists();applyHtmlExportToggle();
 });
-// ... resto igual ...
+document.querySelectorAll("#misc-style-pick .spbtn").forEach(b=>{
+  b.addEventListener("click",()=>{
+    _htmlExportStyle=b.dataset.mstyle;
+    localStorage.setItem("html_export_style",_htmlExportStyle);
+    applyMiscStyleUI();
+  });
+});
+document.getElementById("misc-color-pick").addEventListener("input",e=>{
+  _htmlExportColor=e.target.value;
+  localStorage.setItem("html_export_color",_htmlExportColor);
+});
 
 // ============================================================
-// EXPORT LIST (CORREGIDO CON LOGS)
+// LIVE EDITOR
 // ============================================================
-function exportList(lid, type) {
-  console.log(`📤 Exportando lista ${lid} tipo ${type}`);
-  const lst = LISTS.find(l => l.id === lid);
-  if (!lst) {
-    console.error('Lista no encontrada:', lid);
-    toast('❌ Lista no encontrada');
-    return;
-  }
-  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
-  console.log(`📝 Canciones en lista: ${songs.length}`);
-  if (!songs.length) {
-    toast('❌ La lista está vacía');
-    return;
-  }
-  if (type === 'html') {
-    // Generar HTML
-    const html = buildExportHTML(lst);
-    if (!html) {
-      toast('❌ Error generando HTML');
-      return;
-    }
-    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${lst.name.replace(/[^a-z0-9áéíóúñü ]/gi, '_')}.html`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
-    toast('✅ HTML descargado');
-  } else if (type === 'pdf') {
-    // Generar HTML para impresión
-    const html = buildExportHTML(lst);
-    const win = window.open('', '_blank', 'width=800,height=600');
-    if (!win) {
-      toast('❌ Permitir ventanas emergentes para PDF');
-      return;
-    }
-    win.document.write(html);
-    win.document.close();
-    win.onload = function() {
-      setTimeout(function() {
-        win.print();
-      }, 500);
+function updateLiveUI() {
+  document.getElementById("live-title").value = liveConfig.title || "";
+  document.getElementById("live-tag").value = liveConfig.tag || "";
+  document.getElementById("live-footer").value = liveConfig.footer || "";
+  document.getElementById("live-color").value = liveConfig.color || "#E55A00";
+  document.querySelectorAll("#mov-live .spbtn").forEach(b => { b.classList.toggle("active", b.dataset.lstyle === liveConfig.style); });
+}
+function updateLiveAdminUI() {
+  document.getElementById("live-title-admin").value = liveConfig.title || "";
+  document.getElementById("live-tag-admin").value = liveConfig.tag || "";
+  document.getElementById("live-footer-admin").value = liveConfig.footer || "";
+  document.getElementById("live-color-admin").value = liveConfig.color || "#E55A00";
+  document.querySelectorAll("#ap-live .spbtn").forEach(b => { b.classList.toggle("active", b.dataset.lstyleAdmin === liveConfig.style); });
+}
+function openLiveEditor() { updateLiveUI(); document.getElementById("mov-live").classList.add("open"); updateSettingsBtn(); }
+document.getElementById("live-close").addEventListener("click", () => { document.getElementById("mov-live").classList.remove("open"); updateSettingsBtn(); });
+
+document.getElementById("live-title").addEventListener("input", e => { liveConfig.title = e.target.value; saveLiveConfig(); });
+document.getElementById("live-tag").addEventListener("input", e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
+document.getElementById("live-footer").addEventListener("input", e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
+document.getElementById("live-color").addEventListener("input", e => { liveConfig.color = e.target.value; saveLiveConfig(); });
+document.querySelectorAll("#mov-live .spbtn").forEach(b => {
+  b.addEventListener("click", () => {
+    liveConfig.style = b.dataset.lstyle;
+    saveLiveConfig();
+    document.querySelectorAll("#mov-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
+  });
+});
+document.getElementById("live-logo").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      liveConfig.logo = ev.target.result;
+      saveLiveConfig();
+      document.getElementById("live-status").textContent = "✓ Logo cargado";
+      document.getElementById("live-status").className = "mstatus ok";
     };
-    toast('🖨️ Abriendo PDF para imprimir');
-  } else if (type === 'live') {
-    const html = buildExportHTML(lst);
-    const win = window.open('', '_blank');
-    win.document.write(html);
-    win.document.close();
-    toast('🌐 Vista en vivo abierta');
+    reader.readAsDataURL(file);
   }
-}
+});
+document.getElementById("live-publish").addEventListener("click", () => {
+  const st = document.getElementById("live-status");
+  st.textContent = "✓ Configuración publicada en vivo";
+  st.className = "mstatus ok";
+  toast("Configuración publicada ✓");
+});
+document.getElementById("live-reset").addEventListener("click", () => {
+  liveConfig = { title: "Cancionero", tag: "#Iglesia · Rosario", footer: "IEMA · Rosario", style: "minimal", color: "#E55A00", logo: null };
+  saveLiveConfig(); updateLiveUI();
+  document.getElementById("live-status").textContent = "✓ Restaurado a valores por defecto";
+  document.getElementById("live-status").className = "mstatus ok";
+});
+
+document.querySelectorAll("#ap-live .spbtn").forEach(b => {
+  b.addEventListener("click", () => {
+    liveConfig.style = b.dataset.lstyleAdmin;
+    saveLiveConfig();
+    document.querySelectorAll("#ap-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
+  });
+});
+document.getElementById("live-color-admin").addEventListener("input", e => { liveConfig.color = e.target.value; saveLiveConfig(); });
+document.getElementById("live-title-admin").addEventListener("input", e => { liveConfig.title = e.target.value; saveLiveConfig(); });
+document.getElementById("live-tag-admin").addEventListener("input", e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
+document.getElementById("live-footer-admin").addEventListener("input", e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
+document.getElementById("live-logo-admin").addEventListener("change", e => {
+  const file = e.target.files[0];
+  if (file) {
+    const reader = new FileReader();
+    reader.onload = ev => {
+      liveConfig.logo = ev.target.result;
+      saveLiveConfig();
+      document.getElementById("live-status-admin").textContent = "✓ Logo cargado";
+      document.getElementById("live-status-admin").className = "mstatus ok";
+    };
+    reader.readAsDataURL(file);
+  }
+});
+document.getElementById("live-publish-admin").addEventListener("click", () => {
+  const st = document.getElementById("live-status-admin");
+  st.textContent = "✓ Configuración publicada en vivo";
+  st.className = "mstatus ok";
+  toast("Configuración publicada ✓");
+});
 
 // ============================================================
-// BUILD EXPORT HTML (CORREGIDO)
+// UPDATE DB
 // ============================================================
-function buildExportHTML(lst) {
-  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
-  if (!songs.length) return null;
-  const hex = lst.color || liveConfig.color || '#E55A00';
-  const style = lst.style || liveConfig.style || 'minimal';
-  const title = lst.name || 'Lista';
-  const tag = liveConfig.tag || '#Iglesia · Rosario';
-  const footer = liveConfig.footer || 'IEMA · Rosario';
-  
-  // Generar contenido
-  let songsHTML = songs.map((s, i) => {
-    const stanzas = s.p && s.p.length ? s.p : [{ d: '', x: s.l || '' }];
-    const stanzasHTML = stanzas.map(p => `
-      <div class="stanza">
-        ${p.d ? `<div class="stanza-label">${esc(p.d)}</div>` : ''}
-        <div class="stanza-text">${esc(p.x || '')}</div>
-      </div>
-    `).join('');
-    return `
-      <div class="song-item">
-        <div class="song-title">${esc(s.t || 'Sin título')}</div>
-        ${s.a ? `<div class="song-artist">${esc(s.a)}</div>` : ''}
-        <div class="song-body">${stanzasHTML}</div>
-      </div>
-    `;
-  }).join('');
+const adminFile=document.getElementById("admin-file");
+document.getElementById("admin-zone").addEventListener("click",()=>adminFile.click());
+adminFile.addEventListener("change",()=>{
+  const file=adminFile.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const raw=JSON.parse(e.target.result);
+      if(!Array.isArray(raw)||(!raw[0]?.title&&!raw[0]?.t))throw new Error();
+      const existingIds=new Set(SONGS.map(s=>s.id));
+      const newSongs=raw.map(slimSong).filter(s=>!existingIds.has(s.id)&&!deletedIds.has(s.id));
+      SONGS=[...SONGS,...newSongs];
+      saveDB();updateCount();deleteMarked.clear();renderDelList();
+      applyFilter();page=1;renderSongList();
+      document.getElementById("db-tag").textContent="(modificada)";
+      const st=document.getElementById("admin-status");
+      st.textContent=newSongs.length?`✓ ${newSongs.length} canciones nuevas agregadas (total: ${SONGS.length})`:`✓ Sin canciones nuevas. Total: ${SONGS.length}`;
+      st.className="mstatus ok";
+    }catch{
+      const st=document.getElementById("admin-status");st.textContent="✗ Formato inválido";st.className="mstatus err";
+    }
+  };
+  reader.readAsText(file);adminFile.value="";
+});
+document.getElementById("btn-reset-db").addEventListener("click",()=>{
+  if(!confirm("¿Restaurar la base de datos original?\nEsto también limpiará el historial de eliminaciones."))return;
+  localStorage.removeItem("holyrics_db");
+  localStorage.removeItem("holyrics_deleted");
+  deletedIds=new Set();
+  SONGS=[];
+  updateCount();deleteMarked.clear();renderDelList();
+  applyFilter();page=1;renderSongList();
+  document.getElementById("db-tag").textContent="";
+  const st=document.getElementById("admin-status");st.textContent="✓ Base de datos restaurada al repo";st.className="mstatus ok";
+});
 
-  // Estilos básicos
-  return `<!DOCTYPE html>
-<html>
-<head><meta charset="UTF-8"><title>${esc(title)}</title>
-<style>
-  body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e0dcd8; padding: 2rem; max-width: 800px; margin: auto; }
-  .song-item { margin-bottom: 2.5rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 1.5rem; }
-  .song-title { font-size: 1.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 0.2rem; color: ${hex}; }
-  .song-artist { font-size: 0.9rem; color: #888; margin-bottom: 0.8rem; }
-  .stanza { margin-bottom: 1.2rem; }
-  .stanza-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 0.2rem; }
-  .stanza-text { font-size: 1.1rem; line-height: 1.7; white-space: pre-wrap; text-transform: uppercase; }
-  .header { text-align: center; margin-bottom: 2.5rem; }
-  .header h1 { font-size: 2.2rem; color: ${hex}; letter-spacing: -0.02em; }
-  .header p { color: #666; }
-  .footer { text-align: center; color: #444; font-size: 0.8rem; margin-top: 2rem; border-top: 1px solid #222; padding-top: 1.5rem; }
-</style>
-</head>
-<body>
-<div class="header">
-  <h1>${esc(title)}</h1>
-  <p>${songs.length} canciones</p>
-</div>
-${songsHTML}
-<div class="footer">${esc(footer)}</div>
-</body>
-</html>`;
+// ============================================================
+// DELETE PANEL
+// ============================================================
+let delQuery="";
+function renderDelList(){
+  document.getElementById("del-count").textContent=deleteMarked.size;
+  const q=delQuery.trim().toLowerCase();
+  const items=!q?SONGS:SONGS.filter(s=>(s.t||"").toLowerCase().includes(q)||(s.a||"").toLowerCase().includes(q));
+  document.getElementById("del-list").innerHTML=items.map(s=>{
+    const marked=deleteMarked.has(s.id);
+    return`<div class="admin-row${marked?" marked":""}" data-id="${s.id}">
+      <div class="admin-chk">${marked?"✕":""}</div>
+      <div class="admin-info">
+        <div class="admin-st">${esc(s.t||"Sin título")}</div>
+        ${s.a?`<div class="admin-sa">${esc(s.a)}</div>`:""}
+      </div>
+    </div>`;
+  }).join("");
+  document.querySelectorAll("#del-list .admin-row").forEach(row=>{
+    row.addEventListener("click",()=>{
+      const id=Number(row.dataset.id);
+      if(deleteMarked.has(id)){deleteMarked.delete(id);row.classList.remove("marked");row.querySelector(".admin-chk").textContent="";}
+      else{deleteMarked.add(id);row.classList.add("marked");row.querySelector(".admin-chk").textContent="✕";}
+      document.getElementById("del-count").textContent=deleteMarked.size;
+    });
+  });
 }
+document.getElementById("del-search").addEventListener("input",e=>{delQuery=e.target.value;renderDelList();});
+document.getElementById("del-clear").addEventListener("click",()=>{deleteMarked.clear();renderDelList();});
+document.getElementById("del-confirm").addEventListener("click",()=>{
+  if(!deleteMarked.size)return;
+  if(!confirm(`¿Eliminar ${deleteMarked.size} canción${deleteMarked.size!==1?"es":""}? Esta acción no se puede deshacer.`))return;
+  deleteMarked.forEach(id=>deletedIds.add(id));saveDeletedIds();
+  SONGS=SONGS.filter(s=>!deleteMarked.has(s.id));
+  deleteMarked.clear();saveDB();updateCount();renderDelList();
+  applyFilter();page=1;renderSongList();
+  document.getElementById("db-tag").textContent="(modificada)";
+  const st=document.getElementById("del-status");st.textContent=`✓ Canciones eliminadas. Quedan ${SONGS.length} en la base.`;st.className="mstatus ok";
+});
+
+// ============================================================
+// EXPORT DB
+// ============================================================
+document.getElementById("btn-export-db").addEventListener("click",()=>{
+  const data=JSON.stringify(SONGS.map(toHolyricsFormat),null,2);
+  const a=document.createElement("a");
+  a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+  a.download="Holyrics_Backup.json";
+  a.click();URL.revokeObjectURL(a.href);
+});
 
 // ============================================================
 // MENSAJES
@@ -1317,19 +1826,6 @@ document.getElementById('msg-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('msg-send').click();
 });
 
-document.getElementById('msg-clear').addEventListener('click', function() {
-  const room = getRoom();
-  const db = getFirebaseDb();
-  if (!db) { toast("⚠️ Conexión a Firebase no disponible"); return; }
-  if (!confirm("¿Eliminar todos los mensajes de esta sala?")) return;
-  db.ref(`rooms/${room}/messages`).remove()
-    .then(() => {
-      document.getElementById('msg-history').innerHTML = '';
-      toast("🗑 Mensajes eliminados");
-    })
-    .catch(err => toast("❌ Error al eliminar: " + err.message));
-});
-
 function loadMessages() {
   const db = getFirebaseDb();
   if (!db) return;
@@ -1353,23 +1849,6 @@ function loadMessages() {
 }
 
 // ============================================================
-// TOAST
-// ============================================================
-function toast(msg, ms=2200) {
-  const el = document.getElementById("toast") || (()=>{
-    const t=document.createElement("div");
-    t.id="toast";
-    t.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s";
-    document.body.appendChild(t);
-    return t;
-  })();
-  el.textContent = msg;
-  el.style.opacity = "1";
-  clearTimeout(el._t);
-  el._t = setTimeout(() => el.style.opacity = "0", ms);
-}
-
-// ============================================================
 // PRESENTER
 // ============================================================
 let _presRoom = localStorage.getItem('pres_room') || "", _presSong = null, _presIdx = 0, _presBlank = false, _presStanzas = [];
@@ -1381,19 +1860,15 @@ function presStanzas(song) {
 }
 
 function presWrite(blank) {
-  const db = getFirebaseDb();
-  if (!db || !_presRoom) return;
+  const db = getFirebaseDb(); if (!db || !_presRoom) return;
   const stanza = _presStanzas[_presIdx] || { d: "", x: "" };
-  const estrofas = _presStanzas.map(s => s.x);
-  const total = _presStanzas.length;
   db.ref(`rooms/${_presRoom}/currentSong`).set({
-    type: "song",
+    id: _presSong.id,
     titulo: _presSong.t || "",
     estrofa: stanza.x,
-    estrofas: estrofas,
-    idx: _presIdx,
-    total: total,
     label: stanza.d,
+    idx: _presIdx,
+    total: _presStanzas.length,
     blank: blank || false,
     ts: Date.now()
   });
@@ -1429,8 +1904,7 @@ function presRenderUI() {
 }
 
 function openPresenter(song) {
-  const db = getFirebaseDb();
-  if (!db) return;
+  const db = getFirebaseDb(); if (!db) return;
   if (!_presRoom) {
     const r = prompt("Nombre de la sala:", "iglesia");
     if (!r) return;
@@ -1447,15 +1921,8 @@ function openPresenter(song) {
   updateSettingsBtn();
 }
 
-document.getElementById("pres-close").addEventListener("click", () => {
-  document.getElementById("mov-pres").classList.remove("open");
-  updateSettingsBtn();
-});
-document.getElementById("pres-blank").addEventListener("click", () => {
-  _presBlank = !_presBlank;
-  presRenderUI();
-  presWrite(_presBlank);
-});
+document.getElementById("pres-close").addEventListener("click", () => { document.getElementById("mov-pres").classList.remove("open"); updateSettingsBtn(); });
+document.getElementById("pres-blank").addEventListener("click", () => { _presBlank = !_presBlank; presRenderUI(); presWrite(_presBlank); });
 document.getElementById("pres-stop").addEventListener("click", () => {
   if (!_presRoom) return;
   const db = getFirebaseDb();
@@ -1509,10 +1976,12 @@ document.addEventListener("keydown", e => {
   document.getElementById("loading").style.display="none";
   document.getElementById("app").style.display="";
 
+  // Inicializar mensajes si la pestaña está activa
   if (document.getElementById('view-messages').classList.contains('active')) {
     loadMessages();
   }
 })();
+
 </script>
 </body>
 </html>
