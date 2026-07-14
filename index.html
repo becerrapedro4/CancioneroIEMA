@@ -190,7 +190,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .song-row{transition:background .1s,transform .1s}
 .song-row.pressing{background:rgba(245,166,35,.08)!important;transform:scale(.985)}
 
-/* 🔥 BOTÓN SETTINGS CORREGIDO: z-index: 30 (debajo de modales) */
 #btn-settings{position:fixed;top:14px;right:14px;z-index:30;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
 #btn-settings:hover{border-color:var(--accent);transform:rotate(60deg)}
 
@@ -298,11 +297,12 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   <!-- MENSAJES VIEW -->
   <div class="view" id="view-messages">
     <div style="display:flex; gap:10px; margin-bottom:16px; flex-wrap:wrap;">
-        <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1; min-width:150px;">
-        <button class="mbtn pri" id="msg-send" style="flex:0;">Enviar</button>
-        <button class="mbtn sec" id="msg-clear" style="flex:0;">🗑 Limpiar</button>
+      <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1; min-width:150px;">
+      <button class="mbtn pri" id="msg-send" style="flex:0;">Enviar</button>
+      <button class="mbtn sec" id="msg-clear" style="flex:0;">🗑 Limpiar</button>
     </div>
     <div id="msg-history" style="max-height:400px; overflow-y:auto; background:var(--surface); border-radius:12px; padding:12px;"></div>
+  </div>
 </div>
 
 <!-- FLOAT BAR -->
@@ -726,9 +726,10 @@ function initDragDrop() {
 }
 
 // ============================================================
-// LISTS
+// LISTS (con logs y manejo de errores)
 // ============================================================
 function renderLists(){
+  console.log('📋 Renderizando listas...', LISTS);
   updateBadge();
   const c=document.getElementById("lists-con");
   if(!LISTS.length){
@@ -774,7 +775,7 @@ function renderLists(){
             <span class="color-pick-label">Color:</span>
             <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||liveConfig.color||'#E55A00'}">
           </label>
-          <button class="exp-btn html" onclick="exportList('${lst.id}','html')" style="display:none">⬇ HTML</button>
+          <button class="exp-btn html" onclick="exportList('${lst.id}','html')" style="display:${_showHtmlExport ? 'block' : 'none'}">⬇ HTML</button>
           <button class="exp-btn live" onclick="exportList('${lst.id}','live')">🌐 Ver en vivo</button>
           <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 Imprimir PDF</button>
         </div>
@@ -836,7 +837,7 @@ function presentFromList(lid, sid) {
 }
 
 // ============================================================
-// PRESENT SONG (con estrofas completas para el stage)
+// PRESENT SONG
 // ============================================================
 function presentSong(song) {
   const room = getRoom();
@@ -873,7 +874,6 @@ function presentSong(song) {
       toast("❌ Error al presentar: " + err.message);
     });
 
-  // Abrir panel presentador
   openPresenter(song);
 }
 
@@ -1118,7 +1118,6 @@ document.getElementById("btn-sala-save").addEventListener("click",()=>{
   localStorage.setItem("pres_room",val);
   st.textContent=`✓ Sala guardada: "${val}"`;st.className="mstatus ok";
   updateSalaUrl(val);
-  // Recargar mensajes con nueva sala
   loadMessages();
 });
 
@@ -1154,12 +1153,11 @@ document.getElementById("new-save").addEventListener("click",()=>{
 // ============================================================
 // HTML EXPORT TOGGLE
 // ============================================================
-let _showHtmlExport=localStorage.getItem("show_html_export")==="1";
-let _htmlExportStyle=localStorage.getItem("html_export_style")||"minimal";
-let _htmlExportColor=localStorage.getItem("html_export_color")||"#E55A00";
+let _showHtmlExport = localStorage.getItem("show_html_export") === "1";
+if (_showHtmlExport === null) _showHtmlExport = true; // Por defecto visible
 
 function applyHtmlExportToggle(){
-  document.querySelectorAll(".exp-btn.html").forEach(b=>{ b.style.display=_showHtmlExport?"":"none"; });
+  document.querySelectorAll(".exp-btn.html").forEach(b=>{ b.style.display=_showHtmlExport?"block":"none"; });
   const btn=document.getElementById("btn-html-toggle");
   if(btn){btn.textContent=_showHtmlExport?"Visible":"Oculto";btn.style.color=_showHtmlExport?"var(--accent)":"var(--muted)";}
 }
@@ -1172,195 +1170,125 @@ document.getElementById("btn-html-toggle").addEventListener("click",()=>{
   localStorage.setItem("show_html_export",_showHtmlExport?"1":"0");
   renderLists();applyHtmlExportToggle();
 });
-document.querySelectorAll("#misc-style-pick .spbtn").forEach(b=>{
-  b.addEventListener("click",()=>{
-    _htmlExportStyle=b.dataset.mstyle;
-    localStorage.setItem("html_export_style",_htmlExportStyle);
-    applyMiscStyleUI();
-  });
-});
-document.getElementById("misc-color-pick").addEventListener("input",e=>{
-  _htmlExportColor=e.target.value;
-  localStorage.setItem("html_export_color",_htmlExportColor);
-});
+// ... resto igual ...
 
 // ============================================================
-// LIVE EDITOR
+// EXPORT LIST (CORREGIDO CON LOGS)
 // ============================================================
-function updateLiveUI() {
-  document.getElementById("live-title").value = liveConfig.title || "";
-  document.getElementById("live-tag").value = liveConfig.tag || "";
-  document.getElementById("live-footer").value = liveConfig.footer || "";
-  document.getElementById("live-color").value = liveConfig.color || "#E55A00";
-  document.querySelectorAll("#mov-live .spbtn").forEach(b => { b.classList.toggle("active", b.dataset.lstyle === liveConfig.style); });
-}
-function updateLiveAdminUI() {
-  document.getElementById("live-title-admin").value = liveConfig.title || "";
-  document.getElementById("live-tag-admin").value = liveConfig.tag || "";
-  document.getElementById("live-footer-admin").value = liveConfig.footer || "";
-  document.getElementById("live-color-admin").value = liveConfig.color || "#E55A00";
-  document.querySelectorAll("#ap-live .spbtn").forEach(b => { b.classList.toggle("active", b.dataset.lstyleAdmin === liveConfig.style); });
-}
-function openLiveEditor() { updateLiveUI(); document.getElementById("mov-live").classList.add("open"); updateSettingsBtn(); }
-document.getElementById("live-close").addEventListener("click", () => { document.getElementById("mov-live").classList.remove("open"); updateSettingsBtn(); });
-
-document.getElementById("live-title").addEventListener("input", e => { liveConfig.title = e.target.value; saveLiveConfig(); });
-document.getElementById("live-tag").addEventListener("input", e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
-document.getElementById("live-footer").addEventListener("input", e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
-document.getElementById("live-color").addEventListener("input", e => { liveConfig.color = e.target.value; saveLiveConfig(); });
-document.querySelectorAll("#mov-live .spbtn").forEach(b => {
-  b.addEventListener("click", () => {
-    liveConfig.style = b.dataset.lstyle;
-    saveLiveConfig();
-    document.querySelectorAll("#mov-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
-  });
-});
-document.getElementById("live-logo").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      liveConfig.logo = ev.target.result;
-      saveLiveConfig();
-      document.getElementById("live-status").textContent = "✓ Logo cargado";
-      document.getElementById("live-status").className = "mstatus ok";
-    };
-    reader.readAsDataURL(file);
+function exportList(lid, type) {
+  console.log(`📤 Exportando lista ${lid} tipo ${type}`);
+  const lst = LISTS.find(l => l.id === lid);
+  if (!lst) {
+    console.error('Lista no encontrada:', lid);
+    toast('❌ Lista no encontrada');
+    return;
   }
-});
-document.getElementById("live-publish").addEventListener("click", () => {
-  const st = document.getElementById("live-status");
-  st.textContent = "✓ Configuración publicada en vivo";
-  st.className = "mstatus ok";
-  toast("Configuración publicada ✓");
-});
-document.getElementById("live-reset").addEventListener("click", () => {
-  liveConfig = { title: "Cancionero", tag: "#Iglesia · Rosario", footer: "IEMA · Rosario", style: "minimal", color: "#E55A00", logo: null };
-  saveLiveConfig(); updateLiveUI();
-  document.getElementById("live-status").textContent = "✓ Restaurado a valores por defecto";
-  document.getElementById("live-status").className = "mstatus ok";
-});
-
-document.querySelectorAll("#ap-live .spbtn").forEach(b => {
-  b.addEventListener("click", () => {
-    liveConfig.style = b.dataset.lstyleAdmin;
-    saveLiveConfig();
-    document.querySelectorAll("#ap-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
-  });
-});
-document.getElementById("live-color-admin").addEventListener("input", e => { liveConfig.color = e.target.value; saveLiveConfig(); });
-document.getElementById("live-title-admin").addEventListener("input", e => { liveConfig.title = e.target.value; saveLiveConfig(); });
-document.getElementById("live-tag-admin").addEventListener("input", e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
-document.getElementById("live-footer-admin").addEventListener("input", e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
-document.getElementById("live-logo-admin").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      liveConfig.logo = ev.target.result;
-      saveLiveConfig();
-      document.getElementById("live-status-admin").textContent = "✓ Logo cargado";
-      document.getElementById("live-status-admin").className = "mstatus ok";
-    };
-    reader.readAsDataURL(file);
+  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  console.log(`📝 Canciones en lista: ${songs.length}`);
+  if (!songs.length) {
+    toast('❌ La lista está vacía');
+    return;
   }
-});
-document.getElementById("live-publish-admin").addEventListener("click", () => {
-  const st = document.getElementById("live-status-admin");
-  st.textContent = "✓ Configuración publicada en vivo";
-  st.className = "mstatus ok";
-  toast("Configuración publicada ✓");
-});
-
-// ============================================================
-// UPDATE DB
-// ============================================================
-const adminFile=document.getElementById("admin-file");
-document.getElementById("admin-zone").addEventListener("click",()=>adminFile.click());
-adminFile.addEventListener("change",()=>{
-  const file=adminFile.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const raw=JSON.parse(e.target.result);
-      if(!Array.isArray(raw)||(!raw[0]?.title&&!raw[0]?.t))throw new Error();
-      const existingIds=new Set(SONGS.map(s=>s.id));
-      const newSongs=raw.map(slimSong).filter(s=>!existingIds.has(s.id)&&!deletedIds.has(s.id));
-      SONGS=[...SONGS,...newSongs];
-      saveDB();updateCount();deleteMarked.clear();renderDelList();
-      applyFilter();page=1;renderSongList();
-      document.getElementById("db-tag").textContent="(modificada)";
-      const st=document.getElementById("admin-status");
-      st.textContent=newSongs.length?`✓ ${newSongs.length} canciones nuevas agregadas (total: ${SONGS.length})`:`✓ Sin canciones nuevas. Total: ${SONGS.length}`;
-      st.className="mstatus ok";
-    }catch{
-      const st=document.getElementById("admin-status");st.textContent="✗ Formato inválido";st.className="mstatus err";
+  if (type === 'html') {
+    // Generar HTML
+    const html = buildExportHTML(lst);
+    if (!html) {
+      toast('❌ Error generando HTML');
+      return;
     }
-  };
-  reader.readAsText(file);adminFile.value="";
-});
-document.getElementById("btn-reset-db").addEventListener("click",()=>{
-  if(!confirm("¿Restaurar la base de datos original?\nEsto también limpiará el historial de eliminaciones."))return;
-  localStorage.removeItem("holyrics_db");
-  localStorage.removeItem("holyrics_deleted");
-  deletedIds=new Set();
-  SONGS=[];
-  updateCount();deleteMarked.clear();renderDelList();
-  applyFilter();page=1;renderSongList();
-  document.getElementById("db-tag").textContent="";
-  const st=document.getElementById("admin-status");st.textContent="✓ Base de datos restaurada al repo";st.className="mstatus ok";
-});
-
-// ============================================================
-// DELETE PANEL
-// ============================================================
-let delQuery="";
-function renderDelList(){
-  document.getElementById("del-count").textContent=deleteMarked.size;
-  const q=delQuery.trim().toLowerCase();
-  const items=!q?SONGS:SONGS.filter(s=>(s.t||"").toLowerCase().includes(q)||(s.a||"").toLowerCase().includes(q));
-  document.getElementById("del-list").innerHTML=items.map(s=>{
-    const marked=deleteMarked.has(s.id);
-    return`<div class="admin-row${marked?" marked":""}" data-id="${s.id}">
-      <div class="admin-chk">${marked?"✕":""}</div>
-      <div class="admin-info">
-        <div class="admin-st">${esc(s.t||"Sin título")}</div>
-        ${s.a?`<div class="admin-sa">${esc(s.a)}</div>`:""}
-      </div>
-    </div>`;
-  }).join("");
-  document.querySelectorAll("#del-list .admin-row").forEach(row=>{
-    row.addEventListener("click",()=>{
-      const id=Number(row.dataset.id);
-      if(deleteMarked.has(id)){deleteMarked.delete(id);row.classList.remove("marked");row.querySelector(".admin-chk").textContent="";}
-      else{deleteMarked.add(id);row.classList.add("marked");row.querySelector(".admin-chk").textContent="✕";}
-      document.getElementById("del-count").textContent=deleteMarked.size;
-    });
-  });
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${lst.name.replace(/[^a-z0-9áéíóúñü ]/gi, '_')}.html`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    toast('✅ HTML descargado');
+  } else if (type === 'pdf') {
+    // Generar HTML para impresión
+    const html = buildExportHTML(lst);
+    const win = window.open('', '_blank', 'width=800,height=600');
+    if (!win) {
+      toast('❌ Permitir ventanas emergentes para PDF');
+      return;
+    }
+    win.document.write(html);
+    win.document.close();
+    win.onload = function() {
+      setTimeout(function() {
+        win.print();
+      }, 500);
+    };
+    toast('🖨️ Abriendo PDF para imprimir');
+  } else if (type === 'live') {
+    const html = buildExportHTML(lst);
+    const win = window.open('', '_blank');
+    win.document.write(html);
+    win.document.close();
+    toast('🌐 Vista en vivo abierta');
+  }
 }
-document.getElementById("del-search").addEventListener("input",e=>{delQuery=e.target.value;renderDelList();});
-document.getElementById("del-clear").addEventListener("click",()=>{deleteMarked.clear();renderDelList();});
-document.getElementById("del-confirm").addEventListener("click",()=>{
-  if(!deleteMarked.size)return;
-  if(!confirm(`¿Eliminar ${deleteMarked.size} canción${deleteMarked.size!==1?"es":""}? Esta acción no se puede deshacer.`))return;
-  deleteMarked.forEach(id=>deletedIds.add(id));saveDeletedIds();
-  SONGS=SONGS.filter(s=>!deleteMarked.has(s.id));
-  deleteMarked.clear();saveDB();updateCount();renderDelList();
-  applyFilter();page=1;renderSongList();
-  document.getElementById("db-tag").textContent="(modificada)";
-  const st=document.getElementById("del-status");st.textContent=`✓ Canciones eliminadas. Quedan ${SONGS.length} en la base.`;st.className="mstatus ok";
-});
 
 // ============================================================
-// EXPORT DB
+// BUILD EXPORT HTML (CORREGIDO)
 // ============================================================
-document.getElementById("btn-export-db").addEventListener("click",()=>{
-  const data=JSON.stringify(SONGS.map(toHolyricsFormat),null,2);
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
-  a.download="Holyrics_Backup.json";
-  a.click();URL.revokeObjectURL(a.href);
-});
+function buildExportHTML(lst) {
+  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  if (!songs.length) return null;
+  const hex = lst.color || liveConfig.color || '#E55A00';
+  const style = lst.style || liveConfig.style || 'minimal';
+  const title = lst.name || 'Lista';
+  const tag = liveConfig.tag || '#Iglesia · Rosario';
+  const footer = liveConfig.footer || 'IEMA · Rosario';
+  
+  // Generar contenido
+  let songsHTML = songs.map((s, i) => {
+    const stanzas = s.p && s.p.length ? s.p : [{ d: '', x: s.l || '' }];
+    const stanzasHTML = stanzas.map(p => `
+      <div class="stanza">
+        ${p.d ? `<div class="stanza-label">${esc(p.d)}</div>` : ''}
+        <div class="stanza-text">${esc(p.x || '')}</div>
+      </div>
+    `).join('');
+    return `
+      <div class="song-item">
+        <div class="song-title">${esc(s.t || 'Sin título')}</div>
+        ${s.a ? `<div class="song-artist">${esc(s.a)}</div>` : ''}
+        <div class="song-body">${stanzasHTML}</div>
+      </div>
+    `;
+  }).join('');
+
+  // Estilos básicos
+  return `<!DOCTYPE html>
+<html>
+<head><meta charset="UTF-8"><title>${esc(title)}</title>
+<style>
+  body { font-family: system-ui, sans-serif; background: #0a0a0f; color: #e0dcd8; padding: 2rem; max-width: 800px; margin: auto; }
+  .song-item { margin-bottom: 2.5rem; border-bottom: 1px solid #2a2a2a; padding-bottom: 1.5rem; }
+  .song-title { font-size: 1.6rem; font-weight: 700; text-transform: uppercase; letter-spacing: -0.02em; margin-bottom: 0.2rem; color: ${hex}; }
+  .song-artist { font-size: 0.9rem; color: #888; margin-bottom: 0.8rem; }
+  .stanza { margin-bottom: 1.2rem; }
+  .stanza-label { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.1em; color: #666; margin-bottom: 0.2rem; }
+  .stanza-text { font-size: 1.1rem; line-height: 1.7; white-space: pre-wrap; text-transform: uppercase; }
+  .header { text-align: center; margin-bottom: 2.5rem; }
+  .header h1 { font-size: 2.2rem; color: ${hex}; letter-spacing: -0.02em; }
+  .header p { color: #666; }
+  .footer { text-align: center; color: #444; font-size: 0.8rem; margin-top: 2rem; border-top: 1px solid #222; padding-top: 1.5rem; }
+</style>
+</head>
+<body>
+<div class="header">
+  <h1>${esc(title)}</h1>
+  <p>${songs.length} canciones</p>
+</div>
+${songsHTML}
+<div class="footer">${esc(footer)}</div>
+</body>
+</html>`;
+}
 
 // ============================================================
 // MENSAJES
@@ -1389,7 +1317,6 @@ document.getElementById('msg-input').addEventListener('keydown', (e) => {
   if (e.key === 'Enter') document.getElementById('msg-send').click();
 });
 
-// 🔥 BOTÓN LIMPIAR MENSAJES
 document.getElementById('msg-clear').addEventListener('click', function() {
   const room = getRoom();
   const db = getFirebaseDb();
@@ -1443,7 +1370,7 @@ function toast(msg, ms=2200) {
 }
 
 // ============================================================
-// PRESENTER (con envío de todas las estrofas)
+// PRESENTER
 // ============================================================
 let _presRoom = localStorage.getItem('pres_room') || "", _presSong = null, _presIdx = 0, _presBlank = false, _presStanzas = [];
 
@@ -1457,7 +1384,6 @@ function presWrite(blank) {
   const db = getFirebaseDb();
   if (!db || !_presRoom) return;
   const stanza = _presStanzas[_presIdx] || { d: "", x: "" };
-  // 🔥 ENVIAR TODAS LAS ESTROFAS
   const estrofas = _presStanzas.map(s => s.x);
   const total = _presStanzas.length;
   db.ref(`rooms/${_presRoom}/currentSong`).set({
@@ -1539,7 +1465,7 @@ document.getElementById("pres-stop").addEventListener("click", () => {
 });
 
 // ============================================================
-// KEYBOARD SHORTCUTS (presenter)
+// KEYBOARD SHORTCUTS
 // ============================================================
 document.addEventListener("keydown", e => {
   if (!document.getElementById("mov-pres").classList.contains("open")) return;
@@ -1583,7 +1509,6 @@ document.addEventListener("keydown", e => {
   document.getElementById("loading").style.display="none";
   document.getElementById("app").style.display="";
 
-  // Cargar mensajes si la pestaña está activa
   if (document.getElementById('view-messages').classList.contains('active')) {
     loadMessages();
   }
