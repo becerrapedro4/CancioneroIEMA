@@ -283,21 +283,30 @@ async function loadSongs() {
   try {
     const pat = getPat();
     if (!pat) { st.className = "status err"; st.textContent = "✗ Pegá tu GitHub Personal Access Token arriba"; return; }
-    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers: ghHeaders() });
+    const url = `https://api.github.com/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`;
+    console.log("Fetching:", url);
+    const res = await fetch(url, { headers: ghHeaders() });
+    console.log("Response:", res.status, res.statusText);
     if (!res.ok) {
       let msg = res.statusText;
-      try { const body = await res.json(); msg = body.message || msg; } catch(e) {}
+      try { const body = await res.json(); msg = body.message || msg; } catch(e) {
+        msg = `HTTP ${res.status} — respuesta no es JSON. Verificá el token y los permisos.`;
+      }
       if (res.status === 401) msg = "Token inválido o sin permisos. Verificá que tenga scope 'repo'";
-      if (res.status === 404) msg = `Archivo no encontrado en ${REPO}/${BRANCH}`;
-      throw new Error(`GitHub API ${res.status}: ${msg}`);
+      if (res.status === 404) msg = `Archivo no encontrado: ${REPO}/${FILE} en branch ${BRANCH}`;
+      throw new Error(msg);
     }
-    const data = await res.json();
+    const text = await res.text();
+    console.log("Response length:", text.length, "starts with:", text.slice(0,50));
+    const data = JSON.parse(text);
+    if (!data.sha || !data.content) throw new Error("Respuesta de GitHub incompleta (falta sha o content)");
     fileSha = data.sha;
     const decoded = decodeURIComponent(escape(atob(data.content)));
     songs = JSON.parse(decoded);
     renderList();
     st.className = "status ok"; st.textContent = `✓ ${songs.length} canciones cargadas (SHA: ${fileSha.slice(0,7)})`;
   } catch (e) {
+    console.error("loadSongs error:", e);
     st.className = "status err"; st.textContent = "✗ Error: " + e.message;
   }
 }
