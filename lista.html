@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lista en Vivo</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0D0D0D;--surface:#161616;--surface2:#1E1E1E;--accent:#F5A623;--text:#F0EDE8;--muted:#6B6560;--border:#2A2A2A;--green:#4CAF7D}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;height:100%;overflow:hidden}
+
+/* ── SPLIT LAYOUT ── */
+.split{display:grid;grid-template-columns:320px 1fr;height:100vh;gap:1px;background:var(--border)}
+@media(max-width:720px){.split{grid-template-columns:1fr;grid-template-rows:40vh 1fr}}
+
+/* ── LEFT PANEL: LISTA ── */
+.panel-list{background:var(--bg);display:flex;flex-direction:column;overflow:hidden;border-right:1px solid var(--border)}
+.list-header{padding:16px;border-bottom:1px solid var(--border);flex-shrink:0}
+.list-label{font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
+.list-name{font-size:16px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-count{font-size:12px;color:var(--muted);margin-top:2px}
+.list-songs{flex:1;overflow-y:auto;padding:8px}
+.song-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;transition:all .15s;border:1px solid transparent}
+.song-item:hover{background:var(--surface2)}
+.song-item.active{background:rgba(245,166,35,.1);border-color:rgba(245,166,35,.3)}
+.song-num{font-size:11px;color:var(--muted);min-width:22px;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.song-item.active .song-num{color:var(--accent);font-weight:600}
+.song-info{flex:1;min-width:0}
+.song-title{font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-item.active .song-title{color:var(--accent)}
+.song-artist{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-status{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.song-status.done{background:var(--muted);opacity:.3}
+.song-status.current{background:var(--green);box-shadow:0 0 8px var(--green)}
+.song-status.pending{background:transparent;border:1.5px solid var(--border)}
+
+/* ── RIGHT PANEL: LETRA ── */
+.panel-lyric{background:var(--bg);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:4vh 4vw;text-align:center;overflow:hidden;position:relative}
+.waiting{color:var(--muted);font-size:14px}
+.waiting-icon{font-size:48px;margin-bottom:16px;opacity:.3}
+.lyric-title{font-size:clamp(14px,2vw,22px);font-weight:600;color:var(--accent);margin-bottom:2vh;letter-spacing:1px;text-transform:uppercase;opacity:.7}
+.lyric-label{font-size:clamp(10px,1.2vw,13px);letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:1.5vh}
+.lyric-text{font-size:clamp(2rem,5vw,4.5rem);font-weight:600;line-height:1.3;text-transform:uppercase;white-space:pre-wrap;max-width:90vw;transition:opacity .3s}
+.lyric-text.out{opacity:0;transform:translateY(10px)}
+.lyric-text.in{animation:fadeUp .35s ease forwards}
+@keyframes fadeUp{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:none}}
+.lyric-counter{position:absolute;bottom:2vh;left:50%;transform:translateX(-50%);font-size:12px;color:var(--muted);letter-spacing:2px}
+
+/* ── NO LIST MESSAGE ── */
+.no-list{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;color:var(--muted);font-size:13px;text-align:center;padding:20px}
+.no-list-icon{font-size:36px;margin-bottom:12px;opacity:.3}
+</style>
+</head>
+<body>
+
+<div class="split">
+  <!-- LEFT: LISTA -->
+  <div class="panel-list">
+    <div class="list-header">
+      <div class="list-label">Lista de presentación</div>
+      <div class="list-name" id="list-name">Esperando…</div>
+      <div class="list-count" id="list-count"></div>
+    </div>
+    <div class="list-songs" id="list-songs">
+      <div class="no-list">
+        <div class="no-list-icon">📋</div>
+        <div>Esperando que se inicie una presentación…</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: LETRA -->
+  <div class="panel-lyric">
+    <div id="lyric-area">
+      <div class="waiting">
+        <div class="waiting-icon">🎵</div>
+        <div>Esperando canción…</div>
+      </div>
+    </div>
+    <div class="lyric-counter" id="lyric-counter"></div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script>
+const db = window.db;
+
+/* ── ROOM ── */
+const params = new URLSearchParams(location.search);
+let room = params.get("room") || localStorage.getItem("pres_room") || "";
+if (!room) {
+  room = (prompt("Nombre de la sala:", "iglesia") || "iglesia").trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  localStorage.setItem("pres_room", room);
+}
+
+/* ── ELEMENTS ── */
+const listNameEl = document.getElementById("list-name");
+const listCountEl = document.getElementById("list-count");
+const listSongsEl = document.getElementById("list-songs");
+const lyricArea = document.getElementById("lyric-area");
+const lyricCounter = document.getElementById("lyric-counter");
+
+let currentQueue = [];
+let currentIdx = 0;
+let currentStanzaIdx = 0;
+
+/* ── RENDER LIST ── */
+function renderList(queue, activeIdx) {
+  if (!queue || !queue.length) {
+    listNameEl.textContent = "Esperando…";
+    listCountEl.textContent = "";
+    listSongsEl.innerHTML = '<div class="no-list"><div class="no-list-icon">📋</div><div>Esperando que se inicie una presentación…</div></div>';
+    return;
+  }
+
+  listNameEl.textContent = queue.length > 1 ? `Lista · ${queue.length} canciones` : queue[0].t || "Canción";
+  listCountEl.textContent = queue.length > 1 ? `Canción ${activeIdx + 1} de ${queue.length}` : "";
+
+  listSongsEl.innerHTML = queue.map((s, i) => {
+    const status = i < activeIdx ? "done" : i === activeIdx ? "current" : "pending";
+    return `<div class="song-item${i === activeIdx ? " active" : ""}" data-idx="${i}">
+      <span class="song-num">${i + 1}</span>
+      <div class="song-info">
+        <div class="song-title">${esc(s.t || "Sin título")}</div>
+        ${s.a ? `<div class="song-artist">${esc(s.a)}</div>` : ""}
+      </div>
+      <div class="song-status ${status}"></div>
+    </div>`;
+  }).join("");
+
+  // Auto-scroll to active
+  const activeEl = listSongsEl.querySelector(".song-item.active");
+  if (activeEl) activeEl.scrollIntoView({ block: "nearest", behavior: "smooth" });
+}
+
+/* ── RENDER LYRIC ── */
+function renderLyric(data) {
+  if (!data || data.blank || data.stop) {
+    lyricArea.innerHTML = '<div class="waiting"><div class="waiting-icon">🎵</div><div>Esperando canción…</div></div>';
+    lyricCounter.textContent = "";
+    return;
+  }
+
+  const stanzas = data.estrofas || [data.estrofa];
+  const idx = Math.min(data.idx || 0, Math.max(stanzas.length - 1, 0));
+  const text = stanzas[idx] || data.estrofa || "";
+  const label = data.label || "";
+  const titulo = data.titulo || "";
+  const showTitle = data.showTitle !== false;
+
+  lyricArea.innerHTML = `
+    ${showTitle && titulo ? `<div class="lyric-title">${esc(titulo)}</div>` : ""}
+    ${label ? `<div class="lyric-label">${esc(label)}</div>` : ""}
+    <div class="lyric-text in">${esc(text)}</div>
+  `;
+
+  lyricCounter.textContent = data.total > 1 ? `${idx + 1} / ${data.total}` : "";
+}
+
+/* ── HELPER ── */
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'&quot;'}[c])); }
+
+/* ── FIREBASE LISTENER ── */
+db.ref(`rooms/${room}/currentSong`).on("value", (snap) => {
+  const data = snap.val();
+  renderLyric(data);
+
+  // Update list from queue in Firebase data
+  if (data && data.queue && data.queue.length) {
+    const queueChanged = JSON.stringify(data.queue) !== JSON.stringify(currentQueue);
+    const idxChanged = data.queueIdx !== currentIdx;
+    currentQueue = data.queue;
+    currentIdx = data.queueIdx || 0;
+    if (queueChanged || idxChanged) renderList(currentQueue, currentIdx);
+  } else if (data && !data.blank && !data.stop && data.id) {
+    // Single song (no queue)
+    if (currentQueue.length !== 1 || currentQueue[0]?.id !== data.id) {
+      currentQueue = [{ id: data.id, t: data.titulo || "", a: "" }];
+      currentIdx = 0;
+      renderList(currentQueue, 0);
+    }
+  } else {
+    currentQueue = [];
+    renderList([], 0);
+  }
+});
+
+/* ── WAKE LOCK ── */
+if ("wakeLock" in navigator) {
+  const lock = () => navigator.wakeLock.request("screen").catch(() => {});
+  lock();
+  document.addEventListener("visibilitychange", () => { if (document.visibilityState === "visible") lock(); });
+}
+</script>
+</body>
+</html>

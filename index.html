@@ -1838,10 +1838,17 @@ function loadMessages() {
   msgListenerRef = ref.limitToLast(20).on('child_added', (snap) => {
     const msg = snap.val();
     if (!msg) return;
+    const key = snap.key;
     const div = document.createElement('div');
-    div.style.cssText = 'padding:6px 0; border-bottom:1px solid rgba(255,255,255,0.05); font-size:13px;';
+    div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
     const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
-    div.innerHTML = `<span style="color:var(--muted);font-size:11px;margin-right:8px;">${time}</span>${esc(msg.texto || msg)}`;
+    div.innerHTML = `<span style="color:var(--muted);font-size:11px;flex-shrink:0;">${time}</span><span style="flex:1;">${esc(msg.texto || msg)}</span><button style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;" title="Eliminar">×</button>`;
+    div.querySelector('button').addEventListener('click', () => {
+      if (!confirm('¿Eliminar este mensaje?')) return;
+      ref.child(key).remove();
+      div.remove();
+      toast('🗑 Mensaje eliminado');
+    });
     container.prepend(div);
   });
 }
@@ -1849,7 +1856,7 @@ function loadMessages() {
 // ============================================================
 // PRESENTER (cola de canciones)
 // ============================================================
-let _presRoom = localStorage.getItem('pres_room') || "", _presQueue = [], _presSongIdx = 0, _presIdx = 0, _presBlank = false;
+let _presRoom = localStorage.getItem('pres_room') || "", _presQueue = [], _presSongIdx = 0, _presIdx = 0, _presBlank = false, _presListId = null;
 let _presShowNext = localStorage.getItem('pres_show_next') !== '0';
 let _presShowTitle = localStorage.getItem('pres_show_title') !== '0';
 let _presShowRef = localStorage.getItem('pres_show_ref') === '1';
@@ -1881,6 +1888,9 @@ function presWrite(blank) {
     showTitle: _presShowTitle,
     showRef: _presShowRef,
     showNext: _presShowNext,
+    listId: _presListId,
+    queue: _presQueue.map(q => ({id: q.song.id, t: q.song.t || "", a: q.song.a || ""})),
+    queueIdx: _presSongIdx,
     ts: Date.now()
   });
 }
@@ -1954,6 +1964,7 @@ function openQueue(songs, startIdx) {
 }
 
 function openPresenter(song) {
+  _presListId = null;
   openQueue([song], 0);
 }
 
@@ -1962,6 +1973,7 @@ function presentList(lid) {
   if (!lst) return;
   const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
   if (!songs.length) { toast("⚠️ La lista está vacía o no tiene canciones válidas"); return; }
+  _presListId = lid;
   openQueue(songs, 0);
   toast(`▶ Presentando lista: ${lst.name}`);
 }
@@ -1989,6 +2001,7 @@ document.getElementById("pres-stop").addEventListener("click", () => {
   if (!_presRoom) return;
   const db = getFirebaseDb();
   if (db) db.ref(`rooms/${_presRoom}/currentSong`).set({ blank: true, ts: Date.now(), stop: true });
+  _presListId = null;
   document.getElementById("mov-pres").classList.remove("open");
   updateSettingsBtn();
 });
