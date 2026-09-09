@@ -1,0 +1,362 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Admin — Cancionero</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0D0D0D;--surface:#161616;--surface2:#1E1E1E;--accent:#F5A623;--text:#F0EDE8;--muted:#6B6560;--border:#2A2A2A;--green:#4CAF7D;--red:#E05252}
+html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui,sans-serif;min-height:100vh}
+
+/* ── GATE ── */
+.gate{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.gate-box{background:var(--surface);border:1px solid var(--border);border-radius:16px;padding:32px;width:100%;max-width:380px;text-align:center}
+.gate-title{font-size:20px;font-weight:700;margin-bottom:6px}
+.gate-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+.gate-input{width:100%;padding:13px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:15px;outline:none;margin-bottom:12px;transition:border-color .15s}
+.gate-input:focus{border-color:var(--accent)}
+.gate-btn{width:100%;padding:13px;border:none;border-radius:10px;background:var(--accent);color:#000;font-family:'DM Sans',sans-serif;font-size:14px;font-weight:600;cursor:pointer}
+.gate-btn:hover{opacity:.85}
+.gate-err{color:var(--red);font-size:12px;margin-top:8px;display:none}
+
+/* ── APP ── */
+.app{display:none;max-width:1100px;margin:0 auto;padding:16px}
+.topbar{display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap}
+.topbar-title{font-size:18px;font-weight:700;flex:1}
+.btn{padding:10px 16px;border:none;border-radius:9px;font-family:'DM Sans',sans-serif;font-size:13px;font-weight:500;cursor:pointer;transition:opacity .15s;white-space:nowrap}
+.btn:hover{opacity:.8}
+.btn.pri{background:var(--accent);color:#000}
+.btn.sec{background:var(--surface2);border:1px solid var(--border);color:var(--muted)}
+.btn.danger{background:rgba(224,82,82,.12);color:var(--red);border:1px solid rgba(224,82,82,.25)}
+.btn:disabled{opacity:.4;cursor:not-allowed}
+
+/* ── STATUS ── */
+.status{padding:10px 14px;border-radius:8px;font-size:13px;margin-bottom:12px;display:none}
+.status.ok{background:rgba(76,175,125,.12);color:var(--green);border:1px solid rgba(76,175,125,.25);display:block}
+.status.err{background:rgba(224,82,82,.12);color:var(--red);border:1px solid rgba(224,82,82,.25);display:block}
+.status.info{background:rgba(91,156,246,.12);color:#5B9CF6;border:1px solid rgba(91,156,246,.25);display:block}
+
+/* ── SPLIT ── */
+.split{display:grid;grid-template-columns:340px 1fr;gap:16px;align-items:start}
+@media(max-width:720px){.split{grid-template-columns:1fr}}
+
+/* ── LEFT: PAT + LIST ── */
+.pat-section{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px}
+.pat-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.pat-input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:13px;outline:none}
+.pat-input:focus{border-color:var(--accent)}
+.pat-hint{font-size:11px;color:var(--muted);margin-top:6px;line-height:1.5}
+
+.song-list-wrap{background:var(--surface);border:1px solid var(--border);border-radius:12px;overflow:hidden;display:flex;flex-direction:column;max-height:calc(100vh - 220px)}
+.song-search{padding:12px;border-bottom:1px solid var(--border)}
+.song-search input{width:100%;padding:10px 12px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none}
+.song-search input:focus{border-color:var(--accent)}
+.song-items{flex:1;overflow-y:auto;padding:6px}
+.song-row{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;cursor:pointer;border:1px solid transparent;transition:background .1s}
+.song-row:hover{background:var(--surface2)}
+.song-row.active{background:rgba(245,166,35,.08);border-color:rgba(245,166,35,.25)}
+.song-row .snum{font-size:11px;color:var(--muted);min-width:24px;text-align:right}
+.song-row .stitle{font-size:13px;font-weight:500;flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song-row .sartist{font-size:11px;color:var(--muted)}
+.song-count{padding:10px 12px;border-top:1px solid var(--border);font-size:12px;color:var(--muted)}
+
+/* ── RIGHT: EDITOR ── */
+.editor{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;display:none}
+.editor.open{display:block}
+.editor-title{font-size:16px;font-weight:600;margin-bottom:16px}
+.field{margin-bottom:14px}
+.field-label{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.field-input{width:100%;padding:11px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;color:var(--text);font-family:'DM Sans',sans-serif;font-size:14px;outline:none;transition:border-color .15s}
+.field-input:focus{border-color:var(--accent)}
+textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:13px}
+.editor-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
+.no-selection{color:var(--muted);font-size:13px;text-align:center;padding:40px 20px}
+</style>
+</head>
+<body>
+
+<!-- PASSWORD GATE -->
+<div class="gate" id="gate">
+  <div class="gate-box">
+    <div class="gate-title">🔐 Admin</div>
+    <div class="gate-sub">Ingresá la contraseña para acceder</div>
+    <input type="password" class="gate-input" id="gate-pass" placeholder="Contraseña">
+    <button class="gate-btn" id="gate-btn">Ingresar</button>
+    <div class="gate-err" id="gate-err">Contraseña incorrecta</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div class="app" id="app">
+  <div class="topbar">
+    <div class="topbar-title">🎵 Admin del Cancionero</div>
+    <button class="btn sec" id="btn-logout">Cerrar sesión</button>
+  </div>
+
+  <div class="status" id="status"></div>
+
+  <!-- GitHub PAT -->
+  <div class="pat-section">
+    <div class="pat-label">GitHub Personal Access Token</div>
+    <input type="password" class="pat-input" id="pat-input" placeholder="ghp_xxxxxxxxxxxx" autocomplete="off">
+    <div class="pat-hint">Necesario para guardar cambios en el repo. Lo guardás una vez en este navegador.<br>
+    Crear en: <a href="https://github.com/settings/tokens/new?scopes=repo&description=CancioneroIEMA" target="_blank" style="color:var(--accent)">github.com/settings/tokens</a> (scope: <b>repo</b>)</div>
+  </div>
+
+  <div class="split">
+    <!-- LEFT: SONG LIST -->
+    <div>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button class="btn pri" id="btn-add">+ Nueva canción</button>
+        <button class="btn sec" id="btn-reload" title="Recargar desde el repo">↻</button>
+      </div>
+      <div class="song-list-wrap">
+        <div class="song-search">
+          <input type="search" id="search" placeholder="Buscar canción…" autocomplete="off">
+        </div>
+        <div class="song-items" id="song-items"></div>
+        <div class="song-count" id="song-count"></div>
+      </div>
+    </div>
+
+    <!-- RIGHT: EDITOR -->
+    <div class="editor" id="editor">
+      <div class="editor-title" id="editor-title">Editar canción</div>
+      <div class="field">
+        <div class="field-label">Título *</div>
+        <input class="field-input" id="ed-title" placeholder="Título de la canción" maxlength="200">
+      </div>
+      <div class="field">
+        <div class="field-label">Artista</div>
+        <input class="field-input" id="ed-artist" placeholder="Artista (opcional)" maxlength="200">
+      </div>
+      <div class="field">
+        <div class="field-label">Letra (separar estrofas con línea en blanco)</div>
+        <textarea class="field-input" id="ed-lyrics" placeholder="PEGÁ LA LETRA ACÁ&#10;&#10;Dejá una línea vacía entre cada estrofa."></textarea>
+      </div>
+      <div class="editor-actions">
+        <button class="btn sec" id="ed-cancel">Cancelar</button>
+        <button class="btn danger" id="ed-delete">🗑 Eliminar</button>
+        <button class="btn pri" id="ed-save">Guardar en repo →</button>
+      </div>
+    </div>
+
+    <div class="no-selection" id="no-selection">
+      Seleccioná una canción para editarla, o creá una nueva con el botón "+ Nueva canción"
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
+<script>
+const db = window.db;
+const REPO = "becerrapedro4/CancioneroIEMA";
+const FILE = "canciones.json";
+const BRANCH = "mejoras";
+
+/* ── STATE ── */
+let songs = [];
+let fileSha = null;
+let selectedIdx = -1;
+let isDirty = false;
+
+/* ── PASSWORD GATE ── */
+const HASH_KEY = "admin_pass_hash";
+async function hashPass(p) {
+  const enc = new TextEncoder().encode(p);
+  const buf = await crypto.subtle.digest("SHA-256", enc);
+  return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
+}
+document.getElementById("gate-btn").addEventListener("click", async () => {
+  const pass = document.getElementById("gate-pass").value;
+  if (!pass) return;
+  const stored = localStorage.getItem(HASH_KEY);
+  if (!stored) {
+    // First time: set password
+    localStorage.setItem(HASH_KEY, await hashPass(pass));
+    enterApp();
+  } else if (await hashPass(pass) === stored) {
+    enterApp();
+  } else {
+    document.getElementById("gate-err").style.display = "block";
+  }
+});
+document.getElementById("gate-pass").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("gate-btn").click(); });
+document.getElementById("btn-logout").addEventListener("click", () => {
+  localStorage.removeItem(HASH_KEY);
+  document.getElementById("app").style.display = "none";
+  document.getElementById("gate").style.display = "flex";
+  document.getElementById("gate-pass").value = "";
+  document.getElementById("gate-err").style.display = "none";
+});
+
+// Auto-login if password was set
+if (!localStorage.getItem(HASH_KEY)) {
+  // First visit: skip gate, set password
+} else if (sessionStorage.getItem("admin_ok")) {
+  enterApp();
+}
+
+function enterApp() {
+  sessionStorage.setItem("admin_ok", "1");
+  document.getElementById("gate").style.display = "none";
+  document.getElementById("app").style.display = "block";
+  // Load PAT
+  const pat = localStorage.getItem("admin_pat") || "";
+  document.getElementById("pat-input").value = pat;
+  if (pat) loadSongs();
+}
+
+/* ── GITHUB API ── */
+function getPat() {
+  const pat = document.getElementById("pat-input").value.trim();
+  if (pat) localStorage.setItem("admin_pat", pat);
+  return pat;
+}
+function ghHeaders() {
+  return { "Authorization": "token " + getPat(), "Accept": "application/vnd.github.v3+json", "Content-Type": "application/json" };
+}
+
+async function loadSongs() {
+  const st = document.getElementById("status");
+  st.className = "status info"; st.textContent = "📥 Cargando canciones desde el repo…"; st.style.display = "block";
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers: ghHeaders() });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}: ${(await res.json()).message || res.statusText}`);
+    const data = await res.json();
+    fileSha = data.sha;
+    const decoded = decodeURIComponent(escape(atob(data.content)));
+    songs = JSON.parse(decoded);
+    renderList();
+    st.className = "status ok"; st.textContent = `✓ ${songs.length} canciones cargadas (SHA: ${fileSha.slice(0,7)})`;
+  } catch (e) {
+    st.className = "status err"; st.textContent = "✗ Error: " + e.message;
+  }
+}
+
+async function saveToRepo(newSongs, message) {
+  const st = document.getElementById("status");
+  st.className = "status info"; st.textContent = "💾 Guardando en el repo…"; st.style.display = "block";
+  try {
+    const content = btoa(unescape(encodeURIComponent(JSON.stringify(newSongs, null, 2))));
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}`, {
+      method: "PUT",
+      headers: ghHeaders(),
+      body: JSON.stringify({ message, content, sha: fileSha, branch: BRANCH })
+    });
+    if (!res.ok) throw new Error(`GitHub API ${res.status}: ${(await res.json()).message || res.statusText}`);
+    const data = await res.json();
+    fileSha = data.content.sha;
+    songs = newSongs;
+    isDirty = false;
+    st.className = "status ok"; st.textContent = `✓ Guardado — commit ${data.commit.sha.slice(0,7)}`;
+    renderList();
+  } catch (e) {
+    st.className = "status err"; st.textContent = "✗ Error al guardar: " + e.message;
+  }
+}
+
+/* ── RENDER LIST ── */
+function renderList() {
+  const q = document.getElementById("search").value.trim().toLowerCase();
+  const filtered = q ? songs.filter(s => (s.title || "").toLowerCase().includes(q) || (s.artist || "").toLowerCase().includes(q)) : songs;
+  const el = document.getElementById("song-items");
+  el.innerHTML = filtered.map((s, i) => {
+    const realIdx = songs.indexOf(s);
+    return `<div class="song-row${realIdx === selectedIdx ? " active" : ""}" data-idx="${realIdx}">
+      <span class="snum">${realIdx + 1}</span>
+      <div style="flex:1;min-width:0">
+        <div class="stitle">${esc(s.title || "Sin título")}</div>
+        ${s.artist ? `<div class="sartist">${esc(s.artist)}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+  document.getElementById("song-count").textContent = `${songs.length} canciones${q ? ` (${filtered.length} visibles)` : ""}`;
+  el.querySelectorAll(".song-row").forEach(row => {
+    row.addEventListener("click", () => selectSong(+row.dataset.idx));
+  });
+}
+
+/* ── SELECT SONG ── */
+function selectSong(idx) {
+  if (isDirty && !confirm("Tenés cambios sin guardar. ¿Descartar?")) return;
+  selectedIdx = idx;
+  const s = songs[idx];
+  document.getElementById("editor-title").textContent = `Editar: ${s.title || "Sin título"}`;
+  document.getElementById("ed-title").value = s.title || "";
+  document.getElementById("ed-artist").value = s.artist || "";
+  document.getElementById("ed-lyrics").value = (s.lyrics?.paragraphs || []).map(p => p.text || "").join("\n\n");
+  document.getElementById("editor").classList.add("open");
+  document.getElementById("no-selection").style.display = "none";
+  isDirty = false;
+  renderList();
+}
+
+/* ── ACTIONS ── */
+document.getElementById("btn-add").addEventListener("click", () => {
+  if (isDirty && !confirm("Tenés cambios sin guardar. ¿Descartar?")) return;
+  const newSong = {
+    id: Date.now(),
+    title: "", artist: "", author: "", note: "", copyright: "", language: "", key: "", bpm: 0, time_sig: "",
+    midi: null, order: "", arrangements: [],
+    lyrics: { full_text: "", full_text_with_comment: null, paragraphs: [] }
+  };
+  songs.unshift(newSong);
+  selectSong(0);
+  document.getElementById("editor-title").textContent = "Nueva canción";
+});
+
+document.getElementById("ed-cancel").addEventListener("click", () => {
+  if (isDirty && !confirm("¿Descartar cambios?")) return;
+  selectedIdx = -1;
+  document.getElementById("editor").classList.remove("open");
+  document.getElementById("no-selection").style.display = "";
+  isDirty = false;
+  renderList();
+});
+
+document.getElementById("ed-delete").addEventListener("click", async () => {
+  if (selectedIdx < 0) return;
+  const s = songs[selectedIdx];
+  if (!confirm(`¿Eliminar "${s.title || "Sin título"}"?`)) return;
+  const newSongs = songs.filter((_, i) => i !== selectedIdx);
+  await saveToRepo(newSongs, `Eliminar: ${s.title || "Sin título"}`);
+  selectedIdx = -1;
+  document.getElementById("editor").classList.remove("open");
+  document.getElementById("no-selection").style.display = "";
+});
+
+document.getElementById("ed-save").addEventListener("click", async () => {
+  const title = document.getElementById("ed-title").value.trim();
+  if (!title) { alert("El título es obligatorio"); return; }
+  const artist = document.getElementById("ed-artist").value.trim();
+  const lyricsRaw = document.getElementById("ed-lyrics").value;
+  const paragraphs = lyricsRaw.split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map((text, i) => ({
+    number: i + 1, description: "", text, text_with_comment: null, translations: null
+  }));
+  const full_text = paragraphs.map(p => p.text).join("\n\n");
+
+  const updated = { ...songs[selectedIdx], title, artist, lyrics: { ...songs[selectedIdx].lyrics, full_text, paragraphs } };
+  const newSongs = songs.map((s, i) => i === selectedIdx ? updated : s);
+  await saveToRepo(newSongs, `${songs[selectedIdx].title ? "Actualizar" : "Agregar"}: ${title}`);
+});
+
+// Track dirty state
+["ed-title", "ed-artist", "ed-lyrics"].forEach(id => {
+  document.getElementById(id).addEventListener("input", () => { isDirty = true; });
+});
+
+document.getElementById("search").addEventListener("input", renderList);
+document.getElementById("btn-reload").addEventListener("click", loadSongs);
+document.getElementById("pat-input").addEventListener("change", () => {
+  localStorage.setItem("admin_pat", document.getElementById("pat-input").value.trim());
+});
+
+/* ── HELPER ── */
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'&quot;'}[c])); }
+</script>
+</body>
+</html>
