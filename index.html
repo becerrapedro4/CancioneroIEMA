@@ -448,32 +448,16 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
       <div class="modal-sub" style="margin-bottom:16px">Tap × para cerrar</div>
       <div class="admin-select-wrap">
         <select class="admin-nav" id="admin-nav">
-          <option value="update">📂 Actualizar DB</option>
           <option value="nueva">✏️ Nueva canción</option>
           <option value="delete">🗑 Eliminar canciones</option>
           <option value="export">⬇ Exportar DB</option>
           <option value="sala">📺 Sala</option>
-          <option value="misc">⚙️ Misc</option>
-          <option value="live">🎬 Editor en Vivo</option>
         </select>
       </div>
     </div>
 
-    <!-- UPDATE PANEL -->
-    <div class="admin-panel active" id="ap-update" style="overflow-y:auto;flex:1">
-      <div class="upload-zone" id="admin-zone">
-        <div style="font-size:26px;margin-bottom:8px">📂</div>
-        <div style="font-size:13px;color:var(--muted)"><b style="color:var(--text)">Tocar para seleccionar</b><br>Holyrics_Backup.json</div>
-        <input type="file" accept=".json" id="admin-file" style="display:none">
-      </div>
-      <div class="mstatus" id="admin-status"></div>
-      <div class="mactions">
-        <button class="mbtn danger" id="btn-reset-db">↺ Restaurar original</button>
-      </div>
-    </div>
-
     <!-- NUEVA CANCIÓN PANEL -->
-    <div class="admin-panel" id="ap-nueva" style="overflow-y:auto;flex:1">
+    <div class="admin-panel active" id="ap-nueva" style="overflow-y:auto;flex:1">
       <input class="minput" id="new-title" placeholder="Título *" maxlength="200" type="text">
       <input class="minput" id="new-artist" placeholder="Artista (opcional)" maxlength="200" type="text">
       <textarea class="minput" id="new-lyrics" placeholder="Pegá la letra acá…&#10;&#10;Dejá una línea vacía entre cada estrofa." style="min-height:220px;resize:vertical;line-height:1.7;font-size:14px"></textarea>
@@ -517,67 +501,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
       </div>
     </div>
 
-    <!-- MISC PANEL -->
-    <div class="admin-panel" id="ap-misc" style="overflow-y:auto;flex:1">
-      <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Exportación HTML</div>
 
-      <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px">
-        <div>
-          <div style="font-size:13px;font-weight:500">Mostrar botón HTML</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Habilita "⬇ HTML" en Mis Listas</div>
-        </div>
-        <button id="btn-html-toggle" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;min-width:70px;transition:all .2s">Oculto</button>
-      </div>
-
-      <!-- Style picker -->
-      <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);margin-bottom:8px">
-        <div style="font-size:12px;color:var(--muted);margin-bottom:10px">Diseño de portada</div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap" id="misc-style-pick">
-          <button class="spbtn active" data-mstyle="minimal">Minimalista</button>
-          <button class="spbtn" data-mstyle="aesthetic">Aesthetic</button>
-          <button class="spbtn" data-mstyle="glass">Glass</button>
-          <button class="spbtn" data-mstyle="vintage">Vintage</button>
-          <button class="spbtn" data-mstyle="neon">Neon</button>
-          <button class="spbtn" data-mstyle="nature">Naturaleza</button>
-        </div>
-      </div>
-
-      <!-- Color picker -->
-      <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
-        <div>
-          <div style="font-size:13px;font-weight:500">Color de acento</div>
-          <div style="font-size:12px;color:var(--muted);margin-top:2px">Aplica a todas las listas sin color propio</div>
-        </div>
-        <input type="color" id="misc-color-pick" value="#E55A00" style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
-      </div>
-    </div>
-
-    <!-- LIVE EDITOR PANEL -->
-    <div class="admin-panel" id="ap-live" style="overflow-y:auto;flex:1">
-      <div style="display:flex;flex-direction:column;gap:12px">
-        <input class="minput" id="live-title-admin" placeholder="Título del evento" style="margin-bottom:0">
-        <input class="minput" id="live-tag-admin" placeholder="Etiqueta (ej: #Iglesia · Rosario)" style="margin-bottom:0">
-        <input class="minput" id="live-footer-admin" placeholder="Pie de página" style="margin-bottom:0">
-        <div style="display:flex;gap:10px;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">Logo:</span>
-          <input type="file" id="live-logo-admin" accept="image/png" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
-        </div>
-        <div style="display:flex;gap:6px;flex-wrap:wrap">
-          <button class="spbtn" data-lstyle-admin="minimal">Minimal</button>
-          <button class="spbtn" data-lstyle-admin="aesthetic">Aesthetic</button>
-          <button class="spbtn" data-lstyle-admin="glass">Glass</button>
-          <button class="spbtn" data-lstyle-admin="vintage">Vintage</button>
-          <button class="spbtn" data-lstyle-admin="neon">Neon</button>
-          <button class="spbtn" data-lstyle-admin="nature">Nature</button>
-        </div>
-        <div style="display:flex;gap:10px;align-items:center">
-          <span style="font-size:13px;color:var(--muted)">Color:</span>
-          <input type="color" id="live-color-admin" value="#E55A00" style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
-        </div>
-        <button class="mbtn pri" id="live-publish-admin">📤 Publicar cambios</button>
-        <div class="mstatus" id="live-status-admin"></div>
-      </div>
-    </div>
   </div>
 </div>
 
@@ -826,9 +750,10 @@ function renderLists(){
             <span class="color-pick-label">Color:</span>
             <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||liveConfig.color||'#E55A00'}">
           </label>
-          <button class="exp-btn html" onclick="exportList('${lst.id}','html')" style="display:none">⬇ HTML</button>
+          <button class="exp-btn html" onclick="exportList('${lst.id}','html')">⬇ HTML</button>
           <button class="exp-btn live" onclick="exportList('${lst.id}','live')">🌐 Ver en vivo</button>
-          <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 Imprimir PDF</button>
+          <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 PDF</button>
+          <button class="exp-btn" onclick="shareList('${lst.id}')" style="background:rgba(91,156,246,.15);color:#5B9CF6;border:1px solid rgba(91,156,246,.3)">📋 Compartir</button>
         </div>
       </div>
     </div>`;
@@ -1522,7 +1447,6 @@ function openAdmin(){
   deleteMarked.clear();renderDelList();
   document.getElementById("sala-input").value=getRoom();
   updateSalaUrl(getRoom());
-  applyMiscStyleUI();
   document.getElementById("mov-admin").classList.add("open");
   updateSettingsBtn();
 }
@@ -1593,31 +1517,30 @@ let _showHtmlExport=localStorage.getItem("show_html_export")==="1";
 let _htmlExportStyle=localStorage.getItem("html_export_style")||"minimal";
 let _htmlExportColor=localStorage.getItem("html_export_color")||"#E55A00";
 
-function applyHtmlExportToggle(){
-  document.querySelectorAll(".exp-btn.html").forEach(b=>{ b.style.display=_showHtmlExport?"":"none"; });
-  const btn=document.getElementById("btn-html-toggle");
-  if(btn){btn.textContent=_showHtmlExport?"Visible":"Oculto";btn.style.color=_showHtmlExport?"var(--accent)":"var(--muted)";}
-}
-function applyMiscStyleUI(){
-  document.querySelectorAll("#misc-style-pick .spbtn").forEach(b=>b.classList.toggle("active",b.dataset.mstyle===_htmlExportStyle));
-  const cp=document.getElementById("misc-color-pick");if(cp)cp.value=_htmlExportColor;
-}
-document.getElementById("btn-html-toggle").addEventListener("click",()=>{
-  _showHtmlExport=!_showHtmlExport;
-  localStorage.setItem("show_html_export",_showHtmlExport?"1":"0");
-  renderLists();applyHtmlExportToggle();
-});
-document.querySelectorAll("#misc-style-pick .spbtn").forEach(b=>{
-  b.addEventListener("click",()=>{
-    _htmlExportStyle=b.dataset.mstyle;
-    localStorage.setItem("html_export_style",_htmlExportStyle);
-    applyMiscStyleUI();
+function shareList(lid) {
+  const lst = LISTS.find(l => l.id === lid);
+  if (!lst) return;
+  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  if (!songs.length) { toast("⚠️ La lista está vacía"); return; }
+  let text = `📋 ${lst.name}\n` + "─".repeat(20) + "\n\n";
+  songs.forEach((s, i) => {
+    text += `${i+1}. ${s.t || "Sin título"}`;
+    if (s.a) text += ` — ${s.a}`;
+    text += "\n";
+    const stanzas = s.p?.length ? s.p : [{x: s.l || ""}];
+    text += stanzas.map(p => p.x || "").join("\n\n") + "\n\n";
   });
-});
-document.getElementById("misc-color-pick").addEventListener("input",e=>{
-  _htmlExportColor=e.target.value;
-  localStorage.setItem("html_export_color",_htmlExportColor);
-});
+  text += `\n🎶 ${songs.length} canciones — Cancionero IEMA`;
+  navigator.clipboard.writeText(text).then(() => {
+    toast("📋 Lista copiada al portapapeles");
+  }).catch(() => {
+    // Fallback: create textarea and copy
+    const ta = document.createElement("textarea");
+    ta.value = text; document.body.appendChild(ta);
+    ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
+    toast("📋 Lista copiada al portapapeles");
+  });
+}
 
 // ============================================================
 // LIVE EDITOR
@@ -1629,16 +1552,8 @@ function updateLiveUI() {
   document.getElementById("live-color").value = liveConfig.color || "#E55A00";
   document.querySelectorAll("#mov-live .spbtn").forEach(b => { b.classList.toggle("active", b.dataset.lstyle === liveConfig.style); });
 }
-function updateLiveAdminUI() {
-  document.getElementById("live-title-admin").value = liveConfig.title || "";
-  document.getElementById("live-tag-admin").value = liveConfig.tag || "";
-  document.getElementById("live-footer-admin").value = liveConfig.footer || "";
-  document.getElementById("live-color-admin").value = liveConfig.color || "#E55A00";
-  document.querySelectorAll("#ap-live .spbtn").forEach(b => { b.classList.toggle("active", b.dataset.lstyleAdmin === liveConfig.style); });
-}
 function openLiveEditor() { updateLiveUI(); document.getElementById("mov-live").classList.add("open"); updateSettingsBtn(); }
 document.getElementById("live-close").addEventListener("click", () => { document.getElementById("mov-live").classList.remove("open"); updateSettingsBtn(); });
-
 document.getElementById("live-title").addEventListener("input", e => { liveConfig.title = e.target.value; saveLiveConfig(); });
 document.getElementById("live-tag").addEventListener("input", e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
 document.getElementById("live-footer").addEventListener("input", e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
@@ -1674,76 +1589,6 @@ document.getElementById("live-reset").addEventListener("click", () => {
   saveLiveConfig(); updateLiveUI();
   document.getElementById("live-status").textContent = "✓ Restaurado a valores por defecto";
   document.getElementById("live-status").className = "mstatus ok";
-});
-
-document.querySelectorAll("#ap-live .spbtn").forEach(b => {
-  b.addEventListener("click", () => {
-    liveConfig.style = b.dataset.lstyleAdmin;
-    saveLiveConfig();
-    document.querySelectorAll("#ap-live .spbtn").forEach(btn => btn.classList.toggle("active", btn === b));
-  });
-});
-document.getElementById("live-color-admin").addEventListener("input", e => { liveConfig.color = e.target.value; saveLiveConfig(); });
-document.getElementById("live-title-admin").addEventListener("input", e => { liveConfig.title = e.target.value; saveLiveConfig(); });
-document.getElementById("live-tag-admin").addEventListener("input", e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
-document.getElementById("live-footer-admin").addEventListener("input", e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
-document.getElementById("live-logo-admin").addEventListener("change", e => {
-  const file = e.target.files[0];
-  if (file) {
-    const reader = new FileReader();
-    reader.onload = ev => {
-      liveConfig.logo = ev.target.result;
-      saveLiveConfig();
-      document.getElementById("live-status-admin").textContent = "✓ Logo cargado";
-      document.getElementById("live-status-admin").className = "mstatus ok";
-    };
-    reader.readAsDataURL(file);
-  }
-});
-document.getElementById("live-publish-admin").addEventListener("click", () => {
-  const st = document.getElementById("live-status-admin");
-  st.textContent = "✓ Configuración publicada en vivo";
-  st.className = "mstatus ok";
-  toast("Configuración publicada ✓");
-});
-
-// ============================================================
-// UPDATE DB
-// ============================================================
-const adminFile=document.getElementById("admin-file");
-document.getElementById("admin-zone").addEventListener("click",()=>adminFile.click());
-adminFile.addEventListener("change",()=>{
-  const file=adminFile.files[0];if(!file)return;
-  const reader=new FileReader();
-  reader.onload=e=>{
-    try{
-      const raw=JSON.parse(e.target.result);
-      if(!Array.isArray(raw)||(!raw[0]?.title&&!raw[0]?.t))throw new Error();
-      const existingIds=new Set(SONGS.map(s=>s.id));
-      const newSongs=raw.map(slimSong).filter(s=>!existingIds.has(s.id)&&!deletedIds.has(s.id));
-      SONGS=[...SONGS,...newSongs];
-      saveDB();updateCount();deleteMarked.clear();renderDelList();
-      applyFilter();page=1;renderSongList();
-      document.getElementById("db-tag").textContent="(modificada)";
-      const st=document.getElementById("admin-status");
-      st.textContent=newSongs.length?`✓ ${newSongs.length} canciones nuevas agregadas (total: ${SONGS.length})`:`✓ Sin canciones nuevas. Total: ${SONGS.length}`;
-      st.className="mstatus ok";
-    }catch{
-      const st=document.getElementById("admin-status");st.textContent="✗ Formato inválido";st.className="mstatus err";
-    }
-  };
-  reader.readAsText(file);adminFile.value="";
-});
-document.getElementById("btn-reset-db").addEventListener("click",()=>{
-  if(!confirm("¿Restaurar la base de datos original?\nEsto también limpiará el historial de eliminaciones."))return;
-  localStorage.removeItem("holyrics_db");
-  localStorage.removeItem("holyrics_deleted");
-  deletedIds=new Set();
-  SONGS=[];
-  updateCount();deleteMarked.clear();renderDelList();
-  applyFilter();page=1;renderSongList();
-  document.getElementById("db-tag").textContent="";
-  const st=document.getElementById("admin-status");st.textContent="✓ Base de datos restaurada al repo";st.className="mstatus ok";
 });
 
 // ============================================================
@@ -2066,7 +1911,6 @@ document.addEventListener("keydown", e => {
   }
 
   updateCount();applyFilter();renderSongList();updateBadge();
-  applyHtmlExportToggle();
   document.getElementById("loading").style.display="none";
   document.getElementById("app").style.display="";
 
