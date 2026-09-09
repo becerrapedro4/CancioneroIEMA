@@ -263,14 +263,14 @@ function showLyric(data) {
         }
         nextEl.style.fontSize = nextFontSize;
     } else {
-        nextEl.textContent = '⬇ Fin de la canción';
+        nextEl.textContent = '';
         nextEl.classList.add('empty');
-        nextEl.style.fontSize = 'clamp(1.2rem, 2.5vw, 2.5rem)';
     }
 
     // ── REFERENCIA ──
+    const showRef = data.showRef !== false;
     const ref = data.reference || data.citation || '';
-    if (ref) {
+    if (ref && showRef) {
         refInfo.textContent = ref;
         refInfo.classList.remove('hidden');
     } else {

@@ -385,8 +385,16 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
     <div class="pres-stanza-list" id="pres-stanza-list"></div>
     <div class="pres-footer">
       <button class="pres-blank" id="pres-blank">⬜ Pantalla en blanco</button>
+      <label class="pres-check" title="Mostrar título en el viewer/stage">
+        <input type="checkbox" id="pres-title-toggle" checked>
+        <span>Título</span>
+      </label>
+      <label class="pres-check" title="Mostrar cita/referencia en el viewer/stage">
+        <input type="checkbox" id="pres-ref-toggle">
+        <span>Cita</span>
+      </label>
       <label class="pres-check" title="El viewer mostrará también la estrofa siguiente (atenuada)">
-        <input type="checkbox" id="pres-next">
+        <input type="checkbox" id="pres-next" checked>
         <span>Ver siguiente</span>
       </label>
       <button class="pres-stop" id="pres-stop">⏹ Terminar</button>
@@ -1843,6 +1851,8 @@ function loadMessages() {
 // ============================================================
 let _presRoom = localStorage.getItem('pres_room') || "", _presQueue = [], _presSongIdx = 0, _presIdx = 0, _presBlank = false;
 let _presShowNext = localStorage.getItem('pres_show_next') !== '0';
+let _presShowTitle = localStorage.getItem('pres_show_title') !== '0';
+let _presShowRef = localStorage.getItem('pres_show_ref') === '1';
 
 function presStanzas(song) {
   if (song.p && song.p.length) return song.p.map(p => ({ d: p.d || "", x: p.x || "" }));
@@ -1868,6 +1878,8 @@ function presWrite(blank) {
     idx: _presIdx,
     total: stanzas.length,
     blank: blank || false,
+    showTitle: _presShowTitle,
+    showRef: _presShowRef,
     showNext: _presShowNext,
     ts: Date.now()
   });
@@ -1908,6 +1920,8 @@ function presRenderUI() {
 
   document.getElementById("pres-blank").classList.toggle("on", _presBlank);
   document.getElementById("pres-blank").textContent = _presBlank ? "▶ Mostrar letra" : "⬜ Pantalla en blanco";
+  document.getElementById("pres-title-toggle").checked = _presShowTitle;
+  document.getElementById("pres-ref-toggle").checked = _presShowRef;
 }
 
 function presGoSong(delta) {
@@ -1956,6 +1970,16 @@ document.getElementById("pres-close").addEventListener("click", () => { document
 document.getElementById("pres-blank").addEventListener("click", () => { _presBlank = !_presBlank; presRenderUI(); presWrite(_presBlank); });
 document.getElementById("pres-prev-song").addEventListener("click", () => presGoSong(-1));
 document.getElementById("pres-next-song").addEventListener("click", () => presGoSong(1));
+document.getElementById("pres-title-toggle").addEventListener("change", e => {
+  _presShowTitle = e.target.checked;
+  localStorage.setItem("pres_show_title", _presShowTitle ? "1" : "0");
+  presWrite(_presBlank);
+});
+document.getElementById("pres-ref-toggle").addEventListener("change", e => {
+  _presShowRef = e.target.checked;
+  localStorage.setItem("pres_show_ref", _presShowRef ? "1" : "0");
+  presWrite(_presBlank);
+});
 document.getElementById("pres-next").addEventListener("change", e => {
   _presShowNext = e.target.checked;
   localStorage.setItem("pres_show_next", _presShowNext ? "1" : "0");
