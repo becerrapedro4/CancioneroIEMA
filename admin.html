@@ -281,8 +281,16 @@ async function loadSongs() {
   const st = document.getElementById("status");
   st.className = "status info"; st.textContent = "📥 Cargando canciones desde el repo…"; st.style.display = "block";
   try {
+    const pat = getPat();
+    if (!pat) { st.className = "status err"; st.textContent = "✗ Pegá tu GitHub Personal Access Token arriba"; return; }
     const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`, { headers: ghHeaders() });
-    if (!res.ok) throw new Error(`GitHub API ${res.status}: ${(await res.json()).message || res.statusText}`);
+    if (!res.ok) {
+      let msg = res.statusText;
+      try { const body = await res.json(); msg = body.message || msg; } catch(e) {}
+      if (res.status === 401) msg = "Token inválido o sin permisos. Verificá que tenga scope 'repo'";
+      if (res.status === 404) msg = `Archivo no encontrado en ${REPO}/${BRANCH}`;
+      throw new Error(`GitHub API ${res.status}: ${msg}`);
+    }
     const data = await res.json();
     fileSha = data.sha;
     const decoded = decodeURIComponent(escape(atob(data.content)));
@@ -304,7 +312,11 @@ async function saveToRepo(newSongs, message) {
       headers: ghHeaders(),
       body: JSON.stringify({ message, content, sha: fileSha, branch: BRANCH })
     });
-    if (!res.ok) throw new Error(`GitHub API ${res.status}: ${(await res.json()).message || res.statusText}`);
+    if (!res.ok) {
+      let msg = res.statusText;
+      try { const body = await res.json(); msg = body.message || msg; } catch(e) {}
+      throw new Error(`GitHub API ${res.status}: ${msg}`);
+    }
     const data = await res.json();
     fileSha = data.content.sha;
     songs = newSongs;
