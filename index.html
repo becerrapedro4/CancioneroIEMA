@@ -814,8 +814,10 @@ function renderLists(){
 
 function addToList(listId,ids){
   const l=LISTS.find(x=>x.id===listId);if(!l)return;
-  ids.forEach(id=>{if(!l.songIds.includes(id))l.songIds.push(id);});
+  const added=ids.filter(id=>!l.songIds.includes(id));
+  added.forEach(id=>l.songIds.push(id));
   saveLists();renderLists();
+  if(added.length)toast(`✓ ${added.length} canción${added.length!==1?"es":""} agregada${added.length!==1?"s":""} a "${l.name}"`);
 }
 function rmFromList(lid,sid,e){
   e.stopPropagation();
@@ -1311,6 +1313,7 @@ document.getElementById("atl-new").addEventListener("click",()=>{
     document.getElementById("btn-sel").classList.remove("active");
     document.getElementById("btn-sel").textContent="☰ Seleccionar";
     renderSongList();switchTab("lists");
+    toast(`✓ Lista "${name}" creada con ${_pendingIds.length} canción${_pendingIds.length!==1?"es":""}`);
   });
 });
 
@@ -1329,7 +1332,7 @@ document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>swit
 // NEW LIST FROM LISTS TAB
 // ============================================================
 document.getElementById("btn-newlist").addEventListener("click",()=>{
-  openNameModal("",name=>{LISTS.push({id:uid(),name,songIds:[]});saveLists();renderLists();});
+  openNameModal("",name=>{LISTS.push({id:uid(),name,songIds:[]});saveLists();renderLists();toast(`✓ Lista "${name}" creada`);});
 });
 
 // ============================================================
@@ -1577,23 +1580,16 @@ function shareList(lid) {
   if (!lst) return;
   const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
   if (!songs.length) { toast("⚠️ La lista está vacía"); return; }
-  let text = `📋 ${lst.name}\n` + "─".repeat(20) + "\n\n";
-  songs.forEach((s, i) => {
-    text += `${i+1}. ${s.t || "Sin título"}`;
-    if (s.a) text += ` — ${s.a}`;
-    text += "\n";
-    const stanzas = s.p?.length ? s.p : [{x: s.l || ""}];
-    text += stanzas.map(p => p.x || "").join("\n\n") + "\n\n";
-  });
-  text += `\n🎶 ${songs.length} canciones — Cancionero IEMA`;
-  navigator.clipboard.writeText(text).then(() => {
-    toast("📋 Lista copiada al portapapeles");
+  const ids = songs.map(s => s.id).join(",");
+  const name = encodeURIComponent(lst.name);
+  const url = `${location.origin}${location.pathname.replace("index.html","").replace(/\/$/,"")}/share.html?name=${name}#${ids}`;
+  navigator.clipboard.writeText(url).then(() => {
+    toast("🔗 Link copiado al portapapeles");
   }).catch(() => {
-    // Fallback: create textarea and copy
     const ta = document.createElement("textarea");
-    ta.value = text; document.body.appendChild(ta);
+    ta.value = url; document.body.appendChild(ta);
     ta.select(); document.execCommand("copy"); document.body.removeChild(ta);
-    toast("📋 Lista copiada al portapapeles");
+    toast("🔗 Link copiado al portapapeles");
   });
 }
 
@@ -1954,8 +1950,9 @@ document.addEventListener("keydown", e => {
     }
   }catch(e){}
 
-  // 3. Unir: repo primero, después creaciones locales
+  // 3. Unir: repo primero, después creaciones locales, ordenar alfabéticamente
   SONGS=[...repoSongs,...localOnly];
+  SONGS.sort((a,b)=>(a.t||"").localeCompare(b.t||"","es"));
   saveDB();
 
   if(repoSongs.length){

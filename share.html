@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>Lista Compartida — Cancionero IEMA</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#080808;--surface:#161616;--accent:#F5A623;--text:#DEDAD4;--muted:#444;--border:#1C1C1C}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,sans-serif;min-height:100vh}
+
+.header{padding:60px 28px 40px;max-width:680px;margin:0 auto}
+.hl{font-size:10px;letter-spacing:4px;text-transform:uppercase;color:var(--accent);margin-bottom:14px}
+h1{font-size:clamp(28px,7vw,48px);font-weight:700;line-height:1.05;letter-spacing:-1px}
+.hc{margin-top:10px;font-size:13px;color:var(--muted)}
+
+main{max-width:680px;margin:0 auto;padding:0 28px 80px}
+.ac-item{border-top:1px solid var(--border)}
+.ac-item:last-child{border-bottom:1px solid var(--border)}
+.ac-hdr{display:flex;align-items:center;gap:16px;padding:20px 0;cursor:pointer;user-select:none;-webkit-user-select:none}
+.ac-num{font-size:11px;color:var(--muted);min-width:22px;font-variant-numeric:tabular-nums}
+.ac-title{flex:1;font-size:15px;font-weight:500;transition:color .2s;color:var(--text)}
+.ac-item:hover .ac-title,.ac-item.open .ac-title{color:var(--accent)}
+.ac-icon{font-size:20px;color:var(--muted);transition:transform .3s,color .2s;line-height:1}
+.ac-item.open .ac-icon{transform:rotate(45deg);color:var(--accent)}
+.ac-body{max-height:0;overflow:hidden;transition:max-height .4s cubic-bezier(.4,0,.2,1)}
+.ac-item.open .ac-body{max-height:3000px}
+.ac-inner{padding:0 0 28px 38px}
+.stanza{margin-bottom:18px}
+.stanza-label{font-size:10px;letter-spacing:2.5px;text-transform:uppercase;color:var(--muted);margin-bottom:6px}
+.stanza-text{font-size:13px;line-height:2.1;white-space:pre-wrap;text-transform:uppercase;color:rgba(222,218,212,0.85)}
+
+.loading{display:flex;flex-direction:column;align-items:center;justify-content:center;padding:80px 20px;gap:14px;color:var(--muted)}
+.spinner{width:32px;height:32px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.empty{padding:60px 20px;text-align:center;color:var(--muted);font-size:13px}
+
+footer{text-align:center;padding:28px;color:var(--muted);font-size:11px;letter-spacing:1px;border-top:1px solid var(--border)}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="hl" id="tag">📋 Lista compartida</div>
+  <h1 id="title">Cargando…</h1>
+  <div class="hc" id="count"></div>
+</div>
+
+<main id="main">
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <span>Cargando canciones…</span>
+  </div>
+</main>
+
+<footer>Cancionero IEMA</footer>
+
+<script>
+const params = new URLSearchParams(location.search);
+const listName = decodeURIComponent(params.get("name") || "Lista");
+const hashIds = location.hash.replace("#", "").split(",").map(Number).filter(Boolean);
+
+document.getElementById("title").textContent = listName;
+document.title = `${listName} — Cancionero IEMA`;
+
+if (!hashIds.length) {
+  document.getElementById("main").innerHTML = '<div class="empty">No se encontraron canciones en este enlace.</div>';
+} else {
+  loadList();
+}
+
+async function loadList() {
+  try {
+    const res = await fetch("canciones.json?v=" + Date.now());
+    if (!res.ok) throw new Error("HTTP " + res.status);
+    const raw = await res.json();
+    const idSet = new Set(hashIds);
+    const songs = raw.filter(s => idSet.has(s.id));
+    // Mantener el orden del link
+    songs.sort((a, b) => hashIds.indexOf(a.id) - hashIds.indexOf(b.id));
+
+    document.getElementById("count").textContent = songs.length + " canciones";
+
+    if (!songs.length) {
+      document.getElementById("main").innerHTML = '<div class="empty">No se encontraron las canciones. Es posible que la base de datos se haya actualizado.</div>';
+      return;
+    }
+
+    document.getElementById("main").innerHTML = songs.map((s, i) => {
+      const stanzas = (s.lyrics?.paragraphs || []).map(p => ({
+        d: p.description || "",
+        x: p.text || ""
+      }));
+      return `<div class="ac-item">
+        <div class="ac-hdr">
+          <span class="ac-num">${String(i + 1).padStart(2, "0")}</span>
+          <span class="ac-title">${esc(s.title || "Sin título")}</span>
+          <span class="ac-icon">+</span>
+        </div>
+        <div class="ac-body"><div class="ac-inner">${
+          stanzas.length
+            ? stanzas.map(p => `<div class="stanza">${p.d ? `<div class="stanza-label">${esc(p.d)}</div>` : ""}<div class="stanza-text">${esc(p.x)}</div></div>`).join("")
+            : `<div class="stanza"><div class="stanza-text">${esc(s.lyrics?.full_text || "Sin letra")}</div></div>`
+        }</div></div>
+      </div>`;
+    }).join("");
+
+    document.querySelectorAll(".ac-hdr").forEach(h => {
+      h.addEventListener("click", () => {
+        const open = h.parentElement.classList.contains("open");
+        document.querySelectorAll(".ac-item.open").forEach(x => x.classList.remove("open"));
+        if (!open) h.parentElement.classList.add("open");
+      });
+    });
+
+  } catch (e) {
+    document.getElementById("main").innerHTML = `<div class="empty">Error al cargar: ${e.message}</div>`;
+  }
+}
+
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'&quot;'}[c])); }
+</script>
+</body>
+</html>
