@@ -2018,25 +2018,39 @@ document.addEventListener("keydown", e => {
 (async()=>{
   loadLists();
   loadDeletedIds();
-  let localData;
-  try{const s=localStorage.getItem("holyrics_db");if(s){localData=JSON.parse(s);document.getElementById("db-tag").textContent="(local)";}}catch{}
-  if(localData) SONGS=localData.map(s=>s.title!==undefined?slimSong(s):s);
-  else SONGS=[];
 
+  // 1. Repo como fuente de verdad (cache-busting para updates inmediatos)
+  let repoSongs=[];
   try{
-    const res=await fetch("canciones.json");
+    const res=await fetch("canciones.json?v="+Date.now());
     if(!res.ok)throw new Error("HTTP "+res.status);
     const raw=await res.json();
-    const existingIds=new Set(SONGS.map(s=>s.id));
-    const newSongs=raw.map(slimSong).filter(s=>!existingIds.has(s.id)&&!deletedIds.has(s.id));
-    if(newSongs.length){
-      SONGS=[...SONGS,...newSongs];
-      saveDB();
-      document.getElementById("db-tag").textContent=`(+${newSongs.length} del repo)`;
-    }else if(!localData){
-      document.getElementById("db-tag").textContent="(repo)";
+    repoSongs=raw.map(slimSong).filter(s=>!deletedIds.has(s.id));
+  }catch(e){console.warn("No se pudo cargar canciones.json:",e);}
+
+  // 2. LocalStorage: solo conservar canciones CREADAS POR EL USUARIO (no están en el repo)
+  let localOnly=[];
+  try{
+    const s=localStorage.getItem("holyrics_db");
+    if(s&&repoSongs.length){
+      const localData=JSON.parse(s);
+      const repoIds=new Set(repoSongs.map(s=>s.id));
+      localOnly=localData
+        .map(s=>s.title!==undefined?slimSong(s):s)
+        .filter(s=>!repoIds.has(s.id)&&!deletedIds.has(s.id));
     }
-  }catch(e){if(!localData)console.warn("No se pudo cargar canciones.json:",e);}
+  }catch(e){}
+
+  // 3. Unir: repo primero, después creaciones locales
+  SONGS=[...repoSongs,...localOnly];
+  saveDB();
+
+  if(repoSongs.length){
+    document.getElementById("db-tag").textContent=localOnly.length
+      ?`(repo + ${localOnly.length} local)`:"(repo)";
+  }else{
+    document.getElementById("db-tag").textContent=localOnly.length?"(local)":"";
+  }
 
   updateCount();applyFilter();renderSongList();updateBadge();
   applyHtmlExportToggle();
