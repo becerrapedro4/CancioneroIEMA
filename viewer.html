@@ -42,7 +42,9 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 }
 .lyric.out{opacity:0;transform:translateY(14px)}
 .lyric.in{animation:lyricIn .35s ease forwards}
+.lyric.next{margin-top:5vh;font-weight:400;color:rgba(255,255,255,.4);max-width:78vw}
 @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
+.hidden{display:none}
 
 .ref-info{
   position:absolute;bottom:5vh;left:50%;transform:translateX(-50%);
@@ -78,20 +80,17 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 <div class="stage hidden" id="stage">
   <div class="song-title hidden" id="song-title"></div>
   <div class="lyric" id="lyric"></div>
+  <div class="lyric next hidden" id="lyric-next"></div>
   <div class="ref-info hidden" id="ref-info"></div>
   <div class="bible-ref hidden" id="bible-ref"></div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
 <script>
-firebase.initializeApp({
-  apiKey:"AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-  authDomain:"browser-songs.firebaseapp.com",
-  databaseURL:"https://browser-songs-default-rtdb.firebaseio.com",
-  projectId:"browser-songs"
-});
-const db=firebase.database();
+// 🔥 INICIALIZACIÓN DE FIREBASE (ver js/firebase-init.js)
+const db=window.db;
 
 const params=new URLSearchParams(location.search);
 let room=params.get("room")||localStorage.getItem("pres_room")||"";
@@ -102,6 +101,7 @@ localStorage.setItem("pres_room",room);
 
 const stage=document.getElementById("stage");
 const lyricEl=document.getElementById("lyric");
+const lyricNextEl=document.getElementById("lyric-next");
 const titleEl=document.getElementById("song-title");
 const refInfo=document.getElementById("ref-info");
 const bibleRef=document.getElementById("bible-ref");
@@ -182,8 +182,12 @@ function calcFontSize(text, isTitle){
 function showLyric(data){
   if(!data || data.stop || data.blank){
     stage.classList.add("hidden");
+    lyricNextEl.classList.add("hidden");
     return;
   }
+  
+  const stanzas = data.estrofas || [data.estrofa];
+  const idx = Math.min(data.idx || 0, Math.max(stanzas.length - 1, 0));
   
   const isBible = data.type === "bible";
   const showTitle = data.showTitle !== undefined ? data.showTitle : config.showTitle;
@@ -203,13 +207,23 @@ function showLyric(data){
   lyricEl.classList.add("out");
   
   setTimeout(()=>{
-    lyricEl.textContent = data.estrofa || "";
-    lyricEl.style.fontSize = calcFontSize(data.estrofa || "", false);
+    lyricEl.textContent = stanzas[idx] || data.estrofa || "";
+    lyricEl.style.fontSize = calcFontSize(lyricEl.textContent, false);
     lyricEl.classList.remove("out");
     void lyricEl.offsetWidth;
     lyricEl.classList.add("in");
     stage.classList.remove("hidden");
   },200);
+
+  // Siguiente estrofa (opcional, activado desde el presentador)
+  const nextText = data.showNext ? (stanzas[idx+1] || "") : "";
+  if(nextText){
+    lyricNextEl.textContent = nextText;
+    lyricNextEl.style.fontSize = calcFontSize(nextText, false);
+    lyricNextEl.classList.remove("hidden");
+  }else{
+    lyricNextEl.classList.add("hidden");
+  }
 
   // Referencia
   const ref = data.reference || data.citation || "";
@@ -240,6 +254,9 @@ window.addEventListener("resize", ()=>{
     if(!titleEl.classList.contains("hidden")){
       titleEl.style.fontSize = calcFontSize(titleEl.textContent, true);
     }
+  }
+  if(!lyricNextEl.classList.contains("hidden")){
+    lyricNextEl.style.fontSize = calcFontSize(lyricNextEl.textContent, false);
   }
 });
 

@@ -155,18 +155,13 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
 
 <script>
 // ============================================================
-// 🔥 INICIALIZACIÓN DE FIREBASE
+// 🔥 INICIALIZACIÓN DE FIREBASE (ver js/firebase-init.js)
 // ============================================================
-firebase.initializeApp({
-    apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-    authDomain: "browser-songs.firebaseapp.com",
-    databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
-    projectId: "browser-songs"
-});
-const db = firebase.database();
+const db = window.db;
 
 // ============================================================
 // PARÁMETROS DE URL

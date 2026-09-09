@@ -129,15 +129,10 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
 <script>
-/* ── FIREBASE ── */
-firebase.initializeApp({
-  apiKey:"AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-  authDomain:"browser-songs.firebaseapp.com",
-  databaseURL:"https://browser-songs-default-rtdb.firebaseio.com",
-  projectId:"browser-songs"
-});
-const db=firebase.database();
+/* ── FIREBASE (ver js/firebase-init.js) ── */
+const db=window.db;
 const getRoom=()=>localStorage.getItem("pres_room")||"";
 
 /* ── STATE ── */

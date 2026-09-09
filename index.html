@@ -6,6 +6,7 @@
 <title>Cancionero</title>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
+<script src="js/firebase-init.js"></script>
 <style>
 /* ===== TODOS LOS ESTILOS ===== */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -114,6 +115,8 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .lca{background:transparent;border:1px solid var(--border);border-radius:7px;padding:6px 10px;font-size:12px;color:var(--muted);font-family:'DM Sans',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
 .lca:hover{border-color:var(--accent);color:var(--accent)}
 .lca.danger:hover{border-color:var(--red);color:var(--red)}
+.lca.pres{border-color:rgba(76,175,125,.4);color:var(--green)}
+.lca.pres:hover{border-color:var(--green);color:var(--green)}
 .lcard-body{display:none;border-top:1px solid var(--border)}
 .lcard.expanded .lcard-body{display:block}
 .lcard-songs{padding:8px}
@@ -225,6 +228,14 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .pres-stop{padding:11px 16px;border-radius:9px;border:none;background:var(--surface2);font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;transition:opacity .15s}
 .pres-stop:hover{opacity:.7}
 .dfbtn.present{background:rgba(76,175,125,.12);color:var(--green);border:1px solid rgba(76,175,125,.3)}
+
+.pres-queue-row{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;flex-shrink:0}
+.pres-queue-info{font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted)}
+.pres-queue-acts{display:flex;gap:6px}
+.pres-nav{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:16px;cursor:pointer;line-height:1;transition:all .15s;flex-shrink:0}
+.pres-nav:hover{border-color:var(--accent);color:var(--accent)}
+.pres-check{display:flex;align-items:center;gap:7px;cursor:pointer;user-select:none;font-size:12px;color:var(--muted);white-space:nowrap}
+.pres-check input{width:16px;height:16px;accent-color:var(--accent);cursor:pointer;flex-shrink:0}
 </style>
 </head>
 <body>
@@ -364,9 +375,20 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
       </div>
       <button class="mclose" id="pres-close" style="margin-top:-4px">×</button>
     </div>
+    <div class="pres-queue-row" id="pres-queue-row">
+      <span class="pres-queue-info" id="pres-queue-info"></span>
+      <span class="pres-queue-acts">
+        <button class="pres-nav" id="pres-prev-song" title="Canción anterior (Re Pág)">‹</button>
+        <button class="pres-nav" id="pres-next-song" title="Siguiente canción (Av Pág)">›</button>
+      </span>
+    </div>
     <div class="pres-stanza-list" id="pres-stanza-list"></div>
     <div class="pres-footer">
       <button class="pres-blank" id="pres-blank">⬜ Pantalla en blanco</button>
+      <label class="pres-check" title="El viewer mostrará también la estrofa siguiente (atenuada)">
+        <input type="checkbox" id="pres-next">
+        <span>Ver siguiente</span>
+      </label>
       <button class="pres-stop" id="pres-stop">⏹ Terminar</button>
     </div>
   </div>
@@ -553,15 +575,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 
 <script>
 // ============================================================
-// 🔥 INICIALIZACIÓN DE FIREBASE
+// 🔥 INICIALIZACIÓN DE FIREBASE (ver js/firebase-init.js)
 // ============================================================
-firebase.initializeApp({
-  apiKey: "AIzaSyDcstZpX0ji9HAdK9POboYQPTMcc6utC1E",
-  authDomain: "browser-songs.firebaseapp.com",
-  databaseURL: "https://browser-songs-default-rtdb.firebaseio.com",
-  projectId: "browser-songs"
-});
-const db = firebase.database();
+const db = window.db;
 
 // ============================================================
 // FUNCIONES DE AYUDA
@@ -636,7 +652,7 @@ function applyAdminUI(){
   renderLists();
 }
 function updateSettingsBtn(){
-  const anyOpen=document.querySelector(".mov.open");
+  const anyOpen=document.querySelector(".mov.open")||document.querySelector(".detail-ov.open");
   document.getElementById("btn-settings").style.opacity=anyOpen?"0":"1";
   document.getElementById("btn-settings").style.pointerEvents=anyOpen?"none":"auto";
 }
@@ -708,6 +724,7 @@ function showDetail(song){
     ?song.p.map((par,i)=>`<div class="lyric-block">${par.d?`<div class="lyric-desc">${esc(par.d)}</div>`:""}<div class="lyric-text">${hlHtml(par.x||"",q)}</div>${i<song.p.length-1?'<hr class="lyric-div">':""}</div>`).join("")
     :`<div style="color:var(--muted);font-size:14px">Sin letra</div>`;
   document.getElementById("detail-ov").classList.add("open");
+  updateSettingsBtn();
 }
 
 // ============================================================
@@ -769,11 +786,11 @@ function renderLists(){
       <div class="lcard-hdr" data-lid="${lst.id}">
         <span class="lcard-chev">›</span>
         <span class="lcard-name">${esc(lst.name)}</span>
-        <span class="lcard-cnt">${songs.length} canc.</span>
-        <div class="lcard-acts" onclick="event.stopPropagation()">
-          <button class="lca" onclick="renameList('${lst.id}')">✏️</button>
-          <button class="lca danger" onclick="deleteList('${lst.id}')">🗑️</button>
-        </div>
+        <span class="lcard-cnt">${songs.length} canc.</span>          <div class="lcard-acts" onclick="event.stopPropagation()">
+            <button class="lca pres" onclick="presentList('${lst.id}')" title="Presentar toda la lista">▶</button>
+            <button class="lca" onclick="renameList('${lst.id}')">✏️</button>
+            <button class="lca danger" onclick="deleteList('${lst.id}')">🗑️</button>
+          </div>
       </div>
       <div class="lcard-body">
         <div class="lcard-songs">
@@ -858,45 +875,13 @@ function renameList(lid){
 }
 
 // ============================================================
-// PRESENT SONG (envía todas las estrofas a Firebase)
+// PRESENT SONG (abre el presentador y envía a Firebase)
 // ============================================================
 function presentSong(song) {
-  const room = getRoom();
-  if (!room) { toast("⚠️ Configurá la sala en el Admin del Cancionero"); return; }
-  const db = getFirebaseDb();
-  if (!db) { toast("❌ Error conectando a Firebase"); return; }
-
-  const estrofas = song.p ? song.p.map(p => p.x || "") : [song.l || ""];
-  const titulo = song.t || "Canción";
-  const idx = 0;
-
-  const songData = {
-    type: "song",
-    titulo: titulo,
-    estrofa: estrofas[0] || "",
-    estrofas: estrofas,
-    idx: idx,
-    total: estrofas.length,
-    reference: "",
-    citation: "",
-    version: "",
-    showTitle: true,
-    showRef: false,
-    ts: Date.now(),
-    blank: false,
-    stop: false
-  };
-
-  db.ref(`rooms/${room}/currentSong`).set(songData)
-    .then(() => {
-      toast(`📺 Presentando: ${titulo}`);
-    })
-    .catch((err) => {
-      toast("❌ Error al presentar: " + err.message);
-    });
-
-  // Abrir panel presentador
+  if (!getRoom()) { toast("⚠️ Configurá la sala en el Admin del Cancionero"); return; }
+  if (!getFirebaseDb()) { toast("❌ Error conectando a Firebase"); return; }
   openPresenter(song);
+  toast(`📺 Presentando: ${song.t || "Canción"}`);
 }
 
 function presentFromList(lid, sid) {
@@ -1401,8 +1386,13 @@ document.getElementById("song-list").addEventListener("click",e=>{
     row.classList.add("active");showDetail(song);
   }
 });
-document.getElementById("d-close").addEventListener("click",()=>{document.getElementById("detail-ov").classList.remove("open");document.querySelectorAll(".song-row.active").forEach(r=>r.classList.remove("active"));});
-document.getElementById("detail-ov").addEventListener("click",e=>{if(e.target===document.getElementById("detail-ov")){document.getElementById("detail-ov").classList.remove("open");document.querySelectorAll(".song-row.active").forEach(r=>r.classList.remove("active"));}});
+function closeDetail(){
+  document.getElementById("detail-ov").classList.remove("open");
+  document.querySelectorAll(".song-row.active").forEach(r=>r.classList.remove("active"));
+  updateSettingsBtn();
+}
+document.getElementById("d-close").addEventListener("click",closeDetail);
+document.getElementById("detail-ov").addEventListener("click",e=>{if(e.target===document.getElementById("detail-ov"))closeDetail();});
 
 // ============================================================
 // EDIT BUTTON
@@ -1418,7 +1408,7 @@ document.getElementById("d-delete").addEventListener("click",()=>{
   deletedIds.add(_detailSong.id);saveDeletedIds();
   SONGS=SONGS.filter(s=>s.id!==_detailSong.id);
   saveDB();updateCount();applyFilter();page=1;renderSongList();
-  document.getElementById("detail-ov").classList.remove("open");
+  closeDetail();
   _detailSong=null;
 });
 document.getElementById("search").addEventListener("input",e=>{query=e.target.value;page=1;applyFilter();renderSongList();});
@@ -1849,9 +1839,10 @@ function loadMessages() {
 }
 
 // ============================================================
-// PRESENTER
+// PRESENTER (cola de canciones)
 // ============================================================
-let _presRoom = localStorage.getItem('pres_room') || "", _presSong = null, _presIdx = 0, _presBlank = false, _presStanzas = [];
+let _presRoom = localStorage.getItem('pres_room') || "", _presQueue = [], _presSongIdx = 0, _presIdx = 0, _presBlank = false;
+let _presShowNext = localStorage.getItem('pres_show_next') !== '0';
 
 function presStanzas(song) {
   if (song.p && song.p.length) return song.p.map(p => ({ d: p.d || "", x: p.x || "" }));
@@ -1859,28 +1850,44 @@ function presStanzas(song) {
   return raw.split(/\n{2,}/).map((x, i) => ({ d: `Estrofa ${i+1}`, x: x.trim() })).filter(s => s.x);
 }
 
+function presCurrent() { return _presQueue[_presSongIdx] || null; }
+function presSong() { const c = presCurrent(); return c ? c.song : null; }
+function presStanzaList() { const c = presCurrent(); return c ? c.stanzas : []; }
+
 function presWrite(blank) {
   const db = getFirebaseDb(); if (!db || !_presRoom) return;
-  const stanza = _presStanzas[_presIdx] || { d: "", x: "" };
+  const song = presSong(); if (!song) return;
+  const stanzas = presStanzaList();
+  const stanza = stanzas[_presIdx] || { d: "", x: "" };
   db.ref(`rooms/${_presRoom}/currentSong`).set({
-    id: _presSong.id,
-    titulo: _presSong.t || "",
+    id: song.id,
+    titulo: song.t || "",
     estrofa: stanza.x,
     label: stanza.d,
+    estrofas: stanzas.map(s => s.x),
     idx: _presIdx,
-    total: _presStanzas.length,
+    total: stanzas.length,
     blank: blank || false,
+    showNext: _presShowNext,
     ts: Date.now()
   });
 }
 
 function presRenderUI() {
-  document.getElementById("pres-title").textContent = _presSong?.t || "";
-  document.getElementById("pres-artist").textContent = _presSong?.a || "";
-  document.getElementById("pres-artist").style.display = _presSong?.a ? "" : "none";
+  const song = presSong();
+  const stanzas = presStanzaList();
+  document.getElementById("pres-title").textContent = song?.t || "";
+  document.getElementById("pres-artist").textContent = song?.a || "";
+  document.getElementById("pres-artist").style.display = song?.a ? "" : "none";
+
+  const qi = document.getElementById("pres-queue-info");
+  qi.textContent = _presQueue.length > 1 ? `Lista · ${_presSongIdx+1} de ${_presQueue.length}` : "";
+  document.getElementById("pres-prev-song").style.display = _presQueue.length > 1 ? "" : "none";
+  document.getElementById("pres-next-song").style.display = _presQueue.length > 1 ? "" : "none";
+  document.getElementById("pres-next").checked = _presShowNext;
 
   const list = document.getElementById("pres-stanza-list");
-  list.innerHTML = _presStanzas.map((p, i) => `
+  list.innerHTML = stanzas.map((p, i) => `
     <div class="pres-stanza${i===_presIdx&&!_presBlank?" active":""}" data-pi="${i}">
       ${p.d ? `<div class="pres-slabel">${esc(p.d)}</div>` : ""}
       <div class="pres-stext">${esc(p.x || "")}</div>
@@ -1903,7 +1910,18 @@ function presRenderUI() {
   document.getElementById("pres-blank").textContent = _presBlank ? "▶ Mostrar letra" : "⬜ Pantalla en blanco";
 }
 
-function openPresenter(song) {
+function presGoSong(delta) {
+  if (_presQueue.length < 2) return;
+  const ni = Math.max(0, Math.min(_presQueue.length - 1, _presSongIdx + delta));
+  if (ni === _presSongIdx) return;
+  _presSongIdx = ni;
+  _presBlank = false;
+  _presIdx = delta > 0 ? 0 : Math.max(0, presStanzaList().length - 1);
+  presRenderUI();
+  presWrite(false);
+}
+
+function openQueue(songs, startIdx) {
   const db = getFirebaseDb(); if (!db) return;
   if (!_presRoom) {
     const r = prompt("Nombre de la sala:", "iglesia");
@@ -1911,18 +1929,38 @@ function openPresenter(song) {
     _presRoom = r.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
     localStorage.setItem("pres_room", _presRoom);
   }
-  _presSong = song;
+  _presQueue = songs.map(s => ({ song: s, stanzas: presStanzas(s) }));
+  _presSongIdx = Math.max(0, Math.min(startIdx || 0, _presQueue.length - 1));
   _presIdx = 0;
   _presBlank = false;
-  _presStanzas = presStanzas(song);
   presRenderUI();
   presWrite(false);
   document.getElementById("mov-pres").classList.add("open");
   updateSettingsBtn();
 }
 
+function openPresenter(song) {
+  openQueue([song], 0);
+}
+
+function presentList(lid) {
+  const lst = LISTS.find(l => l.id === lid);
+  if (!lst) return;
+  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  if (!songs.length) { toast("⚠️ La lista está vacía o no tiene canciones válidas"); return; }
+  openQueue(songs, 0);
+  toast(`▶ Presentando lista: ${lst.name}`);
+}
+
 document.getElementById("pres-close").addEventListener("click", () => { document.getElementById("mov-pres").classList.remove("open"); updateSettingsBtn(); });
 document.getElementById("pres-blank").addEventListener("click", () => { _presBlank = !_presBlank; presRenderUI(); presWrite(_presBlank); });
+document.getElementById("pres-prev-song").addEventListener("click", () => presGoSong(-1));
+document.getElementById("pres-next-song").addEventListener("click", () => presGoSong(1));
+document.getElementById("pres-next").addEventListener("change", e => {
+  _presShowNext = e.target.checked;
+  localStorage.setItem("pres_show_next", _presShowNext ? "1" : "0");
+  presWrite(_presBlank);
+});
 document.getElementById("pres-stop").addEventListener("click", () => {
   if (!_presRoom) return;
   const db = getFirebaseDb();
@@ -1936,11 +1974,16 @@ document.getElementById("pres-stop").addEventListener("click", () => {
 // ============================================================
 document.addEventListener("keydown", e => {
   if (!document.getElementById("mov-pres").classList.contains("open")) return;
+  if (e.key === "PageDown") { presGoSong(1); return; }
+  if (e.key === "PageUp") { presGoSong(-1); return; }
   if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-    if (_presIdx < _presStanzas.length - 1) { _presIdx++; _presBlank = false; presRenderUI(); presWrite(false); }
+    const stanzas = presStanzaList();
+    if (_presIdx < stanzas.length - 1) { _presIdx++; _presBlank = false; presRenderUI(); presWrite(false); }
+    else if (_presQueue.length > 1 && _presSongIdx < _presQueue.length - 1) presGoSong(1);
   }
   if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
     if (_presIdx > 0) { _presIdx--; _presBlank = false; presRenderUI(); presWrite(false); }
+    else if (_presQueue.length > 1 && _presSongIdx > 0) presGoSong(-1);
   }
   if (e.key === " ") { e.preventDefault(); _presBlank = !_presBlank; presRenderUI(); presWrite(_presBlank); }
 });
