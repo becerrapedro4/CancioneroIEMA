@@ -281,30 +281,31 @@ async function loadSongs() {
   const st = document.getElementById("status");
   st.className = "status info"; st.textContent = "📥 Cargando canciones desde el repo…"; st.style.display = "block";
   try {
+    // 1. Cargar contenido raw (sin límite de tamaño)
+    const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${FILE}`;
+    console.log("Fetching raw:", rawUrl);
+    const rawRes = await fetch(rawUrl + "?v=" + Date.now());
+    if (!rawRes.ok) throw new Error(`No se pudo cargar ${FILE}: HTTP ${rawRes.status}`);
+    const rawText = await rawRes.text();
+    songs = JSON.parse(rawText);
+    console.log("Songs loaded:", songs.length);
+
+    // 2. Obtener SHA del archivo vía tree API (para poder commit después)
     const pat = getPat();
-    if (!pat) { st.className = "status err"; st.textContent = "✗ Pegá tu GitHub Personal Access Token arriba"; return; }
-    const url = `https://api.github.com/repos/${REPO}/contents/${FILE}?ref=${BRANCH}`;
-    console.log("Fetching:", url);
-    const res = await fetch(url, { headers: ghHeaders() });
-    console.log("Response:", res.status, res.statusText);
-    if (!res.ok) {
-      let msg = res.statusText;
-      try { const body = await res.json(); msg = body.message || msg; } catch(e) {
-        msg = `HTTP ${res.status} — respuesta no es JSON. Verificá el token y los permisos.`;
-      }
-      if (res.status === 401) msg = "Token inválido o sin permisos. Verificá que tenga scope 'repo'";
-      if (res.status === 404) msg = `Archivo no encontrado: ${REPO}/${FILE} en branch ${BRANCH}`;
-      throw new Error(msg);
+    if (pat) {
+      try {
+        const treeRes = await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`, { headers: ghHeaders() });
+        if (treeRes.ok) {
+          const tree = await treeRes.json();
+          const entry = tree.tree.find(f => f.path === FILE);
+          fileSha = entry ? entry.sha : null;
+          console.log("File SHA:", fileSha ? fileSha.slice(0,7) : "not found");
+        }
+      } catch(e) { console.warn("No se pudo obtener SHA:", e); }
     }
-    const text = await res.text();
-    console.log("Response length:", text.length, "starts with:", text.slice(0,50));
-    const data = JSON.parse(text);
-    if (!data.sha || !data.content) throw new Error("Respuesta de GitHub incompleta (falta sha o content)");
-    fileSha = data.sha;
-    const decoded = decodeURIComponent(escape(atob(data.content)));
-    songs = JSON.parse(decoded);
+
     renderList();
-    st.className = "status ok"; st.textContent = `✓ ${songs.length} canciones cargadas (SHA: ${fileSha.slice(0,7)})`;
+    st.className = "status ok"; st.textContent = `✓ ${songs.length} canciones cargadas${fileSha ? ` (SHA: ${fileSha.slice(0,7)})` : ""}`;
   } catch (e) {
     console.error("loadSongs error:", e);
     st.className = "status err"; st.textContent = "✗ Error: " + e.message;
