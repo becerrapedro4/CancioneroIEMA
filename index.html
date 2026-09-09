@@ -2028,16 +2028,16 @@ document.addEventListener("keydown", e => {
     repoSongs=raw.map(slimSong).filter(s=>!deletedIds.has(s.id));
   }catch(e){console.warn("No se pudo cargar canciones.json:",e);}
 
-  // 2. LocalStorage: solo conservar canciones CREADAS POR EL USUARIO (no están en el repo)
+  // 2. LocalStorage: solo conservar canciones CREADAS POR EL USUARIO
+  //    (IDs string como "1780267002337_abc" del admin, no IDs numéricos del repo)
   let localOnly=[];
   try{
     const s=localStorage.getItem("holyrics_db");
     if(s&&repoSongs.length){
       const localData=JSON.parse(s);
-      const repoIds=new Set(repoSongs.map(s=>s.id));
       localOnly=localData
         .map(s=>s.title!==undefined?slimSong(s):s)
-        .filter(s=>!repoIds.has(s.id)&&!deletedIds.has(s.id));
+        .filter(s=>typeof s.id==="string"&&!deletedIds.has(s.id));
     }
   }catch(e){}
 
