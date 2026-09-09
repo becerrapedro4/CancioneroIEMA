@@ -440,12 +440,32 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   </div>
 </div>
 
+<div class="mov" id="mov-settings">
+  <div class="modal">
+    <button class="mclose" id="settings-close">×</button>
+    <div class="modal-title">⚙️ Configuración</div>
+    <div class="modal-sub" style="margin-bottom:20px">Ajustes de presentsación</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Nombre de sala</div>
+    <input class="minput" id="settings-sala" placeholder="ej: iglesia" maxlength="60" type="text" autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="mstatus" id="settings-sala-status" style="margin-top:8px"></div>
+    <button class="mbtn pri" id="settings-sala-save" style="width:100%;margin-top:8px">Guardar sala</button>
+    <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Exportar última lista</div>
+      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Seleccioná una lista en "Mis Listas" y volvé acá</div>
+      <div style="display:flex;gap:8px">
+        <button class="mbtn sec" id="settings-pdf-one" style="flex:1">🖨 1 canción/hoja</button>
+        <button class="mbtn sec" id="settings-pdf-multi" style="flex:1">🖨 Varias/hoja</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div class="mov" id="mov-admin">
   <div class="modal wide">
     <div style="flex-shrink:0">
       <button class="mclose" id="admin-close">×</button>
-      <div class="modal-title">Admin</div>
-      <div class="modal-sub" style="margin-bottom:16px">Tap × para cerrar</div>
+      <div class="modal-title">🔐 Admin</div>
+      <div class="modal-sub" style="margin-bottom:16px">Gestión de canciones y base de datos</div>
       <div class="admin-select-wrap">
         <select class="admin-nav" id="admin-nav">
           <option value="nueva">✏️ Nueva canción</option>
@@ -750,16 +770,20 @@ function renderLists(){
             <span class="color-pick-label">Color:</span>
             <input type="color" class="list-color-pick" data-lid="${lst.id}" value="${lst.color||liveConfig.color||'#E55A00'}">
           </label>
-          <button class="exp-btn html" onclick="exportList('${lst.id}','html')">⬇ HTML</button>
+          <button class="exp-btn html admin-only" onclick="exportList('${lst.id}','html')">⬇ HTML</button>
           <button class="exp-btn live" onclick="exportList('${lst.id}','live')">🌐 Ver en vivo</button>
-          <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')">🖨 PDF</button>
+          <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf')" title="Una canción por hoja">🖨 1/hoja</button>
+          <button class="exp-btn pdf" onclick="exportList('${lst.id}','pdf-multi')" title="Varias canciones por hoja">🖨 Varias</button>
           <button class="exp-btn" onclick="shareList('${lst.id}')" style="background:rgba(91,156,246,.15);color:#5B9CF6;border:1px solid rgba(91,156,246,.3)">📋 Compartir</button>
         </div>
       </div>
     </div>`;
   }).join("");
   document.querySelectorAll(".lcard-hdr").forEach(h=>{
-    h.addEventListener("click",()=>document.getElementById("lc-"+h.dataset.lid).classList.toggle("expanded"));
+    h.addEventListener("click",()=>{
+      _lastListId = h.dataset.lid;
+      document.getElementById("lc-"+h.dataset.lid).classList.toggle("expanded");
+    });
   });
   document.querySelectorAll(".lcsr").forEach(row=>{
     row.addEventListener("click",e=>{
@@ -1164,6 +1188,7 @@ function exportList(lid, type) {
     win.document.close();
   } else {
     // PDF
+    const isMulti = type === "pdf-multi";
     const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
     const indexRows = songs.map((s,i)=>`
       <div class="idx-row">
@@ -1182,7 +1207,8 @@ function exportList(lid, type) {
         ${p.d?`<div class="slabel">${esc(p.d)}</div>`:""}
         <div class="stext">${esc(p.x||"")}</div>
       `).join('<div class="sdiv"></div>');
-      return `<div class="page">
+      const pageClass = isMulti ? "song-block" : "page";
+      return `<div class="${pageClass}">
         <div class="pheader">
           <div class="ptitle">${esc(s.t||"Sin título")}</div>
           ${s.a?`<div class="partist">${esc(s.a)}</div>`:""}
@@ -1208,6 +1234,8 @@ body{font-family:system-ui,-apple-system,sans-serif;color:#111;background:#fff}
 .idx-artist{font-size:9pt;color:#999;margin-top:1px}
 .page{page-break-after:always;page-break-inside:avoid;height:257mm;display:flex;flex-direction:column}
 .page:last-child{page-break-after:avoid}
+.song-block{page-break-inside:avoid;margin-bottom:20px;border-bottom:1px solid #ddd;padding-bottom:16px}
+.song-block:last-child{border-bottom:none}
 .pheader{flex-shrink:0;border-bottom:2px solid #111;padding-bottom:8px;margin-bottom:10px}
 .ptitle{font-size:20pt;font-weight:700;text-transform:uppercase;letter-spacing:-.5px;line-height:1.1}
 .partist{font-size:9pt;color:#777;letter-spacing:2px;text-transform:uppercase;margin-top:3px}
@@ -1434,7 +1462,34 @@ document.getElementById("mov-edit").addEventListener("click",e=>{if(e.target===d
 // ============================================================
 // ADMIN
 // ============================================================
-document.getElementById("btn-settings").addEventListener("click",openAdmin);
+let _lastListId = null;
+function openSettings() {
+  document.getElementById("settings-sala").value = getRoom();
+  document.getElementById("settings-sala-status").className = "mstatus";
+  document.getElementById("mov-settings").classList.add("open");
+  updateSettingsBtn();
+}
+document.getElementById("btn-settings").addEventListener("click", openSettings);
+document.getElementById("settings-close").addEventListener("click", () => { document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn(); });
+document.getElementById("mov-settings").addEventListener("click", e => { if (e.target === document.getElementById("mov-settings")) { document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn(); } });
+document.getElementById("settings-sala-save").addEventListener("click", () => {
+  const val = document.getElementById("settings-sala").value.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
+  const st = document.getElementById("settings-sala-status");
+  if (!val) { st.textContent = "El nombre no puede estar vacío."; st.className = "mstatus err"; return; }
+  localStorage.setItem("pres_room", val);
+  st.textContent = `✓ Sala guardada: "${val}"`; st.className = "mstatus ok";
+});
+document.getElementById("settings-pdf-one").addEventListener("click", () => {
+  if (!_lastListId) { toast("⚠️ Abrí una lista en Mis Listas primero"); return; }
+  exportList(_lastListId, "pdf");
+  document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn();
+});
+document.getElementById("settings-pdf-multi").addEventListener("click", () => {
+  if (!_lastListId) { toast("⚠️ Abrí una lista en Mis Listas primero"); return; }
+  exportList(_lastListId, "pdf-multi");
+  document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn();
+});
+
 let tapN=0,tapT=null;
 document.getElementById("header-tap").addEventListener("click",()=>{
   tapN++;clearTimeout(tapT);
@@ -1443,7 +1498,7 @@ document.getElementById("header-tap").addEventListener("click",()=>{
 });
 function openAdmin(){
   if(!isAdmin){isAdmin=true;applyAdminUI();}
-  switchAdminTab("update");
+  switchAdminTab("nueva");
   deleteMarked.clear();renderDelList();
   document.getElementById("sala-input").value=getRoom();
   updateSalaUrl(getRoom());
