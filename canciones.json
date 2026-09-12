@@ -511,7 +511,7 @@
   },
   {
     "id": 1788092068840,
-    "title": "",
+    "title": "Bueno es alabarte, Jehová",
     "artist": "",
     "author": "",
     "note": "",
@@ -524,34 +524,27 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "¡Bueno es alabarte, Jehová!\nY cantar salmos a tu nombre.\n\n¡Bueno es alabarte, Jehová!\nY cantar salmos a tu nombre.\n\nAnunciar por la mañana tu misericordia\nY tu fidelidad de noche\n\n¿Quién es el que vive?\n¡Cristo es el que vive!",
+      "full_text": "¡Bueno es alabarte, Jehová!\nY cantar a tu nombre.\n\n¡Bueno es alabarte, Jehová!\nY cantar a tu nombre.\n\nAnunciar por la mañana tu misericordia\nY tu fidelidad cada noche",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "¡Bueno es alabarte, Jehová!\nY cantar salmos a tu nombre.",
+          "text": "¡Bueno es alabarte, Jehová!\nY cantar a tu nombre.",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "¡Bueno es alabarte, Jehová!\nY cantar salmos a tu nombre.",
+          "text": "¡Bueno es alabarte, Jehová!\nY cantar a tu nombre.",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "Anunciar por la mañana tu misericordia\nY tu fidelidad de noche",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 4,
-          "description": "",
-          "text": "¿Quién es el que vive?\n¡Cristo es el que vive!",
+          "text": "Anunciar por la mañana tu misericordia\nY tu fidelidad cada noche",
           "text_with_comment": null,
           "translations": null
         }
