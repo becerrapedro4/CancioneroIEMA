@@ -7,6 +7,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 /* ===== TODOS LOS ESTILOS ===== */
 @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=DM+Sans:wght@300;400;500&display=swap');
@@ -444,21 +445,27 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 </div>
 
 <div class="mov" id="mov-settings">
-  <div class="modal">
+  <div class="modal" style="max-height:90vh;overflow-y:auto">
     <button class="mclose" id="settings-close">×</button>
     <div class="modal-title">⚙️ Configuración</div>
-    <div class="modal-sub" style="margin-bottom:20px">Ajustes de presentsación</div>
+    <div class="modal-sub" style="margin-bottom:20px">Ajustes de presentación</div>
     <div style="font-size:12px;color:var(--muted);margin-bottom:6px">Nombre de sala</div>
     <input class="minput" id="settings-sala" placeholder="ej: iglesia" maxlength="60" type="text" autocomplete="off" autocorrect="off" spellcheck="false">
     <div class="mstatus" id="settings-sala-status" style="margin-top:8px"></div>
     <button class="mbtn pri" id="settings-sala-save" style="width:100%;margin-top:8px">Guardar sala</button>
     <div style="margin-top:20px;padding-top:16px;border-top:1px solid var(--border)">
-      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">Exportar última lista</div>
-      <div style="font-size:12px;color:var(--muted);margin-bottom:12px">Seleccioná una lista en "Mis Listas" y volvé acá</div>
-      <div style="display:flex;gap:8px">
-        <button class="mbtn sec" id="settings-pdf-one" style="flex:1">🖨 1 canción/hoja</button>
-        <button class="mbtn sec" id="settings-pdf-multi" style="flex:1">🖨 Varias/hoja</button>
+      <div style="font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:10px">📺 Sala de presentación</div>
+      <div id="settings-room-name" style="font-size:16px;font-weight:600;margin-bottom:4px"></div>
+      <div id="settings-room-url" style="font-size:11px;color:#5B9CF6;word-break:break-all;line-height:1.6;margin-bottom:12px"></div>
+      <div style="background:#fff;border-radius:14px;padding:14px;display:flex;flex-direction:column;align-items:center;gap:10px">
+        <div id="settings-qr" style="display:flex;align-items:center;justify-content:center;min-height:60px;color:#666;font-size:11px;text-align:center;line-height:1.5">Generando QR…</div>
+        <div style="font-size:11px;color:#555;text-align:center;line-height:1.5">Escaneá con el celular o la tablet<br>para abrir la pantalla de esta sala</div>
       </div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="mbtn sec" id="settings-room-copy" style="flex:1;font-size:13px">🔗 Copiar link</button>
+        <button class="mbtn pri" id="settings-room-open" style="flex:1;font-size:13px">🖥 Abrir pantalla</button>
+      </div>
+      <button class="mbtn sec" id="settings-room-list" style="width:100%;margin-top:8px;font-size:13px">📋 Abrir lista (vista dividida)</button>
     </div>
   </div>
 </div>
@@ -797,7 +804,6 @@ function renderLists(){
   c.innerHTML=parts.length?parts.join(""):LISTS.map(card).join("");
   document.querySelectorAll(".lcard-hdr").forEach(h=>{
     h.addEventListener("click",()=>{
-      _lastListId = h.dataset.lid;
       document.getElementById("lc-"+h.dataset.lid).classList.toggle("expanded");
     });
   });
@@ -1485,32 +1491,79 @@ document.getElementById("mov-edit").addEventListener("click",e=>{if(e.target===d
 // ============================================================
 // ADMIN
 // ============================================================
-let _lastListId = null;
+// ---- Sala + QR (configuración del usuario) ----
+function roomBaseUrl(){
+  const p=location.pathname.replace(/index\.html$/,"").replace(/\/$/,"");
+  return location.origin+p;
+}
+function roomUrl(page,room){
+  return `${roomBaseUrl()}/${page}?room=${encodeURIComponent(room||getRoom())}`;
+}
+function settingsRoom(){
+  const typed=document.getElementById("settings-sala").value.trim().replace(/[^a-zA-Z0-9_-]/g,"_");
+  return typed||getRoom();
+}
+function renderQR(elId,text){
+  const box=document.getElementById(elId);
+  if(!box)return;
+  if(typeof qrcode!=="function"){
+    box.innerHTML='<span style="color:#666">No se pudo cargar el generador de QR.<br>Usá el link de arriba.</span>';
+    return;
+  }
+  try{
+    const qr=qrcode(0,"M");
+    qr.addData(text);
+    qr.make();
+    const n=qr.getModuleCount(),m=3,c=5,size=(n+m*2)*c;
+    let d="";
+    for(let r=0;r<n;r++)for(let col=0;col<n;col++)if(qr.isDark(r,col))d+=`M${(col+m)*c} ${(r+m)*c}h${c}v${c}h-${c}z`;
+    box.innerHTML=`<svg xmlns="http://www.w3.org/2000/svg" width="${size}" height="${size}" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges" role="img" aria-label="QR de la sala" style="max-width:100%;height:auto;display:block"><rect width="${size}" height="${size}" fill="#FFFFFF"/><path d="${d}" fill="#000000"/></svg>`;
+  }catch(e){
+    box.innerHTML='<span style="color:#666">No se pudo generar el QR.<br>Usá el link de arriba.</span>';
+  }
+}
+function renderSettingsRoom(){
+  const room=settingsRoom();
+  const pending=room!==getRoom();
+  document.getElementById("settings-room-name").textContent=room?(pending?`${room} · sin guardar`:room):"(sin sala configurada)";
+  document.getElementById("settings-room-url").textContent=roomUrl("viewer.html",room);
+  renderQR("settings-qr",roomUrl("viewer.html",room));
+}
 function openSettings() {
   document.getElementById("settings-sala").value = getRoom();
   document.getElementById("settings-sala-status").className = "mstatus";
+  renderSettingsRoom();
   document.getElementById("mov-settings").classList.add("open");
   updateSettingsBtn();
 }
 document.getElementById("btn-settings").addEventListener("click", openSettings);
 document.getElementById("settings-close").addEventListener("click", () => { document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn(); });
 document.getElementById("mov-settings").addEventListener("click", e => { if (e.target === document.getElementById("mov-settings")) { document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn(); } });
+document.getElementById("settings-sala").addEventListener("input", () => renderSettingsRoom());
 document.getElementById("settings-sala-save").addEventListener("click", () => {
   const val = document.getElementById("settings-sala").value.trim().replace(/[^a-zA-Z0-9_-]/g, "_");
   const st = document.getElementById("settings-sala-status");
   if (!val) { st.textContent = "El nombre no puede estar vacío."; st.className = "mstatus err"; return; }
   localStorage.setItem("pres_room", val);
   st.textContent = `✓ Sala guardada: "${val}"`; st.className = "mstatus ok";
+  renderSettingsRoom();
 });
-document.getElementById("settings-pdf-one").addEventListener("click", () => {
-  if (!_lastListId) { toast("⚠️ Abrí una lista en Mis Listas primero"); return; }
-  exportList(_lastListId, "pdf");
-  document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn();
+document.getElementById("settings-room-copy").addEventListener("click", () => {
+  const url=roomUrl("viewer.html",settingsRoom());
+  const done=()=>toast("🔗 Link de la sala copiado");
+  if(navigator.clipboard&&navigator.clipboard.writeText){
+    navigator.clipboard.writeText(url).then(done).catch(()=>toast("⚠️ No se pudo copiar el link"));
+  }else{
+    const ta=document.createElement("textarea");ta.value=url;document.body.appendChild(ta);ta.select();
+    try{document.execCommand("copy");done();}catch(e){toast("⚠️ No se pudo copiar el link");}
+    document.body.removeChild(ta);
+  }
 });
-document.getElementById("settings-pdf-multi").addEventListener("click", () => {
-  if (!_lastListId) { toast("⚠️ Abrí una lista en Mis Listas primero"); return; }
-  exportList(_lastListId, "pdf-multi");
-  document.getElementById("mov-settings").classList.remove("open"); updateSettingsBtn();
+document.getElementById("settings-room-open").addEventListener("click", () => {
+  window.open(roomUrl("viewer.html",settingsRoom()),"_blank");
+});
+document.getElementById("settings-room-list").addEventListener("click", () => {
+  window.open(roomUrl("lista.html",settingsRoom()),"_blank");
 });
 
 let tapN=0,tapT=null;
@@ -1541,9 +1594,8 @@ document.getElementById("admin-nav").addEventListener("change",e=>switchAdminTab
 // SALA PANEL
 // ============================================================
 function updateSalaUrl(room){
-  const base="https://becerrapedro4.github.io/CancioneroIEMA/viewer.html";
   document.getElementById("sala-viewer-url").textContent=room
-    ?`${base}?room=${room}`:"(ingresá un nombre de sala)";
+    ?roomUrl("viewer.html",room):"(ingresá un nombre de sala)";
 }
 document.getElementById("sala-input").addEventListener("input",e=>{
   updateSalaUrl(e.target.value.trim().replace(/[^a-zA-Z0-9_-]/g,"_"));
