@@ -747,7 +747,8 @@ function renderPicker() {
       texto: text.trim(),
       timestamp: Date.now()
     });
-    document.getElementById('admin-msg-input').value = '';
+    const input = document.getElementById('admin-msg-input');
+    if (input) input.value = '';
     toast('📨 Mensaje enviado al stage');
   }
 

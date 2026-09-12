@@ -1595,6 +1595,7 @@ function openAdmin(){
   updateSalaUrl(getRoom());
   document.getElementById("mov-admin").classList.add("open");
   updateSettingsBtn();
+  setupMessageUI();
 }
 document.getElementById("admin-close").addEventListener("click",()=>{document.getElementById("mov-admin").classList.remove("open");updateSettingsBtn();});
 document.getElementById("mov-admin").addEventListener("click",e=>{if(e.target===document.getElementById("mov-admin")){document.getElementById("mov-admin").classList.remove("open");updateSettingsBtn();}});
@@ -1638,12 +1639,36 @@ document.getElementById("btn-sala-save").addEventListener("click",()=>{
 // ============================================================
 // MENSAJES: eventos (solo Admin)
 // ============================================================
-document.getElementById('admin-msg-send').addEventListener('click', ()=>{
-  const input=document.getElementById('admin-msg-input');
-  sendMessage(input.value);
+function setupMessageUI() {
+  const sendBtn = document.getElementById('admin-msg-send');
+  const input = document.getElementById('admin-msg-input');
+  if (!sendBtn || !input) return;
+  sendBtn.addEventListener('click', () => {
+    sendMessage(input.value);
+  });
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') sendBtn.click();
+  });
+  loadMessages();
+}
+
+document.getElementById('admin-close').addEventListener('click', () => {
+  document.getElementById('mov-admin').classList.remove('open');
+  updateSettingsBtn();
+  if (msgListenerRef) {
+    msgListenerRef.off();
+    msgListenerRef = null;
+  }
 });
-document.getElementById('admin-msg-input').addEventListener('keydown',(e)=>{
-  if(e.key==='Enter')document.getElementById('admin-msg-send').click();
+document.getElementById('mov-admin').addEventListener('click', (e) => {
+  if (e.target === document.getElementById('mov-admin')) {
+    document.getElementById('mov-admin').classList.remove('open');
+    updateSettingsBtn();
+    if (msgListenerRef) {
+      msgListenerRef.off();
+      msgListenerRef = null;
+    }
+  }
 });
 
 // ============================================================
@@ -1815,17 +1840,10 @@ function sendMessage(text) {
     texto: text.trim(),
     timestamp: Date.now()
   });
-  document.getElementById('msg-input').value = '';
+  const input = document.getElementById('admin-msg-input');
+  if (input) input.value = '';
   toast("📨 Mensaje enviado al stage");
 }
-
-document.getElementById('msg-send').addEventListener('click', () => {
-  const input = document.getElementById('msg-input');
-  sendMessage(input.value);
-});
-document.getElementById('msg-input').addEventListener('keydown', (e) => {
-  if (e.key === 'Enter') document.getElementById('msg-send').click();
-});
 
 function loadMessages() {
   const db = getFirebaseDb();
@@ -1835,10 +1853,10 @@ function loadMessages() {
     msgListenerRef.off();
     msgListenerRef = null;
   }
-  const ref = db.ref(`rooms/${room}/messages`);
-  const container = document.getElementById('msg-history');
+  const container = document.getElementById('admin-msg-history');
+  if (!container) return;
   container.innerHTML = '';
-  msgListenerRef = ref.limitToLast(20).on('child_added', (snap) => {
+  msgListenerRef = db.ref(`rooms/${room}/messages`).limitToLast(20).on('child_added', (snap) => {
     const msg = snap.val();
     if (!msg) return;
     const key = snap.key;
@@ -1848,6 +1866,7 @@ function loadMessages() {
     div.innerHTML = `<span style="color:var(--muted);font-size:11px;flex-shrink:0;">${time}</span><span style="flex:1;">${esc(msg.texto || msg)}</span><button style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;" title="Eliminar">×</button>`;
     div.querySelector('button').addEventListener('click', () => {
       if (!confirm('¿Eliminar este mensaje?')) return;
+      const ref = db.ref(`rooms/${room}/messages`);
       ref.child(key).remove();
       div.remove();
       toast('🗑 Mensaje eliminado');
@@ -2080,7 +2099,10 @@ ensureRoom();
   document.getElementById("loading").style.display="none";
   document.getElementById("app").style.display="";
 
-
+  // Si el admin ya estaba abierto al cargar, ligar mensajes en ese momento
+  if (document.getElementById('mov-admin')?.classList.contains('open')) {
+    setupMessageUI();
+  }
 })();
 
 </script>
