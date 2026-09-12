@@ -258,7 +258,6 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   <div class="tabs">
     <button class="tab active" data-view="search">Canciones</button>
     <button class="tab" data-view="lists">Mis Listas <span class="badge" id="lists-badge"></span></button>
-    <button class="tab" data-view="messages">Mensajes</button>
     <a class="tab" href="biblia.html" style="text-decoration:none">📖 Biblia</a>
   </div>
 
@@ -309,14 +308,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
     <div id="lists-con"></div>
   </div>
 
-  <!-- MENSAJES VIEW -->
-  <div class="view" id="view-messages">
-    <div style="display:flex; gap:10px; margin-bottom:16px;">
-      <input class="minput" id="msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1;">
-      <button class="mbtn pri" id="msg-send" style="flex:0">Enviar</button>
-    </div>
-    <div id="msg-history" style="max-height:400px; overflow-y:auto; background:var(--surface); border-radius:12px; padding:12px;"></div>
-  </div>
+
 </div>
 
 <!-- FLOAT BAR -->
@@ -481,6 +473,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
           <option value="nueva">✏️ Nueva canción</option>
           <option value="delete">🗑 Eliminar canciones</option>
           <option value="export">⬇ Exportar DB</option>
+          <option value="messages">📨 Mensajes</option>
           <option value="sala">📺 Sala</option>
         </select>
       </div>
@@ -529,6 +522,14 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
         <div style="font-size:10px;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:8px">URL del viewer</div>
         <div id="sala-viewer-url" style="font-size:12px;color:#5B9CF6;word-break:break-all;line-height:1.6"></div>
       </div>
+
+    <!-- MENSAJES PANEL -->
+    <div class="admin-panel" id="ap-messages" style="overflow-y:auto;flex:1">
+      <div style="display:flex; gap:10px; margin-bottom:16px;">
+        <input class="minput" id="admin-msg-input" placeholder="Escribe un mensaje para el stage..." style="flex:1;">
+        <button class="mbtn pri" id="admin-msg-send" style="flex:0">Enviar</button>
+      </div>
+      <div id="admin-msg-history" style="max-height:380px; overflow-y:auto; background:var(--surface); border-radius:12px; padding:12px;"></div>
     </div>
 
 
@@ -1350,7 +1351,7 @@ function switchTab(id){
   document.querySelectorAll(".tab").forEach(t=>t.classList.toggle("active",t.dataset.view===id));
   document.querySelectorAll(".view").forEach(v=>v.classList.toggle("active",v.id==="view-"+id));
   if(id==="lists")renderLists();
-  if(id==="messages")loadMessages();
+
 }
 document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>switchTab(t.dataset.view)));
 
@@ -1587,8 +1588,17 @@ document.getElementById("mov-admin").addEventListener("click",e=>{if(e.target===
 function switchAdminTab(id){
   document.querySelectorAll(".admin-panel").forEach(p=>p.classList.toggle("active",p.id==="ap-"+id));
   const nav=document.getElementById("admin-nav");if(nav)nav.value=id;
+  if(id==="messages")loadMessages();
 }
 document.getElementById("admin-nav").addEventListener("change",e=>switchAdminTab(e.target.value));
+
+// ============================================================
+// MENSAJES (solo Admin; vista en admin.html)
+// ============================================================
+function openMessagesTab(){
+  switchAdminTab('messages');
+  loadMessages();
+}
 
 // ============================================================
 // SALA PANEL
@@ -1609,6 +1619,17 @@ document.getElementById("btn-sala-save").addEventListener("click",()=>{
   updateSalaUrl(val);
   // Recargar mensajes con nueva sala
   loadMessages();
+});
+
+// ============================================================
+// MENSAJES: eventos (solo Admin)
+// ============================================================
+document.getElementById('admin-msg-send').addEventListener('click', ()=>{
+  const input=document.getElementById('admin-msg-input');
+  sendMessage(input.value);
+});
+document.getElementById('admin-msg-input').addEventListener('keydown',(e)=>{
+  if(e.key==='Enter')document.getElementById('admin-msg-send').click();
 });
 
 // ============================================================
@@ -2044,10 +2065,7 @@ document.addEventListener("keydown", e => {
   document.getElementById("loading").style.display="none";
   document.getElementById("app").style.display="";
 
-  // Inicializar mensajes si la pestaña está activa
-  if (document.getElementById('view-messages').classList.contains('active')) {
-    loadMessages();
-  }
+
 })();
 
 </script>
