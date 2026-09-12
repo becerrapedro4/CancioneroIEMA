@@ -86,7 +86,7 @@
   },
   {
     "id": 1781474988334,
-    "title": "",
+    "title": "ES SEÑOR",
     "artist": "",
     "author": "",
     "note": "",
@@ -99,34 +99,34 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "ES SEÑOR\nES SEÑOR \n\nÉL LA MUERTE DERROTÓ \nY ES SEÑOR \n\nTODA RODILLA SE DOBLARÁ \nY TODA LENGUA CONFESARÁ \n\nQUE CRISTO ES EL SEÑOR ",
+      "full_text": "ES SEÑOR\nES SEÑOR\n\nÉL LA MUERTE DERROTÓ \nY ES SEÑOR\n\nTODA RODILLA SE DOBLARÁ \nY TODA LENGUA CONFESARÁ\n\nQUE CRISTO ES EL SEÑOR",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "ES SEÑOR\nES SEÑOR ",
+          "text": "ES SEÑOR\nES SEÑOR",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "ÉL LA MUERTE DERROTÓ \nY ES SEÑOR ",
+          "text": "ÉL LA MUERTE DERROTÓ \nY ES SEÑOR",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "TODA RODILLA SE DOBLARÁ \nY TODA LENGUA CONFESARÁ ",
+          "text": "TODA RODILLA SE DOBLARÁ \nY TODA LENGUA CONFESARÁ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": "QUE CRISTO ES EL SEÑOR ",
+          "text": "QUE CRISTO ES EL SEÑOR",
           "text_with_comment": null,
           "translations": null
         }
