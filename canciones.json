@@ -440,7 +440,7 @@
   },
   {
     "id": 1786888826018,
-    "title": "",
+    "title": "SOMOS PUEBLO",
     "artist": "",
     "author": "",
     "note": "",
@@ -453,13 +453,13 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "SOMOS PUEBLO\nPUEBLO ADQUIRIDO POR DIOS \n\nNACIÓN SANTA\nREAL SACERDOCIO\n\nLINAGE ESCOGIDO \nPOR DIOS \n\nPARA ANUNCIAR LAS VIRTUDES DE AQUÉL\nQUE NOS LLAMO DE TINIEBLAS A LUZ \n\nADMIRABLE\nSOMOS LOS HIJOS DE LUZ ",
+      "full_text": "SOMOS PUEBLO\nPUEBLO ADQUIRIDO POR DIOS\n\nNACIÓN SANTA\nREAL SACERDOCIO\n\nLINAGE ESCOGIDO \nPOR DIOS\n\nPARA ANUNCIAR LAS VIRTUDES DE AQUÉL\nQUE NOS LLAMO DE TINIEBLAS A LUZ\n\nADMIRABLE\nSOMOS LOS HIJOS DE LUZ",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "SOMOS PUEBLO\nPUEBLO ADQUIRIDO POR DIOS ",
+          "text": "SOMOS PUEBLO\nPUEBLO ADQUIRIDO POR DIOS",
           "text_with_comment": null,
           "translations": null
         },
@@ -473,21 +473,21 @@
         {
           "number": 3,
           "description": "",
-          "text": "LINAGE ESCOGIDO \nPOR DIOS ",
+          "text": "LINAGE ESCOGIDO \nPOR DIOS",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": "PARA ANUNCIAR LAS VIRTUDES DE AQUÉL\nQUE NOS LLAMO DE TINIEBLAS A LUZ ",
+          "text": "PARA ANUNCIAR LAS VIRTUDES DE AQUÉL\nQUE NOS LLAMO DE TINIEBLAS A LUZ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": "ADMIRABLE\nSOMOS LOS HIJOS DE LUZ ",
+          "text": "ADMIRABLE\nSOMOS LOS HIJOS DE LUZ",
           "text_with_comment": null,
           "translations": null
         }
