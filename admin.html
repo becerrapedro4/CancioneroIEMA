@@ -72,6 +72,20 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:13px}
 .editor-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:16px}
 .no-selection{color:var(--muted);font-size:13px;text-align:center;padding:40px 20px}
+
+/* ── GLOBAL LISTS ── */
+.spbtn{padding:7px 13px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:12px;cursor:pointer;transition:all .15s}
+.spbtn:hover{border-color:var(--accent)}
+.spbtn.active{border-color:var(--accent);color:var(--accent);background:rgba(245,166,35,.1)}
+.gl-chip{padding:8px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface2);color:var(--muted);font-family:'DM Sans',sans-serif;font-size:13px;cursor:pointer;transition:all .15s}
+.gl-chip:hover{border-color:var(--accent)}
+.gl-chip.active{border-color:var(--accent);color:var(--accent);background:rgba(245,166,35,.1)}
+.gl-row{display:flex;align-items:center;gap:8px;padding:9px 12px;border-bottom:1px solid var(--border)}
+.gl-row:last-child{border-bottom:none}
+.gl-row .snum{font-size:11px;color:var(--muted);min-width:24px;text-align:right;flex-shrink:0}
+.gl-row .stitle{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gl-row .sartist{font-size:11px;color:var(--muted)}
+.gl-row .btn{padding:5px 9px;font-size:12px}
 </style>
 </head>
 <body>
@@ -203,6 +217,61 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
       <div class="status" id="live-status"></div>
     </div>
   </div>
+
+  <!-- GLOBAL LISTS -->
+  <div style="margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:6px">
+      <div style="font-size:16px;font-weight:600;flex:1">🌐 Listas globales</div>
+      <button class="btn sec" id="gl-reload" title="Recargar del repo">↻ Recargar</button>
+      <button class="btn pri" id="gl-new">+ Nueva lista</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:16px;line-height:1.6">Aparecen en <b>“Mis Listas”</b> de todos los usuarios y solo el admin puede editarlas. Los usuarios pueden verlas, presentarlas y exportarlas.</div>
+
+    <div class="status" id="gl-status"></div>
+
+    <div id="gl-chips" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px"></div>
+
+    <div id="gl-editor" style="display:none;border-top:1px solid var(--border);padding-top:16px">
+      <div class="field">
+        <div class="field-label">Nombre de la lista</div>
+        <input class="field-input" id="gl-name" placeholder="Ej: Lista del domingo" maxlength="120">
+      </div>
+      <div class="field-label" style="margin-bottom:8px">Canciones (<span id="gl-count">0</span>)</div>
+      <div id="gl-songs" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;max-height:340px;overflow-y:auto"></div>
+      <div class="field" style="margin-top:14px">
+        <div class="field-label">Diseño de portada</div>
+        <div style="display:flex;gap:6px;flex-wrap:wrap" id="gl-style-pick">
+          <button class="spbtn" data-gstyle="minimal">Minimal</button>
+          <button class="spbtn" data-gstyle="aesthetic">Aesthetic</button>
+          <button class="spbtn" data-gstyle="glass">Glass</button>
+          <button class="spbtn" data-gstyle="vintage">Vintage</button>
+          <button class="spbtn" data-gstyle="neon">Neon</button>
+          <button class="spbtn" data-gstyle="nature">Naturaleza</button>
+        </div>
+      </div>
+      <div class="field">
+        <div class="field-label">Color de acento</div>
+        <input type="color" id="gl-color" value="#E55A00" style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px">
+        <button class="btn sec" id="gl-add">+ Agregar canciones</button>
+        <button class="btn pri" id="gl-save">💾 Guardar en repo →</button>
+        <button class="btn danger" id="gl-delete" style="margin-left:auto">🗑 Eliminar lista</button>
+      </div>
+    </div>
+    <div id="gl-empty" class="no-selection" style="display:none;padding:20px">No hay listas globales todavía. Creá una con “+ Nueva lista”.</div>
+
+    <!-- SONG PICKER -->
+    <div class="editor" id="gl-picker" style="margin-top:16px">
+      <div class="editor-title">Agregar canciones</div>
+      <div class="field"><input class="field-input" id="gl-search" placeholder="Buscar canción…" autocomplete="off"></div>
+      <div id="gl-picker-list" style="background:var(--surface2);border:1px solid var(--border);border-radius:10px;max-height:300px;overflow-y:auto;padding:6px"></div>
+      <div class="editor-actions">
+        <button class="btn sec" id="gl-picker-close">Cerrar</button>
+        <button class="btn pri" id="gl-picker-add">Agregar seleccionadas</button>
+      </div>
+    </div>
+  </div>
 </div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
@@ -257,14 +326,15 @@ if (!localStorage.getItem(HASH_KEY)) {
   enterApp();
 }
 
-function enterApp() {
+async function enterApp() {
   sessionStorage.setItem("admin_ok", "1");
   document.getElementById("gate").style.display = "none";
   document.getElementById("app").style.display = "block";
   // Load PAT
   const pat = localStorage.getItem("admin_pat") || "";
   document.getElementById("pat-input").value = pat;
-  if (pat) loadSongs();
+  if (pat) await loadSongs();
+  await loadGlobalLists();
 }
 
 /* ── GITHUB API ── */
@@ -507,8 +577,239 @@ function saveLiveConfig() { try { localStorage.setItem('live_config', JSON.strin
   });
 })();
 
+/* ── GLOBAL LISTS ── */
+const LISTS_FILE = "listas.json";
+let globalLists = [];
+let listsSha = null;
+let glIdx = -1;
+let glPickSel = new Set();
+
+function glStatus(msg, kind) {
+  const st = document.getElementById("gl-status");
+  st.textContent = msg;
+  st.className = "status " + (kind || "info");
+  st.style.display = "block";
+}
+
+async function fetchListsSha() {
+  const pat = getPat();
+  if (!pat) return null;
+  try {
+    const res = await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`, { headers: ghHeaders() });
+    if (!res.ok) return null;
+    const tree = await res.json();
+    const entry = tree.tree.find(f => f.path === LISTS_FILE);
+    return entry ? entry.sha : null;
+  } catch (e) { console.warn("No se pudo obtener SHA de listas:", e); return null; }
+}
+
+async function loadGlobalLists() {
+  glStatus("📥 Cargando listas globales…", "info");
+  try {
+    const rawUrl = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${LISTS_FILE}`;
+    const res = await fetch(rawUrl + "?v=" + Date.now());
+    if (res.status === 404) {
+      globalLists = [];
+      listsSha = null;
+    } else {
+      if (!res.ok) throw new Error(`No se pudo cargar ${LISTS_FILE}: HTTP ${res.status}`);
+      const data = JSON.parse(await res.text());
+      globalLists = Array.isArray(data) ? data : [];
+      listsSha = await fetchListsSha();
+    }
+    glIdx = globalLists.length ? 0 : -1;
+    renderGlobalLists();
+    glStatus(`✓ ${globalLists.length} lista${globalLists.length !== 1 ? "s" : ""} global${globalLists.length !== 1 ? "es" : ""} cargada${globalLists.length !== 1 ? "s" : ""}`, "ok");
+  } catch (e) {
+    console.error("loadGlobalLists error:", e);
+    glStatus("✗ Error: " + e.message, "err");
+  }
+}
+
+function glNewId() { return "g_" + Date.now() + "_" + Math.random().toString(36).slice(2, 6); }
+
+function renderGlobalLists() {
+  renderChips();
+  renderGlobalEditor();
+}
+
+function renderChips() {
+  const chips = document.getElementById("gl-chips");
+  chips.innerHTML = globalLists.map((l, i) =>
+    `<button class="gl-chip${i === glIdx ? " active" : ""}" data-i="${i}">${esc(l.name || "Sin nombre")} <span style="color:var(--muted)">· ${(l.songIds || []).length}</span></button>`
+  ).join("");
+  chips.querySelectorAll(".gl-chip").forEach(b => b.addEventListener("click", () => {
+    glIdx = +b.dataset.i;
+    renderGlobalLists();
+  }));
+  document.getElementById("gl-empty").style.display = globalLists.length ? "none" : "";
+}
+
+function renderGlobalEditor() {
+  const ed = document.getElementById("gl-editor");
+  if (glIdx < 0) { ed.style.display = "none"; return; }
+  ed.style.display = "block";
+  const l = globalLists[glIdx];
+  if (!l.songIds) l.songIds = [];
+  document.getElementById("gl-name").value = l.name || "";
+  document.getElementById("gl-count").textContent = l.songIds.length;
+  const ast = l.style || "minimal";
+  document.querySelectorAll("#gl-style-pick .spbtn").forEach(b => b.classList.toggle("active", b.dataset.gstyle === ast));
+  document.getElementById("gl-color").value = l.color || "#E55A00";
+
+  const cont = document.getElementById("gl-songs");
+  cont.innerHTML = l.songIds.length ? l.songIds.map((id, i) => {
+    const s = songs.find(x => x.id === id);
+    return `<div class="gl-row">
+      <span class="snum">${i + 1}</span>
+      <div style="flex:1;min-width:0">
+        <div class="stitle">${s ? esc(s.title || "Sin título") : "⚠ Canción no encontrada (id " + id + ")"}</div>
+        ${s && s.artist ? `<div class="sartist">${esc(s.artist)}</div>` : ""}
+      </div>
+      <button class="btn sec gl-up" data-i="${i}" title="Subir">↑</button>
+      <button class="btn sec gl-down" data-i="${i}" title="Bajar">↓</button>
+      <button class="btn danger gl-rm" data-i="${i}" title="Quitar">✕</button>
+    </div>`;
+  }).join("") : `<div style="padding:16px;color:var(--muted);font-size:13px;text-align:center">Lista vacía — agregá canciones</div>`;
+
+  cont.querySelectorAll(".gl-up").forEach(b => b.addEventListener("click", () => glMove(+b.dataset.i, -1)));
+  cont.querySelectorAll(".gl-down").forEach(b => b.addEventListener("click", () => glMove(+b.dataset.i, 1)));
+  cont.querySelectorAll(".gl-rm").forEach(b => b.addEventListener("click", () => {
+    globalLists[glIdx].songIds.splice(+b.dataset.i, 1);
+    renderGlobalLists();
+  }));
+}
+
+function glMove(i, dir) {
+  const l = globalLists[glIdx];
+  if (!l) return;
+  const j = i + dir;
+  if (j < 0 || j >= l.songIds.length) return;
+  l.songIds.splice(j, 0, l.songIds.splice(i, 1)[0]);
+  renderGlobalLists();
+}
+
+function renderPicker() {
+  const q = document.getElementById("gl-search").value.trim().toLowerCase();
+  const current = new Set(globalLists[glIdx] ? globalLists[glIdx].songIds : []);
+  const base = q ? songs.filter(s => (s.title || "").toLowerCase().includes(q) || (s.artist || "").toLowerCase().includes(q)) : songs;
+  const el = document.getElementById("gl-picker-list");
+  const shown = base.slice(0, 400);
+  el.innerHTML = shown.length ? shown.map(s => {
+    const inList = current.has(s.id);
+    const sel = glPickSel.has(s.id);
+    return `<div class="song-row${sel ? " active" : ""}" data-id="${s.id}" style="cursor:pointer${inList ? ";opacity:.45" : ""}">
+      <span class="snum">${sel ? "✓" : ""}</span>
+      <div style="flex:1;min-width:0">
+        <div class="stitle">${esc(s.title || "Sin título")}</div>
+        ${s.artist ? `<div class="sartist">${esc(s.artist)}</div>` : ""}
+      </div>
+      ${inList ? `<span style="font-size:11px;color:var(--muted)">ya está</span>` : ""}
+    </div>`;
+  }).join("") : `<div style="padding:16px;color:var(--muted);font-size:13px;text-align:center">Sin resultados</div>`;
+
+  el.querySelectorAll(".song-row").forEach(row => row.addEventListener("click", () => {
+    const id = Number(row.dataset.id);
+    if (glPickSel.has(id)) glPickSel.delete(id); else glPickSel.add(id);
+    renderPicker();
+  }));
+}
+
+async function saveListsToRepo(message) {
+  glStatus("💾 Guardando listas globales…", "info");
+  const body = { message, content: "", branch: BRANCH };
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      body.content = btoa(unescape(encodeURIComponent(JSON.stringify(globalLists, null, 2))));
+      if (listsSha) body.sha = listsSha; else delete body.sha;
+      const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${LISTS_FILE}`, {
+        method: "PUT", headers: ghHeaders(), body: JSON.stringify(body)
+      });
+      if (!res.ok) {
+        let msg = res.statusText;
+        try { const b = await res.json(); msg = b.message || msg; } catch (e) {}
+        // SHA desactualizado o faltante → refrescar y reintentar una vez
+        if ((res.status === 409 || res.status === 422) && attempt === 0) {
+          listsSha = await fetchListsSha();
+          continue;
+        }
+        throw new Error(`GitHub API ${res.status}: ${msg}`);
+      }
+      const data = await res.json();
+      listsSha = data.content.sha;
+      glStatus(`✓ Listas globales guardadas — commit ${data.commit.sha.slice(0, 7)}`, "ok");
+      return;
+    } catch (e) {
+      if (attempt === 0 && /409|422/.test(e.message)) { listsSha = await fetchListsSha(); continue; }
+      glStatus("✗ Error al guardar: " + e.message, "err");
+      return;
+    }
+  }
+}
+
+document.getElementById("gl-reload").addEventListener("click", loadGlobalLists);
+document.getElementById("gl-new").addEventListener("click", () => {
+  const name = prompt("Nombre de la nueva lista global:", "");
+  if (!name || !name.trim()) return;
+  globalLists.push({ id: glNewId(), name: name.trim(), songIds: [], style: "minimal", color: "#E55A00" });
+  glIdx = globalLists.length - 1;
+  renderGlobalLists();
+  glStatus("Lista creada — agregá canciones y tocá “Guardar en repo”", "ok");
+});
+document.getElementById("gl-name").addEventListener("input", e => {
+  const l = globalLists[glIdx];
+  if (!l) return;
+  l.name = e.target.value;
+  renderChips();
+});
+document.querySelectorAll("#gl-style-pick .spbtn").forEach(b => b.addEventListener("click", () => {
+  const l = globalLists[glIdx];
+  if (!l) return;
+  l.style = b.dataset.gstyle;
+  document.querySelectorAll("#gl-style-pick .spbtn").forEach(x => x.classList.toggle("active", x === b));
+}));
+document.getElementById("gl-color").addEventListener("input", e => {
+  const l = globalLists[glIdx];
+  if (l) l.color = e.target.value;
+});
+document.getElementById("gl-add").addEventListener("click", () => {
+  if (!songs.length) { alert("Primero cargá las canciones del repo (con tu PAT, arriba)."); return; }
+  glPickSel = new Set();
+  document.getElementById("gl-search").value = "";
+  renderPicker();
+  document.getElementById("gl-picker").classList.add("open");
+});
+document.getElementById("gl-search").addEventListener("input", renderPicker);
+document.getElementById("gl-picker-close").addEventListener("click", () => document.getElementById("gl-picker").classList.remove("open"));
+document.getElementById("gl-picker-add").addEventListener("click", () => {
+  const l = globalLists[glIdx];
+  if (!l) return;
+  if (!l.songIds) l.songIds = [];
+  const add = [...glPickSel].filter(id => !l.songIds.includes(id));
+  add.forEach(id => l.songIds.push(id));
+  glPickSel.clear();
+  document.getElementById("gl-picker").classList.remove("open");
+  renderGlobalLists();
+  glStatus(`✓ ${add.length} canción${add.length !== 1 ? "es" : ""} agregada${add.length !== 1 ? "s" : ""} — recordá guardar en el repo`, "ok");
+});
+document.getElementById("gl-save").addEventListener("click", () => {
+  const l = globalLists[glIdx];
+  if (l && !(l.name || "").trim()) { alert("La lista necesita un nombre."); return; }
+  saveListsToRepo(`Listas globales: ${l ? l.name : "actualizar"}`);
+});
+document.getElementById("gl-delete").addEventListener("click", async () => {
+  const l = globalLists[glIdx];
+  if (!l) return;
+  if (!confirm(`¿Eliminar la lista global "${l.name}"?`)) return;
+  const name = l.name;
+  globalLists.splice(glIdx, 1);
+  glIdx = globalLists.length ? 0 : -1;
+  renderGlobalLists();
+  await saveListsToRepo(`Listas globales: eliminar "${name}"`);
+});
+
 /* ── HELPER ── */
-function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&','<':'<','>':'>','"':'&quot;'}[c])); }
+function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 </script>
 </body>
 </html>
