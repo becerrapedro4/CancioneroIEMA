@@ -553,7 +553,21 @@ function toHolyricsFormat(s){ return{id:s.id,title:s.t,artist:s.a,author:"",note
 function uid(){return Date.now()+"_"+Math.random().toString(36).slice(2,7);}
 
 function getRoom() {
-  return localStorage.getItem('pres_room') || 'iglesia';
+  return localStorage.getItem('pres_room');
+}
+
+function randomRoomId() {
+  return 'sala_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 7);
+}
+
+let _roomInitDone = false;
+function ensureRoom() {
+  if (_roomInitDone) return;
+  _roomInitDone = true;
+  if (!localStorage.getItem('pres_room')) {
+    const room = randomRoomId();
+    try { localStorage.setItem('pres_room', room); } catch (e) {}
+  }
 }
 
 function getFirebaseDb() {
@@ -2017,6 +2031,7 @@ document.addEventListener("keydown", e => {
 // ============================================================
 // INIT
 // ============================================================
+ensureRoom();
 (async()=>{
   loadLists();
   loadDeletedIds();
