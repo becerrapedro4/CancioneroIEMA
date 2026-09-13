@@ -178,16 +178,10 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
   <div style="margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px">⚙️ Configuración</div>
 
-    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">Exportación HTML</div>
-    <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px">
-      <div>
-        <div style="font-size:13px;font-weight:500">Mostrar botón HTML</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Habilita "⬇ HTML" en Mis Listas</div>
-      </div>
-      <button id="btn-html-toggle" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;min-width:70px;transition:all .2s">Oculto</button>
-    </div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">🎨 Apariencia</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Único lugar donde se configura el diseño: se usa en el HTML que exportás y en el modo en vivo. Cada lista global puede tener su propio color.</div>
 
-    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Diseño de portada</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Diseño</div>
     <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px" id="misc-style-pick">
       <button class="spbtn active" data-mstyle="minimal">Minimalista</button>
       <button class="spbtn" data-mstyle="aesthetic">Aesthetic</button>
@@ -200,12 +194,25 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
     <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px">
       <div>
         <div style="font-size:13px;font-weight:500">Color de acento</div>
-        <div style="font-size:12px;color:var(--muted);margin-top:2px">Aplica a todas las listas sin color propio</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Aplica al HTML exportado y al modo en vivo</div>
       </div>
       <input type="color" id="misc-color-pick" value="#E55A00" style="width:36px;height:36px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
     </div>
 
-    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">🎬 Editor en Vivo</div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">⬇ Exportar HTML</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px">
+      <select class="field-input" id="html-export-target" style="flex:1;min-width:220px;cursor:pointer"></select>
+      <button class="btn pri" id="btn-export-html">⬇ Exportar HTML</button>
+    </div>
+    <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:20px">
+      <div>
+        <div style="font-size:13px;font-weight:500">Mostrar botón "⬇ HTML" en Mis Listas</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px">Para el panel oculto de index.html</div>
+      </div>
+      <button id="btn-html-toggle" style="padding:8px 16px;border-radius:8px;border:1px solid var(--border);background:transparent;font-family:'DM Sans',sans-serif;font-size:13px;color:var(--muted);cursor:pointer;white-space:nowrap;min-width:70px;transition:all .2s">Oculto</button>
+    </div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:12px">🎬 Datos del evento (modo en vivo)</div>
     <div style="display:flex;flex-direction:column;gap:12px">
       <input class="field-input" id="live-title" placeholder="Título del evento">
       <input class="field-input" id="live-tag" placeholder="Etiqueta (ej: #Iglesia · Rosario)">
@@ -213,18 +220,6 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
       <div style="display:flex;gap:10px;align-items:center">
         <span style="font-size:13px;color:var(--muted)">Logo:</span>
         <input type="file" id="live-logo" accept="image/png" style="flex:1;padding:8px;background:var(--surface2);border:1px solid var(--border);border-radius:8px;color:var(--text)">
-      </div>
-      <div style="display:flex;gap:6px;flex-wrap:wrap">
-        <button class="spbtn" data-lstyle="minimal">Minimal</button>
-        <button class="spbtn" data-lstyle="aesthetic">Aesthetic</button>
-        <button class="spbtn" data-lstyle="glass">Glass</button>
-        <button class="spbtn" data-lstyle="vintage">Vintage</button>
-        <button class="spbtn" data-lstyle="neon">Neon</button>
-        <button class="spbtn" data-lstyle="nature">Nature</button>
-      </div>
-      <div style="display:flex;gap:10px;align-items:center">
-        <span style="font-size:13px;color:var(--muted)">Color:</span>
-        <input type="color" id="live-color" value="#E55A00" style="width:44px;height:44px;border:none;border-radius:8px;cursor:pointer;padding:0;background:none">
       </div>
       <button class="btn pri" id="live-publish" style="width:100%">📤 Publicar cambios</button>
       <div class="status" id="live-status"></div>
@@ -290,6 +285,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
+<script src="js/export-html.js"></script>
 <script>
 const db = window.db;
 const REPO = "becerrapedro4/CancioneroIEMA";
@@ -396,6 +392,7 @@ async function loadSongs() {
     }
 
     renderList();
+    renderExportTargets();
     st.className = "status ok"; st.textContent = `✓ ${songs.length} canciones cargadas${fileSha ? ` (SHA: ${fileSha.slice(0,7)})` : ""}`;
   } catch (e) {
     console.error("loadSongs error:", e);
@@ -612,9 +609,26 @@ document.getElementById("pat-input").addEventListener("change", () => {
   localStorage.setItem("admin_pat", document.getElementById("pat-input").value.trim());
 });
 
-/* ── MISC CONFIG ── */
+/* ── APARIENCIA (única configuración: la usan el HTML exportado y el modo en vivo) ── */
 let _htmlExportStyle = localStorage.getItem('html_export_style') || 'minimal';
 let _htmlExportColor = localStorage.getItem('html_export_color') || '#E55A00';
+
+function renderAppearanceControls() {
+  document.querySelectorAll('#misc-style-pick .spbtn').forEach(b => b.classList.toggle('active', b.dataset.mstyle === _htmlExportStyle));
+  const cp = document.getElementById('misc-color-pick');
+  if (cp) cp.value = _htmlExportColor;
+}
+
+// Se llama solo después de que exista liveConfig (ver initLiveEditor)
+function applyAppearance() {
+  localStorage.setItem('html_export_style', _htmlExportStyle);
+  localStorage.setItem('html_export_color', _htmlExportColor);
+  renderAppearanceControls();
+  liveConfig.style = _htmlExportStyle;
+  liveConfig.color = _htmlExportColor;
+  saveLiveConfig();
+  renderExportTargets();
+}
 
 (function initMisc() {
   const btn = document.getElementById('btn-html-toggle');
@@ -627,21 +641,77 @@ let _htmlExportColor = localStorage.getItem('html_export_color') || '#E55A00';
     btn.textContent = next ? 'Visible' : 'Oculto';
     btn.style.color = next ? 'var(--accent)' : 'var(--muted)';
   });
+  renderAppearanceControls();
   document.querySelectorAll('#misc-style-pick .spbtn').forEach(b => {
-    b.classList.toggle('active', b.dataset.mstyle === _htmlExportStyle);
-    b.addEventListener('click', () => {
-      _htmlExportStyle = b.dataset.mstyle;
-      localStorage.setItem('html_export_style', _htmlExportStyle);
-      document.querySelectorAll('#misc-style-pick .spbtn').forEach(x => x.classList.toggle('active', x === b));
-    });
+    b.addEventListener('click', () => { _htmlExportStyle = b.dataset.mstyle; applyAppearance(); });
   });
-  const cp = document.getElementById('misc-color-pick');
-  cp.value = _htmlExportColor;
-  cp.addEventListener('input', e => {
+  document.getElementById('misc-color-pick').addEventListener('input', e => {
     _htmlExportColor = e.target.value;
-    localStorage.setItem('html_export_color', _htmlExportColor);
+    applyAppearance();
   });
 })();
+
+/* ── EXPORTAR HTML (mismo generador que usa index.html) ── */
+function renderExportTargets() {
+  const sel = document.getElementById('html-export-target');
+  if (!sel) return;
+  const prev = sel.value;
+  const opts = [`<option value="__all__">Todo el cancionero (${songs.length} canciones)</option>`];
+  if (listsLoaded) {
+    (globalLists || []).forEach(l => {
+      opts.push(`<option value="${esc(l.id)}">${esc(l.name || 'Sin nombre')} (${(l.songIds || []).length})</option>`);
+    });
+  }
+  sel.innerHTML = opts.join('');
+  if (prev && Array.from(sel.options).some(o => o.value === prev)) sel.value = prev;
+}
+
+function adminSongToExport(s) {
+  const pars = (s.lyrics && s.lyrics.paragraphs) || [];
+  return {
+    title: s.title || 'Sin título',
+    artist: s.artist || '',
+    letra: pars.map(p => p.text || '').join('\n\n'),
+    stanzas: pars.map(p => ({ d: p.description || '', x: p.text || '' }))
+  };
+}
+
+function exportAdminHTML() {
+  const st = document.getElementById('status');
+  const show = (kind, msg) => { st.className = 'status ' + kind; st.textContent = msg; st.style.display = 'block'; };
+  const target = document.getElementById('html-export-target').value;
+
+  let list = null, songsToExport = [];
+  if (target === '__all__') {
+    songsToExport = songs.slice().sort((a, b) => (a.title || '').localeCompare(b.title || '', 'es'));
+  } else {
+    list = (globalLists || []).find(l => String(l.id) === String(target));
+    if (!list) { show('err', '✗ No se encontró la lista seleccionada. Recargá con ↻.'); return; }
+    songsToExport = (list.songIds || []).map(id => songs.find(s => s.id === id)).filter(Boolean);
+  }
+  if (!songsToExport.length) { show('err', '✗ No hay canciones para exportar. Cargá el cancionero con ↻.'); return; }
+  if (!window.ExportHTML) { show('err', '✗ Falta js/export-html.js'); return; }
+
+  const style = (list && list.style) || _htmlExportStyle;
+  const color = (list && list.color) || _htmlExportColor;
+  const title = (list && list.name) || 'Cancionero IEMA';
+  const html = window.ExportHTML.build({
+    title,
+    tag: liveConfig.tag || '#Iglesia · Rosario',
+    footer: liveConfig.footer || 'IEMA · Rosario',
+    style, color,
+    songs: songsToExport.map(adminSongToExport)
+  });
+  const fileName = title.replace(/[^a-z0-9áéíóúñü ]/gi, '_') + '.html';
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' }));
+  a.download = fileName;
+  a.click();
+  URL.revokeObjectURL(a.href);
+  show('ok', `✓ HTML exportado: ${fileName} — ${songsToExport.length} canciones, diseño ${style}, color ${color}`);
+  toast('⬇ HTML exportado');
+}
+document.getElementById('btn-export-html').addEventListener('click', exportAdminHTML);
 
 /* ── LIVE EDITOR ── */
 let liveConfig = { title: 'Cancionero', tag: '#Iglesia · Rosario', footer: 'IEMA · Rosario', style: 'minimal', color: '#E55A00', logo: null };
@@ -652,20 +722,14 @@ function saveLiveConfig() { try { localStorage.setItem('live_config', JSON.strin
   document.getElementById('live-title').value = liveConfig.title || '';
   document.getElementById('live-tag').value = liveConfig.tag || '';
   document.getElementById('live-footer').value = liveConfig.footer || '';
-  document.getElementById('live-color').value = liveConfig.color || '#E55A00';
-  document.querySelectorAll('[data-lstyle]').forEach(b => b.classList.toggle('active', b.dataset.lstyle === liveConfig.style));
+  // Primera vez: heredar el diseño que ya estuviera guardado en el modo en vivo
+  if (!localStorage.getItem('html_export_style')) _htmlExportStyle = liveConfig.style || _htmlExportStyle;
+  if (!localStorage.getItem('html_export_color')) _htmlExportColor = liveConfig.color || _htmlExportColor;
+  applyAppearance();
 
   document.getElementById('live-title').addEventListener('input', e => { liveConfig.title = e.target.value; saveLiveConfig(); });
   document.getElementById('live-tag').addEventListener('input', e => { liveConfig.tag = e.target.value; saveLiveConfig(); });
   document.getElementById('live-footer').addEventListener('input', e => { liveConfig.footer = e.target.value; saveLiveConfig(); });
-  document.getElementById('live-color').addEventListener('input', e => { liveConfig.color = e.target.value; saveLiveConfig(); });
-  document.querySelectorAll('[data-lstyle]').forEach(b => {
-    b.addEventListener('click', () => {
-      liveConfig.style = b.dataset.lstyle;
-      saveLiveConfig();
-      document.querySelectorAll('[data-lstyle]').forEach(x => x.classList.toggle('active', x === b));
-    });
-  });
   document.getElementById('live-logo').addEventListener('change', e => {
     const file = e.target.files[0];
     if (file) {
@@ -741,6 +805,7 @@ function glNewId() { return "g_" + Date.now() + "_" + Math.random().toString(36)
 function renderGlobalLists() {
   renderChips();
   renderGlobalEditor();
+  renderExportTargets();
 }
 
 function renderChips() {
