@@ -1,33 +1,5 @@
 [
   {
-    "id": 1789302605787,
-    "title": ".test",
-    "artist": "",
-    "author": "",
-    "note": "",
-    "copyright": "",
-    "language": "",
-    "key": "",
-    "bpm": 0,
-    "time_sig": "",
-    "midi": null,
-    "order": "",
-    "arrangements": [],
-    "lyrics": {
-      "full_text": "H gg gv",
-      "full_text_with_comment": null,
-      "paragraphs": [
-        {
-          "number": 1,
-          "description": "",
-          "text": "H gg gv",
-          "text_with_comment": null,
-          "translations": null
-        }
-      ]
-    }
-  },
-  {
     "id": 1789302206620,
     "title": "Nada es imposible para Dios",
     "artist": "",
