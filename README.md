@@ -42,6 +42,8 @@ Al configurar la sala, el presente, el viewer, el stage y la lista en vivo se si
 
 Sala → Firebase realtime (`rooms/<sala>/currentSong`) + mensajes del stage (`rooms/<sala>/messages`).
 
+Mientras se presenta, el dispositivo suma su sala al índice de presencia (`rooms/_salas`), que es lo que después permite elegir esa sala desde el admin.
+
 ---
 
 ### `admin.html` — Administración protegida
@@ -54,12 +56,12 @@ Sirve para:
 - Crear nuevas canciones.
 - Eliminar canciones.
 - Exportar la base actual como `Holyrics_Backup.json`.
-- Mensajes del stage (ver y enviar).
+- Mensajes del stage (ver, enviar, eliminar y elegir a qué sala se mandan).
 - Configuración global: mostrar/ocultar botón HTML, estilo de portada, color de acento.
 - Editor en vivo: título del evento, etiqueta, pie de página, logo, estilo, color, publicar.
 - Listas globales: crear, editar, agregar canciones, reordenar, eliminar, guardar en el repo.
 
-Solo quien tiene la contraseña puede entrar. La contraseña se guarda en el navegador como hash.
+Solo quien tiene la contraseña puede entrar (`CoroIEMA`).
 
 ---
 
@@ -169,6 +171,15 @@ El admin puede:
 - Ver los mensajes del stage conectados a la sala.
 - Enviar mensajes al stage.
 - Eliminar mensajes individuales.
+- **Elegir a qué sala se mandan**: un campo de texto más los accesos rápidos de las
+  salas conocidas (las activas primero, con 🟢 y quién está conectado: stage,
+  presentador o ambos), y un botón "📍 Este dispositivo" para volver a la sala
+  propia. La sala elegida queda guardada y se muestra debajo del campo
+  ("Los mensajes van a la sala …").
+
+Las salas conocidas salen del índice de presencia (`rooms/_salas`, ver Firebase),
+que publican el stage y los presentadores; las que no se usan hace un mes se
+borran solas al entrar al admin.
 
 ---
 
@@ -283,7 +294,9 @@ El mismo mecanismo sirve para listas globales (`listas.json`).
 
 ### Contraseña
 
-Se fija la primera vez que se ingresa. Se guarda en `localStorage` como hash SHA-256.
+Es fija (`CoroIEMA`) y en el código solo está su hash SHA-256. No se guarda por
+dispositivo ni se puede cambiar desde la página. Es una barrera de navegador, no
+seguridad real: el sitio es estático. La protección efectiva de la base es el PAT.
 
 ### GitHub PAT
 
@@ -314,6 +327,8 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/biblia.html` — biblia (puede tener su propia lógica).
 - `/control.html`, `/login.html` — redirección a index.
 - `/js/firebase-init.js` — configuración de Firebase única del proyecto.
+- `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
+- `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 
 ---
 
@@ -323,6 +338,12 @@ La app usa Firebase Realtime Database para sincronizar en vivo:
 
 - `rooms/<sala>/currentSong` — canción actual del presentador.
 - `rooms/<sala>/messages` — mensajes del stage.
+- `rooms/_salas/<sala>` — índice de presencia (quién está activo y dónde). No es
+  una sala real: es un "cuarto" reservado donde el `stage` y los presentadores
+  publican un latido cada 25 s (`{ ts, online, mode, song }`) y se marcan offline
+  al cerrar la pestaña o perder la conexión. Lo lee el admin para poder elegir a
+  qué sala mandar los mensajes. Vive dentro de `rooms/` porque las reglas de la
+  base solo permiten leer y escribir bajo ese nodo.
 
 La sala se elige desde la configuración. Todos los participantes de la misma sala ven lo mismo.
 

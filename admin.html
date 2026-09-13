@@ -166,7 +166,13 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
   <!-- MENSAJES -->
   <div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
     <div style="font-size:15px;font-weight:600;margin-bottom:8px">📨 Mensajes del stage</div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Ver y enviar mensajes vía Firebase. Solo aparece aquí (oculto para usuarios en index.html).</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">El mensaje va a la sala que elijas de acá abajo, y solo lo ve el stage conectado a esa sala.</div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <input class="field-input" id="admin-msg-room" placeholder="nombre de la sala" style="flex:1;min-width:180px" autocomplete="off">
+      <button class="btn sec" id="btn-msg-room-local" title="Usar la sala de este dispositivo">📍 Este dispositivo</button>
+    </div>
+    <div id="admin-msg-rooms" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+    <div id="admin-msg-room-info" style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">—</div>
     <div style="display:flex;gap:10px;margin-bottom:14px">
       <input class="field-input" id="admin-msg-input" placeholder="Escribí un mensaje..." style="flex:1;">
       <button class="btn pri" id="admin-msg-send" style="flex:0">Enviar</button>
@@ -302,6 +308,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
 <script src="js/export-html.js"></script>
+<script src="js/rooms-index.js"></script>
 <script>
 const db = window.db;
 const REPO = "becerrapedro4/CancioneroIEMA";
@@ -314,7 +321,7 @@ let songs = [];
 let fileSha = null;
 let selectedIdx = -1;
 let isDirty = false;
-let msgListenerRef = null;
+let msgListenerRef = null;   // guarda el ref de Firebase (no el callback), para poder hacer .off()
 let listsLoaded = false;
 let lastSavedSongsJson = null;   // último contenido confirmado en BRANCH
 let lastSavedListsJson = null;
@@ -354,9 +361,6 @@ document.getElementById("btn-logout").addEventListener("click", () => {
 // La contraseña ya no se guarda por dispositivo: si quedó un hash viejo, se borra.
 try { localStorage.removeItem("admin_pass_hash"); } catch (e) {}
 
-// Auto-login dentro de la misma sesión del navegador
-if (sessionStorage.getItem("admin_ok")) enterApp();
-
 async function enterApp() {
   sessionStorage.setItem("admin_ok", "1");
   document.getElementById("gate").style.display = "none";
@@ -367,6 +371,8 @@ async function enterApp() {
   if (pat) await loadSongs();
   await loadGlobalLists();
   loadAdminMessages();
+  // Mantenimiento: borra del índice las salas que no se usan hace un mes
+  if (window.RoomsIndex) window.RoomsIndex.prune(30, localRoom());
 }
 
 /* ── GITHUB API ── */
@@ -1051,18 +1057,107 @@ document.getElementById("gl-delete").addEventListener("click", async () => {
   await saveListsToRepo(`Listas globales: eliminar "${name}"`);
 });
 
+/* ── MENSAJES DEL STAGE: a qué sala se mandan ── */
+let roomsIndex = {};
+
+function localRoom() { return (localStorage.getItem("pres_room") || "iglesia").trim(); }
+function msgRoom() {
+  const el = document.getElementById("admin-msg-room");
+  return ((el && el.value) || "").trim() || localRoom();
+}
+// Quién está conectado en cada sala lo mantiene js/rooms-index.js: el stage y los
+// presentadores publican ahí su presencia. Acá solo se lee.
+function roomsAPI() { return window.RoomsIndex || null; }
+function roomEntry(name) {
+  const RI = roomsAPI();
+  if (!RI || !name) return null;
+  const direct = roomsIndex[RI.key(name)];
+  if (direct) return direct;
+  // El nombre puede venir con otra mayúscula o con espacios de más
+  const lc = String(name).trim().toLowerCase();
+  const hit = Object.keys(roomsIndex).find(k => String((roomsIndex[k] || {}).name || k).toLowerCase() === lc);
+  return hit ? roomsIndex[hit] : null;
+}
+function roomEntryName(entry, name) { return (entry && entry.name) || String(name || "").trim(); }
+function hace(ts) {
+  if (!ts) return "sin datos";
+  const s = Math.max(0, Math.round((Date.now() - ts) / 1000));
+  if (s < 90) return "hace instantes";
+  if (s < 3600) return "hace " + Math.round(s / 60) + " min";
+  if (s < 86400) return "hace " + Math.round(s / 3600) + " h";
+  return "hace " + Math.round(s / 86400) + " d";
+}
+function roomState(entry) {
+  const RI = roomsAPI();
+  const who = RI && RI.summary(entry);
+  if (who) return "🟢 " + who;
+  return "⚪ visto " + hace(RI ? RI.lastSeen(entry) : 0);
+}
+// El índice de salas más la sala de este dispositivo, con las activas primero.
+function roomList() {
+  const RI = roomsAPI();
+  const out = Object.keys(roomsIndex || {}).map(k => {
+    const e = roomsIndex[k] || {};
+    return { name: e.name || k, entry: e };
+  });
+  const local = localRoom();
+  if (!out.some(r => r.name === local)) out.push({ name: local, entry: null });
+  return out.sort((a, b) => {
+    const la = (RI && RI.isLive(a.entry)) ? 1 : 0, lb = (RI && RI.isLive(b.entry)) ? 1 : 0;
+    if (la !== lb) return lb - la;
+    const sa = RI ? RI.lastSeen(a.entry) : 0, sb = RI ? RI.lastSeen(b.entry) : 0;
+    if (sa !== sb) return sb - sa;
+    return a.name.localeCompare(b.name, "es");
+  });
+}
+function renderMsgRooms() {
+  const cont = document.getElementById("admin-msg-rooms");
+  const actual = msgRoom();
+  if (cont) {
+    const RI = roomsAPI();
+    cont.innerHTML = roomList().map(r => {
+      const live = !!(RI && RI.isLive(r.entry));
+      const local = r.name === localRoom();
+      const title = roomState(r.entry);
+      return `<button class="spbtn${r.name === actual ? " active" : ""}" data-room="${esc(r.name)}" title="${esc(title)}">${live ? "🟢" : "⚪"} ${esc(r.name)}${local ? " · este disp." : ""}</button>`;
+    }).join("");
+    cont.querySelectorAll(".spbtn").forEach(b => b.addEventListener("click", () => {
+      document.getElementById("admin-msg-room").value = b.dataset.room;
+      selectMsgRoom();
+    }));
+  }
+  const info = document.getElementById("admin-msg-room-info");
+  if (info) {
+    const room = msgRoom();
+    const entry = roomEntry(room);
+    const name = roomEntryName(entry, room);
+    const estado = entry ? roomState(entry) : "⚪ sin actividad registrada — revisá que sea la sala con la que abriste el stage";
+    info.textContent = `Los mensajes van a la sala “${name}” · ${estado}`;
+  }
+}
+function selectMsgRoom() {
+  localStorage.setItem("msg_room", msgRoom());
+  renderMsgRooms();
+  loadAdminMessages();
+}
+
 /* ── MENSAJES DEL STAGE (viven solo en el admin) ── */
 function loadAdminMessages() {
   const db = window.db;
   const container = document.getElementById("admin-msg-history");
   if (!db || !container) return;
   if (msgListenerRef) { msgListenerRef.off(); msgListenerRef = null; }
-  const room = localStorage.getItem("pres_room") || "iglesia";
+  const room = msgRoom();
   const ref = db.ref(`rooms/${room}/messages`);
-  container.innerHTML = "";
-  msgListenerRef = ref.limitToLast(20).on("child_added", (snap) => {
+  container.innerHTML = `<div data-ph style="color:var(--muted);text-align:center">No hay mensajes en esta sala todavía</div>`;
+  // Ojo: en el SDK compat .on() devuelve el callback, no el ref, así que hay que
+  // guardar el ref para poder cortar el listener (con el callback, .off() no existe).
+  msgListenerRef = ref;
+  ref.limitToLast(20).on("child_added", (snap) => {
     const msg = snap.val();
     if (!msg) return;
+    const ph = container.querySelector("[data-ph]");
+    if (ph) ph.remove();
     const key = snap.key;
     const div = document.createElement("div");
     div.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;";
@@ -1082,11 +1177,12 @@ function sendMessage(text) {
   if (!text || !text.trim()) return;
   const db = window.db;
   if (!db) { toast("⚠️ Firebase no disponible"); return; }
-  const room = localStorage.getItem("pres_room") || "iglesia";
+  const room = msgRoom();
   db.ref(`rooms/${room}/messages`).push({ texto: text.trim(), timestamp: Date.now() });
   const input = document.getElementById("admin-msg-input");
   if (input) input.value = "";
-  toast("📨 Mensaje enviado al stage");
+  toast(`📨 Mensaje enviado a la sala “${room}”`);
+  renderMsgRooms();
 }
 
 document.getElementById("admin-msg-send").addEventListener("click", () => {
@@ -1095,6 +1191,21 @@ document.getElementById("admin-msg-send").addEventListener("click", () => {
 document.getElementById("admin-msg-input").addEventListener("keydown", (e) => {
   if (e.key === "Enter") { e.preventDefault(); sendMessage(e.target.value); }
 });
+
+(function initMsgRooms() {
+  const el = document.getElementById("admin-msg-room");
+  el.value = localStorage.getItem("msg_room") || localRoom();
+  el.addEventListener("change", selectMsgRoom);
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); selectMsgRoom(); } });
+  document.getElementById("btn-msg-room-local").addEventListener("click", () => {
+    el.value = localRoom();
+    selectMsgRoom();
+  });
+  const db = window.db;
+  const base = (window.RoomsIndex && window.RoomsIndex.BASE) || "rooms/_salas";
+  if (db) db.ref(base).on("value", (s) => { roomsIndex = s.val() || {}; renderMsgRooms(); });
+  renderMsgRooms();
+})();
 
 /* ── HELPER ── */
 function toast(msg, ms = 2200) {
@@ -1112,6 +1223,13 @@ function toast(msg, ms = 2200) {
 }
 
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
+
+// ============================================================
+// ARRANQUE
+// Va al final, después de todas las declaraciones: si se llamaba más arriba,
+// enterApp() llegaba a usar constantes (LISTS_FILE y otras) todavía sin inicializar.
+// ============================================================
+if (sessionStorage.getItem("admin_ok")) enterApp();
 </script>
 </body>
 </html>

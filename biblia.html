@@ -130,6 +130,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
+<script src="js/rooms-index.js"></script>
 <script>
 /* ── FIREBASE (ver js/firebase-init.js) ── */
 const db=window.db;
@@ -138,6 +139,17 @@ const getRoom=()=>localStorage.getItem("pres_room")||"";
 /* ── STATE ── */
 let BIBLE=[];
 let bookIdx=0,chapIdx=0,currentTab="verses",presentingRef=null;
+
+/* ── PRESENCIA: avisar al índice de salas que estamos presentando ── */
+let _bibliaTrack=null;
+function bibliaTrackStart(r){
+  if(!window.RoomsIndex||!r)return;
+  if(_bibliaTrack&&_bibliaTrack._room===r)return;
+  bibliaTrackStop();
+  _bibliaTrack=window.RoomsIndex.track(r,"presenter",()=>({song:presentingRef||"",from:"biblia"}));
+  if(_bibliaTrack)_bibliaTrack._room=r;
+}
+function bibliaTrackStop(){if(_bibliaTrack){_bibliaTrack.stop();_bibliaTrack=null;}}
 
 // ── INDEXED DB ──
 const DB_NAME = "BibleCache";
@@ -677,6 +689,7 @@ function initUI(name){
   document.getElementById("pres-stop-btn").onclick=()=>{
     const r=getRoom();
     if(r)db.ref(`rooms/${r}/currentSong`).set({blank:true,stop:true,ts:Date.now()});
+    bibliaTrackStop();
     presentingRef=null;
     document.getElementById("pres-bar").classList.remove("visible");
     document.querySelectorAll(".verse-item").forEach(x=>x.classList.remove("presenting"));
@@ -841,6 +854,7 @@ function presentVerse(el){
   });
   
   presentingRef=ref;
+  bibliaTrackStart(r);
   document.querySelectorAll(".verse-item").forEach(x=>x.classList.toggle("presenting",x.dataset.ref===ref));
   document.getElementById("pres-bar").classList.add("visible");
   document.getElementById("pres-bar-ref").textContent=`📺 ${ref}`;
