@@ -13,5 +13,15 @@
     ],
     "style": "neon",
     "color": "#00aaff"
+  },
+  {
+    "id": "g_1789312727950_52rw",
+    "name": "Coritos",
+    "songIds": [
+      1777239884320,
+      1777239884393
+    ],
+    "style": "minimal",
+    "color": "#E55A00"
   }
 ]
