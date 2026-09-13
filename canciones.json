@@ -1,5 +1,103 @@
 [
   {
+    "id": 1789304389422,
+    "title": "Dejo en esa cruz",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "El murió allí en la Cruz\nCargando mí dolor\n\nExpuesto fue por mí\nSe entregó en mí lugar\n\nY me dió una chance\nDe volver a comenzar\n\nDejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás\n\nMiro hacia Ti, corro hacia Ti\nTu amor me llama\n\nYo dependo de ese amor\nDe su amor, más que todo\n\nYo confío que ese amor tiene poder\nPara sanar dolores\n\nDejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás\n\nMiro hacia Ti, corro hacia Ti\nTu amor me llama\n\nDejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás//\n\nMiro hacia Ti, corro hacia Ti\nTu amor me llama//",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "El murió allí en la Cruz\nCargando mí dolor",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "Expuesto fue por mí\nSe entregó en mí lugar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "Y me dió una chance\nDe volver a comenzar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "Dejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "Miro hacia Ti, corro hacia Ti\nTu amor me llama",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "Yo dependo de ese amor\nDe su amor, más que todo",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "Yo confío que ese amor tiene poder\nPara sanar dolores",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "Dejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "Miro hacia Ti, corro hacia Ti\nTu amor me llama",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "Dejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás//",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "Miro hacia Ti, corro hacia Ti\nTu amor me llama//",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789302206620,
     "title": "Nada es imposible para Dios",
     "artist": "",
