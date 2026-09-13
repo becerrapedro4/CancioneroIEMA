@@ -8,6 +8,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
 <script src="js/export-html.js"></script>
+<script src="js/rooms-index.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 /* ===== TODOS LOS ESTILOS ===== */
@@ -1341,12 +1342,17 @@ function setupMessageUI() {
   const sendBtn = document.getElementById('admin-msg-send');
   const input = document.getElementById('admin-msg-input');
   if (!sendBtn || !input) return;
-  sendBtn.addEventListener('click', () => {
-    sendMessage(input.value);
-  });
-  input.addEventListener('keydown', (e) => {
-    if (e.key === 'Enter') sendBtn.click();
-  });
+  // Se liga una sola vez: si no, cada vez que se abre el panel se sumaría otro
+  // listener y un solo click mandaría el mensaje varias veces.
+  if (!sendBtn.dataset.msgBound) {
+    sendBtn.dataset.msgBound = '1';
+    sendBtn.addEventListener('click', () => {
+      sendMessage(input.value);
+    });
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') sendBtn.click();
+    });
+  }
   loadMessages();
 }
 
@@ -1526,7 +1532,7 @@ document.getElementById("btn-export-db").addEventListener("click",()=>{
 // ============================================================
 // MENSAJES
 // ============================================================
-let msgListenerRef = null;
+let msgListenerRef = null;   // guarda el ref de Firebase (no el callback), para poder hacer .off()
 
 function sendMessage(text) {
   if (!text.trim()) return;
@@ -1554,7 +1560,11 @@ function loadMessages() {
   const container = document.getElementById('admin-msg-history');
   if (!container) return;
   container.innerHTML = '';
-  msgListenerRef = db.ref(`rooms/${room}/messages`).limitToLast(20).on('child_added', (snap) => {
+  // Ojo: en el SDK compat .on() devuelve el callback, no el ref, así que hay que
+  // guardar el ref para poder cortar el listener (con el callback, .off() no existe).
+  const ref = db.ref(`rooms/${room}/messages`);
+  msgListenerRef = ref;
+  ref.limitToLast(20).on('child_added', (snap) => {
     const msg = snap.val();
     if (!msg) return;
     const key = snap.key;
@@ -1564,7 +1574,6 @@ function loadMessages() {
     div.innerHTML = `<span style="color:var(--muted);font-size:11px;flex-shrink:0;">${time}</span><span style="flex:1;">${esc(msg.texto || msg)}</span><button style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;" title="Eliminar">×</button>`;
     div.querySelector('button').addEventListener('click', () => {
       if (!confirm('¿Eliminar este mensaje?')) return;
-      const ref = db.ref(`rooms/${room}/messages`);
       ref.child(key).remove();
       div.remove();
       toast('🗑 Mensaje eliminado');
@@ -1580,6 +1589,22 @@ let _presRoom = localStorage.getItem('pres_room') || "", _presQueue = [], _presS
 let _presShowNext = localStorage.getItem('pres_show_next') !== '0';
 let _presShowTitle = localStorage.getItem('pres_show_title') !== '0';
 let _presShowRef = localStorage.getItem('pres_show_ref') === '1';
+let _presTrack = null;
+
+// Avisa al índice de salas que este dispositivo está presentando en _presRoom.
+// Empieza al mandar la primera canción y termina al cerrar el panel o detener.
+function presTrackStart() {
+  if (!window.RoomsIndex || !_presRoom) return;
+  if (_presTrack && _presTrack._room === _presRoom) return;   // ya está latiendo esta sala
+  presTrackStop();
+  _presTrack = window.RoomsIndex.track(_presRoom, 'presenter', () => ({
+    song: presSong() ? (presSong().t || '') : ''
+  }));
+  if (_presTrack) _presTrack._room = _presRoom;
+}
+function presTrackStop() {
+  if (_presTrack) { _presTrack.stop(); _presTrack = null; }
+}
 
 function presStanzas(song) {
   if (song.p && song.p.length) return song.p.map(p => ({ d: p.d || "", x: p.x || "" }));
@@ -1594,6 +1619,7 @@ function presStanzaList() { const c = presCurrent(); return c ? c.stanzas : []; 
 function presWrite(blank) {
   const db = getFirebaseDb(); if (!db || !_presRoom) return;
   const song = presSong(); if (!song) return;
+  presTrackStart();
   const stanzas = presStanzaList();
   const stanza = stanzas[_presIdx] || { d: "", x: "" };
   db.ref(`rooms/${_presRoom}/currentSong`).set({
@@ -1698,7 +1724,7 @@ function presentList(lid) {
   toast(`▶ Presentando lista: ${lst.name}`);
 }
 
-document.getElementById("pres-close").addEventListener("click", () => { document.getElementById("mov-pres").classList.remove("open"); updateSettingsBtn(); });
+document.getElementById("pres-close").addEventListener("click", () => { document.getElementById("mov-pres").classList.remove("open"); presTrackStop(); updateSettingsBtn(); });
 document.getElementById("pres-blank").addEventListener("click", () => { _presBlank = !_presBlank; presRenderUI(); presWrite(_presBlank); });
 document.getElementById("pres-prev-song").addEventListener("click", () => presGoSong(-1));
 document.getElementById("pres-next-song").addEventListener("click", () => presGoSong(1));
@@ -1721,6 +1747,7 @@ document.getElementById("pres-stop").addEventListener("click", () => {
   if (!_presRoom) return;
   const db = getFirebaseDb();
   if (db) db.ref(`rooms/${_presRoom}/currentSong`).set({ blank: true, ts: Date.now(), stop: true });
+  presTrackStop();
   _presListId = null;
   document.getElementById("mov-pres").classList.remove("open");
   updateSettingsBtn();
@@ -1749,6 +1776,7 @@ document.addEventListener("keydown", e => {
 // INIT
 // ============================================================
 ensureRoom();
+_presRoom = localStorage.getItem('pres_room') || _presRoom;   // por si ensureRoom() la acaba de crear
 (async()=>{
   loadLists();
   loadDeletedIds();

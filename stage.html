@@ -204,6 +204,7 @@ body.split .next{max-width:92%}
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
+<script src="js/rooms-index.js"></script>
 
 <script>
 // ============================================================
@@ -438,6 +439,17 @@ db.ref(`rooms/${room}/messages`).on('child_added', (snap) => {
         messagesEl.classList.remove('visible');
     }, 5000);
 });
+
+// ============================================================
+// PRESENCIA: esta sala tiene un stage conectado
+// (lo lee el admin para saber a qué sala mandar los mensajes)
+// ============================================================
+if (window.RoomsIndex) {
+    window.RoomsIndex.track(room, 'stage', () => ({
+        mode: currentMode().label,
+        song: (lastData && lastData.titulo) || ''
+    }));
+}
 
 // ============================================================
 // ARRANQUE
