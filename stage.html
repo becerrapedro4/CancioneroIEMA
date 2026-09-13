@@ -9,7 +9,7 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 
-/* ===== ORBS (fondo animado, igual que viewer.html) ===== */
+/* ===== ORBS (fondo animado) ===== */
 .orbs{position:fixed;inset:0;pointer-events:none;z-index:0}
 .orb{position:absolute;border-radius:50%;filter:blur(90px);animation:drift 18s ease-in-out infinite}
 .orb1{width:70vw;height:70vw;background:#F5A623;opacity:.18;top:-15%;left:-15%;animation-delay:0s}
@@ -17,9 +17,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 .orb3{width:35vw;height:35vw;background:#fff;opacity:.04;top:40%;left:55%;animation-delay:-13s}
 @keyframes drift{0%,100%{transform:translate(0,0) scale(1)}33%{transform:translate(4%,6%) scale(1.05)}66%{transform:translate(-3%,3%) scale(.97)}}
 
-/* ===== STAGE ===== */
+/* ===== LAYOUT ===== */
+.wrap{position:fixed;inset:0;z-index:1;display:flex}
 .stage{
-    position:fixed;inset:0;z-index:1;
+    position:relative;flex:1;min-width:0;
     display:flex;flex-direction:column;
     align-items:center;justify-content:center;
     padding:4vh 6vw;
@@ -28,8 +29,8 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
 }
 .stage.hidden{opacity:0;pointer-events:none}
 
-/* ===== TÍTULO (más pequeño) ===== */
-.song-title{
+/* ===== TÍTULO ===== */
+.stage .song-title{
     font-family:system-ui,-apple-system,sans-serif;
     font-weight:500;
     line-height:1.2;
@@ -39,10 +40,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     opacity:.5;
     font-size:clamp(0.8rem,1.8vw,1.8rem);
 }
-.song-title.hidden{display:none}
+.stage .song-title.hidden{display:none}
 
 /* ===== ESTROFA ACTUAL ===== */
-.current{
+.stage .current{
     font-family:system-ui,-apple-system,sans-serif;
     font-weight:600;
     line-height:1.3;
@@ -51,7 +52,6 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     white-space:pre-wrap;
     max-width:94vw;
     padding:1vh 2vw;
-    /* 🔥 SIN FONDO, SIN BORDE, SIN BLUR */
     min-height:20vh;
     display:flex;
     align-items:center;
@@ -59,13 +59,12 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     width:100%;
     transition:opacity .2s,transform .2s;
     font-size:clamp(3rem,8vw,8rem);
-    /* 🔥 Si el texto es muy largo, se achica automáticamente */
 }
-.current.out{opacity:0;transform:translateY(14px)}
-.current.in{animation:lyricIn .35s ease forwards}
+.stage .current.out{opacity:0;transform:translateY(14px)}
+.stage .current.in{animation:lyricIn .35s ease forwards}
 
-/* ===== SIGUIENTE ESTROFA (mismo tamaño, sin caja) ===== */
-.next{
+/* ===== SIGUIENTE ESTROFA ===== */
+.stage .next{
     font-family:system-ui,-apple-system,sans-serif;
     font-weight:400;
     line-height:1.3;
@@ -77,19 +76,21 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     margin-top:2vh;
     border-top:1px solid rgba(255,255,255,0.08);
     color:rgba(255,255,255,0.5);
-    font-size:clamp(2.5rem,7vw,7rem); /* mismo tamaño que la actual */
+    font-size:clamp(2.5rem,7vw,7rem);
     min-height:10vh;
 }
-.next.empty{
+.stage .next.empty{
     color:rgba(255,255,255,0.15);
     font-style:italic;
     font-weight:300;
+    border-top-color:transparent;
 }
+.stage .next.hidden{display:none}
 
 @keyframes lyricIn{from{opacity:0;transform:translateY(-12px)}to{opacity:1;transform:none}}
 
-/* ===== REFERENCIA (opcional) ===== */
-.ref-info{
+/* ===== REFERENCIA ===== */
+.stage .ref-info{
     position:absolute;bottom:5vh;left:50%;transform:translateX(-50%);
     font-family:system-ui,-apple-system,sans-serif;
     font-weight:400;
@@ -99,7 +100,42 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     max-width:80vw;
     transition:opacity .3s;
 }
-.ref-info.hidden{opacity:0}
+.stage .ref-info.hidden{opacity:0}
+
+/* ===== PANEL DE LA LISTA (modos "lista") ===== */
+.panel-list{
+    width:24vw;min-width:230px;max-width:380px;flex-shrink:0;
+    background:rgba(0,0,0,.55);
+    backdrop-filter:blur(16px);
+    -webkit-backdrop-filter:blur(16px);
+    border-right:1px solid rgba(255,255,255,.08);
+    display:flex;flex-direction:column;overflow:hidden;
+}
+body:not(.split) .panel-list{display:none}
+.list-head{padding:2.4vh 1.3vw;border-bottom:1px solid rgba(255,255,255,.08);flex-shrink:0}
+.list-label{font-size:clamp(.6rem,.8vw,.95rem);letter-spacing:3px;text-transform:uppercase;color:#F5A623}
+.list-sub{font-size:clamp(.6rem,.75vw,.85rem);color:rgba(255,255,255,.35);margin-top:4px}
+.list-songs{flex:1;overflow-y:auto;padding:1vh .7vw}
+.list-item{display:flex;align-items:center;gap:.7vw;padding:1vh .8vw;border-radius:8px;border:1px solid transparent;transition:background .15s,border-color .15s}
+.list-item.active{background:rgba(245,166,35,.12);border-color:rgba(245,166,35,.3)}
+.li-num{font-size:clamp(.55rem,.7vw,.8rem);color:rgba(255,255,255,.3);min-width:1.8em;text-align:right;flex-shrink:0;font-variant-numeric:tabular-nums}
+.list-item.active .li-num{color:#F5A623;font-weight:600}
+.li-title{flex:1;min-width:0;font-family:system-ui,-apple-system,sans-serif;font-size:clamp(.65rem,.95vw,1.1rem);text-transform:uppercase;letter-spacing:.02em;color:rgba(255,255,255,.72);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.list-item.active .li-title{color:#F5A623;font-weight:600}
+.li-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.li-dot.st-done{background:rgba(255,255,255,.2)}
+.li-dot.st-cur{background:#00ff88;box-shadow:0 0 8px #00ff88}
+.li-dot.st-pend{background:transparent;border:1.5px solid rgba(255,255,255,.15)}
+.list-empty{padding:2vh 1vw;color:rgba(255,255,255,.25);font-size:.85rem;text-align:center}
+body.split .current{max-width:92%}
+body.split .next{max-width:92%}
+
+/* En pantallas chicas el panel va arriba */
+@media(max-width:720px){
+    .wrap{flex-direction:column}
+    .panel-list{width:100%;max-width:none;min-width:0;height:30vh;border-right:none;border-bottom:1px solid rgba(255,255,255,.08)}
+    .list-head{padding:1.6vh 3vw}
+}
 
 /* ===== MENSAJES (notificaciones) ===== */
 #messages{
@@ -126,6 +162,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     font-size:0.7rem;
     color:rgba(255,255,255,0.15);
     letter-spacing:1px;
+    z-index:10;
 }
 #status-dot{
     width:10px;height:10px;border-radius:50%;
@@ -143,15 +180,26 @@ html,body{width:100%;height:100%;overflow:hidden;background:#000;color:#fff}
     <div class="orb orb3"></div>
 </div>
 
-<div class="stage hidden" id="stage">
-    <div class="song-title hidden" id="song-title"></div>
-    <div class="current" id="current"></div>
-    <div class="next" id="next">⬇ Siguiente</div>
-    <div class="ref-info hidden" id="ref-info"></div>
+<div class="wrap">
+    <!-- LISTA (solo en los modos que la incluyen) -->
+    <aside class="panel-list" id="panel-list">
+        <div class="list-head">
+            <div class="list-label" id="list-label">Lista de presentación</div>
+            <div class="list-sub" id="list-sub"></div>
+        </div>
+        <div class="list-songs" id="list-songs"></div>
+    </aside>
+
+    <main class="stage hidden" id="stage">
+        <div class="song-title hidden" id="song-title"></div>
+        <div class="current" id="current"></div>
+        <div class="next" id="next"></div>
+        <div class="ref-info hidden" id="ref-info"></div>
+    </main>
 </div>
 
 <div id="messages"></div>
-<div id="info">Sala: <span id="room-name">—</span> <span id="status-dot" class="off"></span></div>
+<div id="info">Sala: <span id="room-name">—</span> <span id="status-dot" class="off"></span> <span id="info-mode"></span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
@@ -172,6 +220,21 @@ const offset = parseInt(params.get('offset')) || 0;
 document.getElementById('room-name').textContent = room;
 
 // ============================================================
+// MODOS DEL STAGE (los elige el admin; acá solo se aplican)
+// ============================================================
+const MODES = {
+    'list-next':   { layout: 'list', next: true,  label: 'Lista + letra actual y siguiente' },
+    'lyrics-next': { layout: 'full', next: true,  label: 'Solo letra actual y siguiente' },
+    'list':        { layout: 'list', next: false, label: 'Lista + letra actual' }
+};
+const forcedMode = params.get('mode');   // ?mode=... fuerza el layout e ignora Firebase
+let mode = MODES[forcedMode] ? forcedMode : (MODES[localStorage.getItem('stage_mode')] ? localStorage.getItem('stage_mode') : 'lyrics-next');
+let lastData = null;
+let lastQueueKey = '';
+
+function currentMode() { return MODES[mode] || MODES['lyrics-next']; }
+
+// ============================================================
 // ELEMENTOS
 // ============================================================
 const stageEl = document.getElementById('stage');
@@ -181,13 +244,64 @@ const nextEl = document.getElementById('next');
 const refInfo = document.getElementById('ref-info');
 const messagesEl = document.getElementById('messages');
 const dot = document.getElementById('status-dot');
+const panelList = document.getElementById('panel-list');
+const listSongsEl = document.getElementById('list-songs');
 
 let messageTimer = null;
 
 // ============================================================
-// FUNCIÓN PARA MOSTRAR DATOS (con corrección de desfase)
+// HELPER
 // ============================================================
-function showLyric(data) {
+function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
+
+// ============================================================
+// APLICAR EL MODO
+// ============================================================
+function applyMode() {
+    const m = currentMode();
+    document.body.classList.toggle('split', m.layout === 'list');
+    panelList.style.display = m.layout === 'list' ? '' : 'none';
+    document.getElementById('info-mode').textContent = '· ' + m.label;
+    if (lastData) render(lastData);
+}
+
+// ============================================================
+// LISTA DE LA PRESENTACIÓN
+// ============================================================
+function renderList(data) {
+    const queue = (data && data.queue) || [];
+    const qIdx = (data && data.queueIdx) || 0;
+    const key = JSON.stringify(queue) + '|' + qIdx;
+    if (key === lastQueueKey) return;
+    lastQueueKey = key;
+
+    if (!queue.length) {
+        document.getElementById('list-label').textContent = 'Lista de presentación';
+        document.getElementById('list-sub').textContent = '';
+        listSongsEl.innerHTML = '<div class="list-empty">Sin lista activa</div>';
+        return;
+    }
+
+    document.getElementById('list-label').textContent = queue.length > 1 ? 'Lista de presentación' : 'Canción';
+    document.getElementById('list-sub').textContent = queue.length > 1 ? `Canción ${qIdx + 1} de ${queue.length}` : '';
+
+    listSongsEl.innerHTML = queue.map((s, i) => {
+        const status = i < qIdx ? 'st-done' : i === qIdx ? 'st-cur' : 'st-pend';
+        return `<div class="list-item${i === qIdx ? ' active' : ''}">
+            <span class="li-num">${i + 1}</span>
+            <span class="li-title">${esc(s.t || 'Sin título')}</span>
+            <span class="li-dot ${status}"></span>
+        </div>`;
+    }).join('');
+
+    const activeEl = listSongsEl.querySelector('.list-item.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// ============================================================
+// MOSTRAR LA CANCIÓN (con corrección de desfase)
+// ============================================================
+function render(data) {
     if (!data || data.blank || data.stop) {
         stageEl.classList.add('hidden');
         dot.className = 'off';
@@ -232,7 +346,6 @@ function showLyric(data) {
     }
 
     // ── ESTROFA ACTUAL ──
-    // Ajuste automático de tamaño para textos muy largos
     let fontSize = 'clamp(3rem, 8vw, 8rem)';
     if (currentText.length > 60) {
         fontSize = 'clamp(2.2rem, 5vw, 5rem)';
@@ -250,11 +363,12 @@ function showLyric(data) {
         currentEl.classList.add('in');
     }, 180);
 
-    // ── SIGUIENTE ESTROFA (mismo tamaño que la actual) ──
-    if (nextText) {
+    // ── SIGUIENTE ESTROFA ──
+    // Lo decide el preset elegido en el admin (los 3 presets se diferencian justamente en esto).
+    const wantNext = currentMode().next;
+    if (nextText && wantNext) {
         nextEl.textContent = nextText;
-        nextEl.classList.remove('empty');
-        // Misma lógica de tamaño que la actual
+        nextEl.classList.remove('empty', 'hidden');
         let nextFontSize = 'clamp(2.5rem, 7vw, 7rem)';
         if (nextText.length > 60) {
             nextFontSize = 'clamp(1.8rem, 4.5vw, 4.5rem)';
@@ -264,7 +378,7 @@ function showLyric(data) {
         nextEl.style.fontSize = nextFontSize;
     } else {
         nextEl.textContent = '';
-        nextEl.classList.add('empty');
+        nextEl.classList.add('hidden');
     }
 
     // ── REFERENCIA ──
@@ -277,6 +391,9 @@ function showLyric(data) {
         refInfo.classList.add('hidden');
     }
 
+    // ── LISTA (solo en los modos que la incluyen) ──
+    if (currentMode().layout === 'list') renderList(data);
+
     stageEl.classList.remove('hidden');
     dot.className = 'on';
 }
@@ -285,9 +402,23 @@ function showLyric(data) {
 // ESCUCHAR CANCIÓN
 // ============================================================
 db.ref(`rooms/${room}/currentSong`).on('value', (snap) => {
-    const data = snap.val();
-    showLyric(data);
+    lastData = snap.val();
+    render(lastData);
 });
+
+// ============================================================
+// ESCUCHAR EL MODO ELEGIDO EN EL ADMIN
+// ============================================================
+if (!MODES[forcedMode]) {
+    db.ref(`rooms/${room}/stageMode`).on('value', (snap) => {
+        const v = snap.val();
+        if (v && MODES[v] && v !== mode) {
+            mode = v;
+            localStorage.setItem('stage_mode', v);
+            applyMode();
+        }
+    });
+}
 
 // ============================================================
 // ESCUCHAR MENSAJES
@@ -299,7 +430,7 @@ db.ref(`rooms/${room}/messages`).on('child_added', (snap) => {
     const item = document.createElement('div');
     item.className = 'msg-item';
     const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
-    item.innerHTML = `<span class="msg-time">${time}</span>${text}`;
+    item.innerHTML = `<span class="msg-time">${esc(time)}</span>${esc(text)}`;
     messagesEl.appendChild(item);
     messagesEl.classList.add('visible');
     clearTimeout(messageTimer);
@@ -309,9 +440,10 @@ db.ref(`rooms/${room}/messages`).on('child_added', (snap) => {
 });
 
 // ============================================================
-// INFORMACIÓN EN CONSOLA
+// ARRANQUE
 // ============================================================
-console.log('🎤 Stage iniciado. Sala:', room);
+applyMode();
+console.log('🎤 Stage iniciado. Sala:', room, '· Modo:', mode);
 console.log('💡 Si ves desfase, usa ?offset=-1 en la URL');
 </script>
 </body>

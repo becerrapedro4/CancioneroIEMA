@@ -224,6 +224,22 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
       <button class="btn pri" id="live-publish" style="width:100%">📤 Publicar cambios</button>
       <div class="status" id="live-status"></div>
     </div>
+
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin:22px 0 12px">🖥️ Qué muestra el stage</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:12px;line-height:1.6">Se aplica al instante en la pantalla del stage, sin recargarla. Usa el diseño que ya tiene el stage.</div>
+    <div style="display:flex;flex-direction:column;gap:8px;margin-bottom:12px" id="stage-mode-pick">
+      <button class="spbtn" data-smode="list-next" style="width:100%;text-align:left">📋 Lista + letra actual y siguiente</button>
+      <button class="spbtn" data-smode="lyrics-next" style="width:100%;text-align:left">📖 Solo letra actual y siguiente</button>
+      <button class="spbtn" data-smode="list" style="width:100%;text-align:left">📋 Lista + letra actual</button>
+    </div>
+    <div style="padding:13px 14px;background:var(--surface2);border-radius:10px;border:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;gap:12px">
+      <div>
+        <div style="font-size:13px;font-weight:500">Pantalla del stage</div>
+        <div style="font-size:12px;color:var(--muted);margin-top:2px" id="stage-room-info">—</div>
+      </div>
+      <button class="btn sec" id="btn-open-stage">Abrir ↗</button>
+    </div>
+    <div class="status" id="stage-mode-status"></div>
   </div>
 
   <!-- GLOBAL LISTS -->
@@ -712,6 +728,56 @@ function exportAdminHTML() {
   toast('⬇ HTML exportado');
 }
 document.getElementById('btn-export-html').addEventListener('click', exportAdminHTML);
+
+/* ── STAGE: qué se muestra (Firebase lo aplica al instante) ── */
+const STAGE_MODES = ['list-next', 'lyrics-next', 'list'];
+let _stageMode = localStorage.getItem('stage_mode') || 'lyrics-next';
+
+function stageRoom() { return localStorage.getItem('pres_room') || 'iglesia'; }
+
+function renderStageMode() {
+  document.querySelectorAll('#stage-mode-pick .spbtn').forEach(b => b.classList.toggle('active', b.dataset.smode === _stageMode));
+  const info = document.getElementById('stage-room-info');
+  if (info) info.textContent = `Sala ${stageRoom()}`;
+}
+
+function stageStatus(kind, msg) {
+  const st = document.getElementById('stage-mode-status');
+  st.className = 'status ' + kind;
+  st.textContent = msg;
+  st.style.display = 'block';
+}
+
+function setStageMode(m) {
+  if (!STAGE_MODES.includes(m)) return;
+  _stageMode = m;
+  localStorage.setItem('stage_mode', m);
+  renderStageMode();
+  const db = window.db;
+  if (!db) { stageStatus('err', '✗ Firebase no disponible'); return; }
+  db.ref(`rooms/${stageRoom()}/stageMode`).set(m)
+    .then(() => stageStatus('ok', `✓ Aplicado en el stage (sala ${stageRoom()})`))
+    .catch(e => stageStatus('err', '✗ ' + e.message));
+}
+
+(function initStageMode() {
+  renderStageMode();
+  document.querySelectorAll('#stage-mode-pick .spbtn').forEach(b => b.addEventListener('click', () => setStageMode(b.dataset.smode)));
+  document.getElementById('btn-open-stage').addEventListener('click', () => {
+    window.open('stage.html?room=' + encodeURIComponent(stageRoom()), '_blank');
+  });
+  const db = window.db;
+  if (db) {
+    db.ref(`rooms/${stageRoom()}/stageMode`).on('value', (s) => {
+      const v = s.val();
+      if (v && STAGE_MODES.includes(v)) {
+        _stageMode = v;
+        localStorage.setItem('stage_mode', v);
+        renderStageMode();
+      }
+    });
+  }
+})();
 
 /* ── LIVE EDITOR ── */
 let liveConfig = { title: 'Cancionero', tag: '#Iglesia · Rosario', footer: 'IEMA · Rosario', style: 'minimal', color: '#E55A00', logo: null };
