@@ -105,6 +105,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <div class="app" id="app">
   <div class="topbar">
     <div class="topbar-title">🎵 Admin del Cancionero</div>
+    <button class="btn pri" id="btn-publish-main" title="Envía las canciones cargadas al branch main (el sitio público se actualiza)">🚀 Publicar en main</button>
     <button class="btn sec" id="btn-logout">Cerrar sesión</button>
     <button class="btn sec" id="btn-toggle-full" title="Expandir/Mostrar todo">⛶</button>
   </div>
@@ -293,7 +294,8 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 const db = window.db;
 const REPO = "becerrapedro4/CancioneroIEMA";
 const FILE = "canciones.json";
-const BRANCH = "mejoras";
+const BRANCH = "mejoras";       // rama de trabajo del admin
+const PUBLISH_BRANCH = "main";  // rama publicada por GitHub Pages
 
 /* ── STATE ── */
 let songs = [];
@@ -301,6 +303,9 @@ let fileSha = null;
 let selectedIdx = -1;
 let isDirty = false;
 let msgListenerRef = null;
+let listsLoaded = false;
+let lastSavedSongsJson = null;   // último contenido confirmado en BRANCH
+let lastSavedListsJson = null;
 
 /* ── PASSWORD GATE ── */
 const HASH_KEY = "admin_pass_hash";
@@ -372,6 +377,7 @@ async function loadSongs() {
     if (!rawRes.ok) throw new Error(`No se pudo cargar ${FILE}: HTTP ${rawRes.status}`);
     const rawText = await rawRes.text();
     songs = JSON.parse(rawText);
+    lastSavedSongsJson = JSON.stringify(songs, null, 2);
     console.log("Songs loaded:", songs.length);
 
     // 2. Obtener SHA del archivo vía tree API (para poder commit después)
@@ -414,6 +420,7 @@ async function saveToRepo(newSongs, message) {
     const data = await res.json();
     fileSha = data.content.sha;
     songs = newSongs;
+    lastSavedSongsJson = JSON.stringify(songs, null, 2);
     isDirty = false;
     st.className = "status ok"; st.textContent = `✓ Guardado — commit ${data.commit.sha.slice(0,7)}`;
     renderList();
@@ -421,6 +428,92 @@ async function saveToRepo(newSongs, message) {
     st.className = "status err"; st.textContent = "✗ Error al guardar: " + e.message;
   }
 }
+
+/* ── PUBLICAR EN MAIN (rama que sirve GitHub Pages) ── */
+async function fetchFileSha(branch, file) {
+  const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${file}?ref=${branch}`, { headers: ghHeaders() });
+  if (res.status === 404) return null;
+  if (!res.ok) {
+    let msg = res.statusText;
+    try { const b = await res.json(); msg = b.message || msg; } catch (e) {}
+    throw new Error(`GitHub API ${res.status}: ${msg}`);
+  }
+  const data = await res.json();
+  return data.sha || null;
+}
+
+// Commitea un archivo en la rama indicada. Devuelve { commit, blob }.
+async function commitFile(branch, file, text, message) {
+  for (let attempt = 0; attempt < 2; attempt++) {
+    const sha = await fetchFileSha(branch, file);
+    const body = { message, content: btoa(unescape(encodeURIComponent(text))), branch };
+    if (sha) body.sha = sha;
+    const res = await fetch(`https://api.github.com/repos/${REPO}/contents/${file}`, {
+      method: "PUT", headers: ghHeaders(), body: JSON.stringify(body)
+    });
+    if (res.ok) {
+      const data = await res.json();
+      return { commit: data.commit.sha, blob: data.content ? data.content.sha : null };
+    }
+    let msg = res.statusText;
+    try { const b = await res.json(); msg = b.message || msg; } catch (e) {}
+    // SHA desactualizado → refrescar y reintentar una vez
+    if ((res.status === 409 || res.status === 422) && attempt === 0) continue;
+    throw new Error(`GitHub API ${res.status}: ${msg}`);
+  }
+  throw new Error("No se pudo guardar en el repo");
+}
+
+async function publishToMain() {
+  const btn = document.getElementById("btn-publish-main");
+  const st = document.getElementById("status");
+  const show = (kind, msg) => { st.className = "status " + kind; st.textContent = msg; st.style.display = "block"; };
+
+  if (!getPat()) { show("err", "✗ Pegá tu token de GitHub de arriba para poder publicar."); return; }
+  if (!songs.length) { show("err", "✗ No hay canciones cargadas. Tocá ↻ y volvé a intentar."); return; }
+
+  const songsJson = JSON.stringify(songs, null, 2);
+  const listsJson = listsLoaded ? JSON.stringify(globalLists, null, 2) : null;
+  const parts = [`${songs.length} canciones`];
+  if (listsJson) parts.push(`${globalLists.length} lista${globalLists.length !== 1 ? "s" : ""} global${globalLists.length !== 1 ? "es" : ""}`);
+  if (!confirm(`¿Publicar ${parts.join(" y ")} en el branch "${PUBLISH_BRANCH}"?\n\nEl sitio público se actualiza en ~1 minuto.`)) return;
+
+  btn.disabled = true;
+  try {
+    // 1. Sincronizar la rama de trabajo para que no queden desfasadas
+    if (songsJson !== lastSavedSongsJson) {
+      show("info", `💾 Guardando en ${BRANCH}…`);
+      const r = await commitFile(BRANCH, FILE, songsJson, `Publicar: ${songs.length} canciones`);
+      if (r.blob) fileSha = r.blob;
+      lastSavedSongsJson = songsJson;
+    }
+    if (listsJson && listsJson !== lastSavedListsJson) {
+      show("info", `💾 Guardando listas en ${BRANCH}…`);
+      const r = await commitFile(BRANCH, LISTS_FILE, listsJson, "Publicar: listas globales");
+      if (r.blob) listsSha = r.blob;
+      lastSavedListsJson = listsJson;
+    }
+
+    // 2. Publicar en la rama que sirve el sitio
+    const done = [];
+    show("info", `🚀 Publicando canciones en ${PUBLISH_BRANCH}…`);
+    const rSongs = await commitFile(PUBLISH_BRANCH, FILE, songsJson, `Publicar ${songs.length} canciones en ${PUBLISH_BRANCH}`);
+    done.push(`canciones ${rSongs.commit.slice(0, 7)}`);
+    if (listsJson) {
+      show("info", `🚀 Publicando listas en ${PUBLISH_BRANCH}…`);
+      const rLists = await commitFile(PUBLISH_BRANCH, LISTS_FILE, listsJson, `Publicar listas globales en ${PUBLISH_BRANCH}`);
+      done.push(`listas ${rLists.commit.slice(0, 7)}`);
+    }
+
+    show("ok", `✓ Publicado en ${PUBLISH_BRANCH} (${done.join(" · ")}). GitHub Pages se actualiza en ~1 minuto.`);
+    toast("🚀 Publicado en " + PUBLISH_BRANCH);
+  } catch (e) {
+    show("err", "✗ Error al publicar: " + e.message);
+  } finally {
+    btn.disabled = false;
+  }
+}
+document.getElementById("btn-publish-main").addEventListener("click", publishToMain);
 
 /* ── RENDER LIST ── */
 function renderList() {
@@ -632,6 +725,8 @@ async function loadGlobalLists() {
       listsSha = await fetchListsSha();
     }
     glIdx = globalLists.length ? 0 : -1;
+    listsLoaded = true;
+    lastSavedListsJson = JSON.stringify(globalLists, null, 2);
     renderGlobalLists();
     glStatus(`✓ ${globalLists.length} lista${globalLists.length !== 1 ? "s" : ""} global${globalLists.length !== 1 ? "es" : ""} cargada${globalLists.length !== 1 ? "s" : ""}`, "ok");
   } catch (e) {
@@ -705,53 +800,7 @@ function glMove(i, dir) {
 
 function renderPicker() {
   const q = document.getElementById("gl-search").value.trim().toLowerCase();
-  current = null;
-
-  // Messages (live)
-  function loadAdminMessages() {
-    const db = window.db;
-    if (!db) { return; }
-    if (msgListenerRef) {
-      msgListenerRef.off();
-      msgListenerRef = null;
-    }
-    const room = localStorage.getItem('pres_room') || 'iglesia';
-    const ref = db.ref(`rooms/${room}/messages`);
-    const container = document.getElementById('admin-msg-history');
-    container.innerHTML = '';
-    msgListenerRef = ref.limitToLast(20).on('child_added', (snap) => {
-      const msg = snap.val();
-      if (!msg) return;
-      const key = snap.key;
-      const div = document.createElement('div');
-      div.style.cssText = 'display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;';
-      const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
-      div.innerHTML = `<span style="color:var(--muted);font-size:11px;flex-shrink:0;">${time}</span><span style="flex:1;">${esc(msg.texto || msg)}</span><button style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;" title="Eliminar">×</button>`;
-      div.querySelector('button').addEventListener('click', () => {
-        if (!confirm('¿Eliminar este mensaje?')) return;
-        ref.child(key).remove();
-        div.remove();
-        toast('🗑 Mensaje eliminado');
-      });
-      container.prepend(div);
-    });
-  }
-
-  function sendMessage(text) {
-    if (!text.trim()) return;
-    const room = localStorage.getItem('pres_room') || 'iglesia';
-    const db = window.db;
-    if (!db) { toast('⚠️ Firebase no disponible'); return; }
-    const ref = db.ref(`rooms/${room}/messages`);
-    ref.push({
-      texto: text.trim(),
-      timestamp: Date.now()
-    });
-    const input = document.getElementById('admin-msg-input');
-    if (input) input.value = '';
-    toast('📨 Mensaje enviado al stage');
-  }
-
+  const current = new Set(globalLists[glIdx] ? globalLists[glIdx].songIds : []);
 
   const base = q ? songs.filter(s => (s.title || "").toLowerCase().includes(q) || (s.artist || "").toLowerCase().includes(q)) : songs;
   const el = document.getElementById("gl-picker-list");
@@ -798,6 +847,7 @@ async function saveListsToRepo(message) {
       }
       const data = await res.json();
       listsSha = data.content.sha;
+      lastSavedListsJson = JSON.stringify(globalLists, null, 2);
       glStatus(`✓ Listas globales guardadas — commit ${data.commit.sha.slice(0, 7)}`, "ok");
       return;
     } catch (e) {
@@ -869,7 +919,66 @@ document.getElementById("gl-delete").addEventListener("click", async () => {
   await saveListsToRepo(`Listas globales: eliminar "${name}"`);
 });
 
+/* ── MENSAJES DEL STAGE (viven solo en el admin) ── */
+function loadAdminMessages() {
+  const db = window.db;
+  const container = document.getElementById("admin-msg-history");
+  if (!db || !container) return;
+  if (msgListenerRef) { msgListenerRef.off(); msgListenerRef = null; }
+  const room = localStorage.getItem("pres_room") || "iglesia";
+  const ref = db.ref(`rooms/${room}/messages`);
+  container.innerHTML = "";
+  msgListenerRef = ref.limitToLast(20).on("child_added", (snap) => {
+    const msg = snap.val();
+    if (!msg) return;
+    const key = snap.key;
+    const div = document.createElement("div");
+    div.style.cssText = "display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.05);font-size:13px;";
+    const time = new Date(msg.timestamp || Date.now()).toLocaleTimeString();
+    div.innerHTML = `<span style="color:var(--muted);font-size:11px;flex-shrink:0;">${time}</span><span style="flex:1;">${esc(msg.texto || msg)}</span><button style="background:none;border:none;color:var(--muted);font-size:16px;cursor:pointer;padding:0 4px;flex-shrink:0;" title="Eliminar">×</button>`;
+    div.querySelector("button").addEventListener("click", () => {
+      if (!confirm("¿Eliminar este mensaje?")) return;
+      ref.child(key).remove();
+      div.remove();
+      toast("🗑 Mensaje eliminado");
+    });
+    container.prepend(div);
+  });
+}
+
+function sendMessage(text) {
+  if (!text || !text.trim()) return;
+  const db = window.db;
+  if (!db) { toast("⚠️ Firebase no disponible"); return; }
+  const room = localStorage.getItem("pres_room") || "iglesia";
+  db.ref(`rooms/${room}/messages`).push({ texto: text.trim(), timestamp: Date.now() });
+  const input = document.getElementById("admin-msg-input");
+  if (input) input.value = "";
+  toast("📨 Mensaje enviado al stage");
+}
+
+document.getElementById("admin-msg-send").addEventListener("click", () => {
+  sendMessage(document.getElementById("admin-msg-input").value);
+});
+document.getElementById("admin-msg-input").addEventListener("keydown", (e) => {
+  if (e.key === "Enter") { e.preventDefault(); sendMessage(e.target.value); }
+});
+
 /* ── HELPER ── */
+function toast(msg, ms = 2200) {
+  let el = document.getElementById("toast");
+  if (!el) {
+    el = document.createElement("div");
+    el.id = "toast";
+    el.style.cssText = "position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s;pointer-events:none";
+    document.body.appendChild(el);
+  }
+  el.textContent = msg;
+  el.style.opacity = "1";
+  clearTimeout(el._t);
+  el._t = setTimeout(() => el.style.opacity = "0", ms);
+}
+
 function esc(s) { return String(s).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c])); }
 </script>
 </body>
