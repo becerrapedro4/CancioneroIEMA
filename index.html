@@ -9,6 +9,7 @@
 <script src="js/firebase-init.js"></script>
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
+<script src="js/sugerencias.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
 /* ===== TODOS LOS ESTILOS ===== */
@@ -89,7 +90,13 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .dartist{font-size:12px;color:var(--accent);font-weight:500;margin-top:3px}
 .dclose{background:none;border:none;color:var(--muted);font-size:22px;cursor:pointer;padding:0;line-height:1;flex-shrink:0}
 .dbody{overflow-y:auto;padding:18px;flex:1;-webkit-overflow-scrolling:touch}
-.lyric-block{margin-bottom:18px}
+.lyric-block{margin-bottom:18px;position:relative}
+.lyric-sugwrap{display:flex;justify-content:flex-end;margin-top:4px}
+.lyric-sug{background:transparent;border:none;color:var(--muted);font-family:'DM Sans',sans-serif;font-size:11px;cursor:pointer;padding:2px 0;-webkit-tap-highlight-color:transparent}
+.lyric-sug:hover,.lyric-sug:active{color:var(--accent)}
+.dsugbar{padding:10px 16px 0;flex-shrink:0}
+.dsugbtn{width:100%;background:transparent;border:1px dashed rgba(245,166,35,.3);color:var(--accent);border-radius:9px;padding:9px 12px;font-family:'DM Sans',sans-serif;font-size:12.5px;cursor:pointer}
+.dsugbtn:hover{background:rgba(245,166,35,.06)}
 .lyric-desc{font-size:10px;font-weight:500;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
 .lyric-text{font-size:14px;line-height:1.9;white-space:pre-wrap;text-transform:uppercase}
 .lyric-text mark{background:rgba(245,166,35,.3);color:var(--text);border-radius:2px}
@@ -291,6 +298,9 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
             <button class="dclose" id="d-close">×</button>
           </div>
           <div class="dbody" id="d-body"></div>
+          <div class="dsugbar">
+            <button class="dsugbtn" id="d-suggest">💡 Sugerir un cambio en la letra</button>
+          </div>
           <div class="dfooter" id="dfooter">
             <button class="dfbtn present" id="d-present">📺 Presentar</button>
             <button class="dfbtn edit" id="d-edit">✏️ Editar</button>
@@ -359,6 +369,26 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
     <div class="mactions">
       <button class="mbtn sec" id="edit-cancel">Cancelar</button>
       <button class="mbtn pri" id="edit-save">Guardar cambios</button>
+    </div>
+  </div>
+</div>
+
+<div class="mov" id="mov-suggest">
+  <div class="modal">
+    <button class="mclose" id="sug-close">×</button>
+    <div class="modal-title">💡 Sugerir un cambio</div>
+    <div class="modal-sub" id="sug-sub">—</div>
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Estrofa</div>
+    <select class="minput" id="sug-stanza"></select>
+    <div style="font-size:11px;font-weight:600;letter-spacing:2px;text-transform:uppercase;color:var(--muted);margin-bottom:6px">Cómo quedaría</div>
+    <textarea class="minput" id="sug-text" placeholder="Escribí la estrofa corregida…" style="min-height:170px;resize:vertical;line-height:1.7;font-size:14px"></textarea>
+    <input class="minput" id="sug-auto" placeholder="Tu nombre (opcional)" maxlength="60" type="text">
+    <input class="minput" id="sug-note" placeholder="Comentario para el admin (opcional)" maxlength="300" type="text">
+    <div class="mstatus" id="sug-status"></div>
+    <div class="modal-sub" style="font-size:12px">La canción no cambia hasta que el admin aprueba tu propuesta.</div>
+    <div class="mactions">
+      <button class="mbtn sec" id="sug-cancel">Cancelar</button>
+      <button class="mbtn pri" id="sug-send">Enviar sugerencia</button>
     </div>
   </div>
 </div>
@@ -708,7 +738,7 @@ function showDetail(song){
   document.getElementById("d-artist").textContent=song.a||"";
   document.getElementById("d-artist").style.display=song.a?"":"none";
   document.getElementById("d-body").innerHTML=song.p?.length
-    ?song.p.map((par,i)=>`<div class="lyric-block">${par.d?`<div class="lyric-desc">${esc(par.d)}</div>`:""}<div class="lyric-text">${hlHtml(par.x||"",q)}</div>${i<song.p.length-1?'<hr class="lyric-div">':""}</div>`).join("")
+    ?song.p.map((par,i)=>`<div class="lyric-block">${par.d?`<div class="lyric-desc">${esc(par.d)}</div>`:""}<div class="lyric-text">${hlHtml(par.x||"",q)}</div><div class="lyric-sugwrap"><button class="lyric-sug" data-i="${i}" title="Sugerir un cambio en esta estrofa">✏️ sugerir un cambio</button></div>${i<song.p.length-1?'<hr class="lyric-div">':""}</div>`).join("")
     :`<div style="color:var(--muted);font-size:14px">Sin letra</div>`;
   document.getElementById("detail-ov").classList.add("open");
   updateSettingsBtn();
@@ -1102,6 +1132,73 @@ document.getElementById("detail-ov").addEventListener("click",e=>{if(e.target===
 // EDIT BUTTON
 // ============================================================
 document.getElementById("d-edit").addEventListener("click",()=>{if(_detailSong)openEditModal(_detailSong);});
+
+// ============================================================
+// SUGERIR UN CAMBIO EN LA LETRA
+// (lo revisa el admin desde admin.html; la canción no cambia sola)
+// ============================================================
+let _sugSong=null;
+function sugStanzas(song){
+  if(song?.p?.length)return song.p.map((p,i)=>({d:p.d||`Estrofa ${i+1}`,x:p.x||""}));
+  return String(song?.l||"").split(/\n{2,}/).map((x,i)=>({d:`Estrofa ${i+1}`,x:x.trim()})).filter(s=>s.x);
+}
+function sugFillStanza(){
+  const st=sugStanzas(_sugSong);
+  const i=Math.max(0,Math.min(st.length-1,parseInt(document.getElementById("sug-stanza").value)||0));
+  document.getElementById("sug-text").value=st[i]?st[i].x:"";
+}
+function openSuggest(song,idx){
+  if(!song)return;
+  const st=sugStanzas(song);
+  if(!st.length){toast("ℹ️ Esta canción no tiene letra para sugerir cambios");return;}
+  _sugSong=song;
+  document.getElementById("sug-sub").textContent=`${song.t||"Sin título"}${song.a?" · "+song.a:""}`;
+  const sel=document.getElementById("sug-stanza");
+  sel.innerHTML=st.map((s,i)=>`<option value="${i}">${esc(s.d)}</option>`).join("");
+  sel.value=String(Math.max(0,Math.min(st.length-1,idx||0)));
+  document.getElementById("sug-note").value="";
+  document.getElementById("sug-auto").value=localStorage.getItem("sug_autor")||"";
+  document.getElementById("sug-status").className="mstatus";
+  sugFillStanza();
+  document.getElementById("mov-suggest").classList.add("open");
+  updateSettingsBtn();
+  document.getElementById("sug-text").focus();
+}
+function closeSuggest(){
+  document.getElementById("mov-suggest").classList.remove("open");
+  _sugSong=null;
+  updateSettingsBtn();
+}
+document.getElementById("d-suggest").addEventListener("click",()=>openSuggest(_detailSong,0));
+document.getElementById("d-body").addEventListener("click",e=>{
+  const b=e.target.closest(".lyric-sug");if(!b)return;
+  e.stopPropagation();
+  openSuggest(_detailSong,parseInt(b.dataset.i)||0);
+});
+document.getElementById("sug-stanza").addEventListener("change",sugFillStanza);
+document.getElementById("sug-close").addEventListener("click",closeSuggest);
+document.getElementById("sug-cancel").addEventListener("click",closeSuggest);
+document.getElementById("sug-send").addEventListener("click",async()=>{
+  const status=document.getElementById("sug-status");
+  const fail=m=>{status.className="mstatus err";status.textContent="✗ "+m;};
+  if(!_sugSong)return;
+  const S=window.Sugerencias;
+  if(!S){fail("No se pudo cargar el módulo de sugerencias");return;}
+  const st=sugStanzas(_sugSong);
+  const idx=parseInt(document.getElementById("sug-stanza").value)||0;
+  const propuesta=document.getElementById("sug-text").value;
+  const autor=document.getElementById("sug-auto").value.trim();
+  const nota=document.getElementById("sug-note").value.trim();
+  const err=S.validar({songId:_sugSong.id,antes:st[idx]?st[idx].x:"",propuesta});
+  if(err){fail(err);return;}
+  status.className="mstatus ok";status.textContent="Enviando…";
+  try{
+    await S.enviar({songId:_sugSong.id,title:_sugSong.t,artist:_sugSong.a,idx,antes:st[idx]?st[idx].x:"",propuesta,nota,autor});
+    if(autor)localStorage.setItem("sug_autor",autor);
+    closeSuggest();
+    toast("💡 ¡Gracias! El admin va a revisar tu sugerencia");
+  }catch(e){fail(e.message||"No se pudo enviar");}
+});
 
 // ============================================================
 // DELETE BUTTON

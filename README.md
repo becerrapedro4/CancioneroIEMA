@@ -57,6 +57,7 @@ Sirve para:
 - Eliminar canciones.
 - Exportar la base actual como `Holyrics_Backup.json`.
 - Mensajes del stage (ver, enviar, eliminar y elegir a qué sala se mandan).
+- Cambios sugeridos en las letras: ver, aplicar al repo, rechazar o quitar.
 - Configuración global: mostrar/ocultar botón HTML, estilo de portada, color de acento.
 - Editor en vivo: título del evento, etiqueta, pie de página, logo, estilo, color, publicar.
 - Listas globales: crear, editar, agregar canciones, reordenar, eliminar, guardar en el repo.
@@ -181,6 +182,29 @@ Las salas conocidas salen del índice de presencia (`rooms/_salas`, ver Firebase
 que publican el stage y los presentadores; las que no se usan hace un mes se
 borran solas al entrar al admin.
 
+### Sugerencias de cambio en las letras
+
+Cualquier usuario puede proponer una corrección de letra desde el buscador: en el
+detalle de una canción toca **“💡 Sugerir un cambio en la letra”** (o el
+**“✏️ sugerir un cambio”** de una estrofa puntual), elige la estrofa, escribe cómo
+quedaría, puede dejar su nombre y un comentario, y lo manda. **La canción no
+cambia**: queda como propuesta pendiente.
+
+El admin las ve en **Admin → 💡 Cambios sugeridos en las letras**, con el texto
+actual y el propuesto lado a lado, quién la mandó y cuándo, y puede:
+
+- **✔ Aplicar a la canción** — reemplaza solo esa estrofa en `canciones.json`
+  (rama de trabajo del admin) y recalcula el texto completo. Después hay que
+  publicarla con **🚀 Publicar en main** para que la vean todos.
+- **✕ Rechazar** — la canción queda igual y la sugerencia se marca como rechazada.
+- **🗑 Quitar de la lista** — la borra (para limpiar las ya resueltas).
+
+Al aplicar, si dos personas sugirieron sobre la misma canción, el cambio se ubica
+**por el texto original** y no por el número de estrofa, así no se aplica en el
+lugar equivocado. Si ese texto ya cambió, el admin decide y puede cancelar sin
+tocar nada. Una sugerencia nunca pisa el trabajo de un usuario local: si la
+canción no está en la base del repo, el admin recibe el aviso.
+
 ---
 
 ## 🔐 Admin vs usuario
@@ -195,6 +219,7 @@ Puede:
 - Exportar PDF y compartir listas.
 - Ver QR y link de sala.
 - Ver listas globales (solo lectura).
+- Sugerir cambios en las letras (los revisa el admin).
 
 No puede:
 
@@ -329,6 +354,7 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/js/firebase-init.js` — configuración de Firebase única del proyecto.
 - `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
+- `/js/sugerencias.js` — sugerencias de cambio en las letras: las crea el usuario y las resuelve el admin.
 
 ---
 
@@ -338,6 +364,10 @@ La app usa Firebase Realtime Database para sincronizar en vivo:
 
 - `rooms/<sala>/currentSong` — canción actual del presentador.
 - `rooms/<sala>/messages` — mensajes del stage.
+- `rooms/_sugerencias/<id>` — sugerencias de cambio en las letras que mandan los
+  usuarios (`{ songId, title, idx, antes, propuesta, nota, autor, ts, estado }`),
+  con `estado` en `pendiente` / `aplicada` / `rechazada`. También dentro de
+  `rooms/` por las mismas reglas.
 - `rooms/_salas/<sala>` — índice de presencia (quién está activo y dónde). No es
   una sala real: es un "cuarto" reservado donde el `stage` y los presentadores
   publican un latido cada 25 s (`{ ts, online, mode, song }`) y se marcan offline

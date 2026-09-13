@@ -180,6 +180,17 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
     <div id="admin-msg-history" style="max-height:220px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px"><div style="color:var(--muted);text-align:center">No hay mensajes todavía</div></div>
   </div>
 
+  <!-- CAMBIOS SUGERIDOS EN LAS LETRAS -->
+  <div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="font-size:15px;font-weight:600">💡 Cambios sugeridos en las letras</div>
+      <span id="sg-count" style="font-size:12px;font-weight:500;color:var(--muted)">—</span>
+      <button class="btn sec" id="sg-filter" style="margin-left:auto;flex:0">Ver todas</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Los mandan los usuarios desde el buscador, estrofa por estrofa. Al aplicar, el cambio se guarda en <b id="sg-branch">mejoras</b> y después podés publicarlo con <b>🚀 Publicar en main</b>. Solo se cambia esa estrofa; el resto de la canción queda igual.</div>
+    <div id="sg-list" style="max-height:460px;overflow-y:auto"><div style="color:var(--muted);text-align:center;padding:10px">Cargando…</div></div>
+  </div>
+
   <!-- CONFIG: MISC -->
   <div style="margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px">⚙️ Configuración</div>
@@ -309,6 +320,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="js/firebase-init.js"></script>
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
+<script src="js/sugerencias.js"></script>
 <script>
 const db = window.db;
 const REPO = "becerrapedro4/CancioneroIEMA";
@@ -444,8 +456,10 @@ async function saveToRepo(newSongs, message) {
     isDirty = false;
     st.className = "status ok"; st.textContent = `✓ Guardado — commit ${data.commit.sha.slice(0,7)}`;
     renderList();
+    return true;
   } catch (e) {
     st.className = "status err"; st.textContent = "✗ Error al guardar: " + e.message;
+    return false;
   }
 }
 
@@ -1205,6 +1219,127 @@ document.getElementById("admin-msg-input").addEventListener("keydown", (e) => {
   const base = (window.RoomsIndex && window.RoomsIndex.BASE) || "rooms/_salas";
   if (db) db.ref(base).on("value", (s) => { roomsIndex = s.val() || {}; renderMsgRooms(); });
   renderMsgRooms();
+})();
+
+/* ── CAMBIOS SUGERIDOS EN LAS LETRAS (los manda el usuario desde el buscador) ── */
+let sugerencias = [];
+let _sgFilter = 'pendiente';
+
+function sgAPI() { return window.Sugerencias || null; }
+function sgShow(kind, msg) {
+  const st = document.getElementById("status");
+  if (!st) return;
+  st.className = "status " + kind; st.textContent = msg; st.style.display = "block";
+}
+function sgBadge(estado) {
+  if (estado === 'aplicada') return '<span style="font-size:11px;color:var(--green)">✔ aplicada</span>';
+  if (estado === 'rechazada') return '<span style="font-size:11px;color:var(--red)">✕ rechazada</span>';
+  return '<span style="font-size:11px;color:var(--accent)">● pendiente</span>';
+}
+
+function renderSugerencias() {
+  const cont = document.getElementById('sg-list');
+  if (!cont) return;
+  const pend = (sgAPI() ? sgAPI().pendientes(sugerencias) : sugerencias.filter(s => s.estado === 'pendiente'));
+  const lista = _sgFilter === 'pendiente' ? pend : sugerencias;
+  const cnt = document.getElementById('sg-count');
+  if (cnt) {
+    cnt.textContent = pend.length ? `${pend.length} pendiente${pend.length === 1 ? '' : 's'}` : 'sin pendientes';
+    cnt.style.color = pend.length ? 'var(--accent)' : 'var(--muted)';
+  }
+  const btn = document.getElementById('sg-filter');
+  if (btn) btn.textContent = _sgFilter === 'pendiente' ? 'Ver todas' : 'Ver pendientes';
+  const br = document.getElementById('sg-branch');
+  if (br) br.textContent = BRANCH;
+
+  if (!lista.length) {
+    cont.innerHTML = `<div style="color:var(--muted);text-align:center;padding:10px">${_sgFilter === 'pendiente' ? 'No hay cambios sugeridos pendientes' : 'Todavía no llegó ninguna sugerencia'}</div>`;
+    return;
+  }
+  cont.innerHTML = lista.map(s => {
+    const estrofa = (typeof s.idx === 'number' ? s.idx : 0) + 1;
+    return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2)">
+      <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px">
+        <b style="font-size:14px">${esc(s.title || 'Sin título')}</b>
+        <span style="color:var(--muted);font-size:11px">${s.artist ? esc(s.artist) + ' · ' : ''}Estrofa ${estrofa} · ${hace(s.ts)} · de ${esc(s.autor || 'anónimo')}</span>
+        ${sgBadge(s.estado)}
+      </div>
+      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Ahora dice</div>
+      <div style="font-size:13px;white-space:pre-wrap;background:rgba(224,82,82,.06);border-left:2px solid rgba(224,82,82,.45);padding:6px 10px;border-radius:6px;margin-bottom:8px">${esc(s.antes || '')}</div>
+      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Propone</div>
+      <div style="font-size:13px;white-space:pre-wrap;background:rgba(76,175,125,.06);border-left:2px solid rgba(76,175,125,.45);padding:6px 10px;border-radius:6px">${esc(s.propuesta || '')}</div>
+      ${s.nota ? `<div style="font-size:12px;color:var(--muted);margin-top:8px">💬 ${esc(s.nota)}</div>` : ''}
+      <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
+        ${s.estado === 'pendiente' ? `<button class="btn pri" data-sg-ok="${esc(s.key)}">✔ Aplicar a la canción</button>
+        <button class="btn sec" data-sg-no="${esc(s.key)}">✕ Rechazar</button>` : ''}
+        <button class="btn danger" data-sg-del="${esc(s.key)}">🗑 Quitar de la lista</button>
+      </div>
+    </div>`;
+  }).join('');
+  cont.querySelectorAll('[data-sg-ok]').forEach(b => b.addEventListener('click', () => aplicarSugerencia(b.dataset.sgOk)));
+  cont.querySelectorAll('[data-sg-no]').forEach(b => b.addEventListener('click', () => rejectarSugerencia(b.dataset.sgNo)));
+  cont.querySelectorAll('[data-sg-del]').forEach(b => b.addEventListener('click', () => quitarSugerencia(b.dataset.sgDel)));
+}
+
+async function aplicarSugerencia(key) {
+  const S = sgAPI();
+  const sg = sugerencias.find(s => s.key === key);
+  if (!S || !sg) return;
+  if (!songs.length) { sgShow('err', '✗ Primero cargá tu token de GitHub y tocá ↻ para tener la base de canciones.'); return; }
+  const i = songs.findIndex(s => String(s.id) === String(sg.songId));
+  if (i < 0) {
+    sgShow('err', `✗ No encuentro “${sg.title}” en la base del repo. Puede ser una canción local del usuario o una que ya no existe.`);
+    return;
+  }
+  const m = S.matchParagraph(songs[i], sg);
+  if (m.idx < 0) { sgShow('err', '✗ Esa estrofa ya no existe en la canción: revisala a mano en el editor.'); return; }
+  if (!m.exacto) {
+    const seguir = confirm('El texto de esa estrofa ya no es el mismo que cuando se sugirió el cambio.\n¿Aplicar igual reemplazando la estrofa de esa posición?');
+    if (!seguir) {
+      sgShow('info', '↩ No se aplicó nada: el texto de esa estrofa cambió desde que se sugirió. Si querés, aplicala a mano en el editor.');
+      return;
+    }
+  }
+
+  const paras = (songs[i].lyrics && songs[i].lyrics.paragraphs) || [];
+  const nuevos = paras.map((p, k) => k === m.idx ? Object.assign({}, p, { text: sg.propuesta }) : p);
+  const updated = Object.assign({}, songs[i], {
+    lyrics: Object.assign({}, songs[i].lyrics, { paragraphs: nuevos, full_text: nuevos.map(p => p.text).join('\n\n') })
+  });
+  const newSongs = songs.map((s, k) => k === i ? updated : s);
+  const ok = await saveToRepo(newSongs, `Aplicar sugerencia: ${songs[i].title}`);
+  if (!ok) return;   // saveToRepo ya mostró el error
+  await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
+  sgShow('ok', `✓ Cambio aplicado en “${songs[i].title}” (guardado en ${BRANCH}). Usá 🚀 Publicar en main para que lo vean todos.`);
+}
+
+async function rejectarSugerencia(key) {
+  const S = sgAPI();
+  const sg = sugerencias.find(s => s.key === key);
+  if (!S || !sg) return;
+  if (!confirm(`¿Rechazar el cambio sugerido para “${sg.title}”?`)) return;
+  await S.setEstado(key, 'rechazada', { resueltoPor: 'admin' });
+  sgShow('ok', `✓ Sugerencia rechazada: “${sg.title}” queda como estaba.`);
+}
+
+async function quitarSugerencia(key) {
+  const S = sgAPI();
+  if (!S) return;
+  const sg = sugerencias.find(s => s.key === key);
+  if (!confirm('¿Borrar esta sugerencia de la lista? No se puede deshacer.')) return;
+  await S.eliminar(key);
+  if (sg) sgShow('ok', `🗑 Sugerencia de “${sg.title}” eliminada.`);
+}
+
+(function initSugerencias() {
+  const btn = document.getElementById('sg-filter');
+  if (btn) btn.addEventListener('click', () => {
+    _sgFilter = _sgFilter === 'pendiente' ? 'todas' : 'pendiente';
+    renderSugerencias();
+  });
+  const S = sgAPI();
+  if (S) S.escuchar(list => { sugerencias = list; renderSugerencias(); });
+  renderSugerencias();
 })();
 
 /* ── HELPER ── */
