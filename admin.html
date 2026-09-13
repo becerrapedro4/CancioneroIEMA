@@ -308,41 +308,42 @@ let lastSavedSongsJson = null;   // último contenido confirmado en BRANCH
 let lastSavedListsJson = null;
 
 /* ── PASSWORD GATE ── */
-const HASH_KEY = "admin_pass_hash";
+// Contraseña fija del admin, guardada como SHA-256 (no queda en texto plano en el código).
+const PASS_HASH = "0967832067403cebfa1b9b2e64eccf198b95ba500efe3cc7062a2fea8fddb321";
 async function hashPass(p) {
   const enc = new TextEncoder().encode(p);
   const buf = await crypto.subtle.digest("SHA-256", enc);
   return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2, "0")).join("");
 }
-document.getElementById("gate-btn").addEventListener("click", async () => {
-  const pass = document.getElementById("gate-pass").value;
-  if (!pass) return;
-  const stored = localStorage.getItem(HASH_KEY);
-  if (!stored) {
-    // First time: set password
-    localStorage.setItem(HASH_KEY, await hashPass(pass));
-    enterApp();
-  } else if (await hashPass(pass) === stored) {
+async function checkPass(pass) {
+  const err = document.getElementById("gate-err");
+  err.style.display = "none";
+  if (await hashPass(pass.trim()) === PASS_HASH) {
     enterApp();
   } else {
-    document.getElementById("gate-err").style.display = "block";
+    err.style.display = "block";
+    document.getElementById("gate-pass").value = "";
   }
+}
+document.getElementById("gate-btn").addEventListener("click", () => {
+  const pass = document.getElementById("gate-pass").value;
+  if (!pass) return;
+  checkPass(pass);
 });
 document.getElementById("gate-pass").addEventListener("keydown", e => { if (e.key === "Enter") document.getElementById("gate-btn").click(); });
 document.getElementById("btn-logout").addEventListener("click", () => {
-  localStorage.removeItem(HASH_KEY);
+  sessionStorage.removeItem("admin_ok");
   document.getElementById("app").style.display = "none";
   document.getElementById("gate").style.display = "flex";
   document.getElementById("gate-pass").value = "";
   document.getElementById("gate-err").style.display = "none";
 });
 
-// Auto-login if password was set
-if (!localStorage.getItem(HASH_KEY)) {
-  // First visit: skip gate, set password
-} else if (sessionStorage.getItem("admin_ok")) {
-  enterApp();
-}
+// La contraseña ya no se guarda por dispositivo: si quedó un hash viejo, se borra.
+try { localStorage.removeItem("admin_pass_hash"); } catch (e) {}
+
+// Auto-login dentro de la misma sesión del navegador
+if (sessionStorage.getItem("admin_ok")) enterApp();
 
 async function enterApp() {
   sessionStorage.setItem("admin_ok", "1");
