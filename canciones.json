@@ -1,5 +1,103 @@
 [
   {
+    "id": 1789304389422,
+    "title": "Dejo en esa cruz",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "El murió allí en la Cruz\nCargando mí dolor\n\nExpuesto fue por mí\nSe entregó en mí lugar\n\nY me dió una chance\nDe volver a comenzar\n\nDejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás\n\nMiro hacia Ti, corro hacia Ti\nTu amor me llama\n\nYo dependo de ese amor\nDe su amor, más que todo\n\nYo confío que ese amor tiene poder\nPara sanar dolores\n\nDejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás\n\nMiro hacia Ti, corro hacia Ti\nTu amor me llama\n\nDejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás//\n\nMiro hacia Ti, corro hacia Ti\nTu amor me llama//",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "El murió allí en la Cruz\nCargando mí dolor",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "Expuesto fue por mí\nSe entregó en mí lugar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "Y me dió una chance\nDe volver a comenzar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "Dejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "Miro hacia Ti, corro hacia Ti\nTu amor me llama",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "Yo dependo de ese amor\nDe su amor, más que todo",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "Yo confío que ese amor tiene poder\nPara sanar dolores",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "Dejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "Miro hacia Ti, corro hacia Ti\nTu amor me llama",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "Dejo en esa cruz , todo lo que pasó\nTodo lo que quedó atrás//",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "Miro hacia Ti, corro hacia Ti\nTu amor me llama//",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789302206620,
     "title": "Nada es imposible para Dios",
     "artist": "",
@@ -81184,143 +81282,125 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "TODAS LAS PROMESAS\nDEL SEÑOR JESÚS\nSON APOYO PODEROSO DE MI FE\nMIENTRAS VIVA AQUÍ\nCERCADO DE SU LUZ\nSIEMPRE EN SUS PROMESAS CONFIARÉ\n\nGRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ\n\nTODAS LAS PROMESAS\nPARA EL HOMBRE FIEL,\nEL SEÑOR EN SUS\nBONDADES CUMPLIRÁ\nY CONFIANDO ESPERO\nSIEMPRE QUE POR ÉL\nPAZ ETERNA MI ALMA GOZARÁ\n\nGRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ\n\nTODAS LAS PROMESAS\nDEL SEÑOR SERÁN\nLUZ Y FUERZA EN NUESTRA\nVIDA TERRENAL\nELLAS EN LA DURA LID\nNOS SOSTENDRÁN\nY TRIUNFAR PODREMOS\nSOBRE EL MAL\n\nGRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
+      "full_text": "TODAS LAS PROMESAS DEL SEÑOR JESÚS\nSON APOYO PODEROSO DE MI FE\n\nMIENTRAS VIVA AQUÍ\nCERCADO DE SU LUZ\n\nSIEMPRE EN SUS PROMESAS CONFIARÉ\n\nGRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\n\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ\n\nTODAS LAS PROMESAS\nPARA EL HOMBRE FIEL,\n\nEL SEÑOR EN SUS\nBONDADES CUMPLIRÁ\n\nY CONFIANDO ESPERO\nSIEMPRE QUE POR ÉL\n\nPAZ ETERNA MI ALMA GOZARÁ\n\nGRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\n\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ\n\nTODAS LAS PROMESAS\nDEL SEÑOR SERÁN\n\nLUZ Y FUERZA EN NUESTRA\nVIDA TERRENAL\n\nELLAS EN LA DURA LID\nNOS SOSTENDRÁN\n\nY TRIUNFAR PODREMOS\nSOBRE EL MAL\n\nGRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\n\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "TODAS LAS PROMESAS\nDEL SEÑOR JESÚS\nSON APOYO PODEROSO DE MI FE\nMIENTRAS VIVA AQUÍ\nCERCADO DE SU LUZ\nSIEMPRE EN SUS PROMESAS CONFIARÉ",
+          "text": "TODAS LAS PROMESAS DEL SEÑOR JESÚS\nSON APOYO PODEROSO DE MI FE",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "GRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
+          "text": "MIENTRAS VIVA AQUÍ\nCERCADO DE SU LUZ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "TODAS LAS PROMESAS\nPARA EL HOMBRE FIEL,\nEL SEÑOR EN SUS\nBONDADES CUMPLIRÁ\nY CONFIANDO ESPERO\nSIEMPRE QUE POR ÉL\nPAZ ETERNA MI ALMA GOZARÁ",
+          "text": "SIEMPRE EN SUS PROMESAS CONFIARÉ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": "GRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
+          "text": "GRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": "TODAS LAS PROMESAS\nDEL SEÑOR SERÁN\nLUZ Y FUERZA EN NUESTRA\nVIDA TERRENAL\nELLAS EN LA DURA LID\nNOS SOSTENDRÁN\nY TRIUNFAR PODREMOS\nSOBRE EL MAL",
+          "text": "GRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
           "description": "",
-          "text": "GRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO\nGRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
-          "text_with_comment": null,
-          "translations": null
-        }
-      ]
-    },
-    "streaming": {
-      "audio": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      },
-      "backing_track": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      }
-    },
-    "extras": {
-      "extra": ""
-    }
-  },
-  {
-    "id": 1777239884875,
-    "title": "TODAS LAS PROMESAS DEL SEÑOR (HIMNO)",
-    "artist": "Autor desconocido",
-    "author": "",
-    "note": "",
-    "copyright": "",
-    "language": "",
-    "key": "",
-    "bpm": 0,
-    "time_sig": "",
-    "midi": {
-      "code": 0,
-      "velocity": 0
-    },
-    "order": "",
-    "arrangements": [],
-    "lyrics": {
-      "full_text": "TODAS LAS PROMESAS \nDEL SEÑOR JESUS\nSON APOYO PODERO\nDE MI FE\n\nMIENTRAS LUCHE AQUI\nBUSCANDO YO SU LUZ\nSIEMPRE EN SUS PROMESAS\nCONFIARE\n\nGRANDES FIELES\nLAS PROMESAS QUE \nEL SEÑOR JESUS HA DADO\n\nGRANDES FIELES\nEN ELLAS PARA SIEMPRE CONFIARE\n\nTODAS LAS PROMESAS\nPARA EL HOMBRE FIEL\nEL SEÑOR EN SUS BONDADES\nCUMPLIRA\n\nY CONFIADO SE\nQUE PARA SIEMPRE\nEN ÉL\nPAZ ETERNA MI ALMA GOZARA\n\nTODAS LAS PROMESAS\n DEL SEÑOR SERAN\nGOZO Y FUERZA\nEN NUETRA VIDA ETERNAL\n\nELLAS EN LA DURA LID\nNOS SOTENDRAN\nY TRIUNFAR PODREMOS\nSOBRE EL MAL",
-      "full_text_with_comment": null,
-      "paragraphs": [
-        {
-          "number": 1,
-          "description": "",
-          "text": "TODAS LAS PROMESAS \nDEL SEÑOR JESUS\nSON APOYO PODERO\nDE MI FE",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 2,
-          "description": "",
-          "text": "MIENTRAS LUCHE AQUI\nBUSCANDO YO SU LUZ\nSIEMPRE EN SUS PROMESAS\nCONFIARE",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 3,
-          "description": "",
-          "text": "GRANDES FIELES\nLAS PROMESAS QUE \nEL SEÑOR JESUS HA DADO",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 4,
-          "description": "",
-          "text": "GRANDES FIELES\nEN ELLAS PARA SIEMPRE CONFIARE",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 5,
-          "description": "",
-          "text": "TODAS LAS PROMESAS\nPARA EL HOMBRE FIEL\nEL SEÑOR EN SUS BONDADES\nCUMPLIRA",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 6,
-          "description": "",
-          "text": "Y CONFIADO SE\nQUE PARA SIEMPRE\nEN ÉL\nPAZ ETERNA MI ALMA GOZARA",
+          "text": "TODAS LAS PROMESAS\nPARA EL HOMBRE FIEL,",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 7,
           "description": "",
-          "text": "TODAS LAS PROMESAS\n DEL SEÑOR SERAN\nGOZO Y FUERZA\nEN NUETRA VIDA ETERNAL",
+          "text": "EL SEÑOR EN SUS\nBONDADES CUMPLIRÁ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 8,
           "description": "",
-          "text": "ELLAS EN LA DURA LID\nNOS SOTENDRAN\nY TRIUNFAR PODREMOS\nSOBRE EL MAL",
+          "text": "Y CONFIANDO ESPERO\nSIEMPRE QUE POR ÉL",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "PAZ ETERNA MI ALMA GOZARÁ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "GRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "GRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "TODAS LAS PROMESAS\nDEL SEÑOR SERÁN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "LUZ Y FUERZA EN NUESTRA\nVIDA TERRENAL",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "ELLAS EN LA DURA LID\nNOS SOSTENDRÁN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "Y TRIUNFAR PODREMOS\nSOBRE EL MAL",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "GRANDES, FIELES\nLAS PROMESAS QUE EL SEÑOR JESÚS HA DADO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "GRANDES, FIELES,\nCONFIANDO EN SUS PROMESAS YO ESTARÉ",
           "text_with_comment": null,
           "translations": null
         }
