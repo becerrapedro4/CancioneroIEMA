@@ -330,7 +330,6 @@ La sala se elige desde la configuración. Todos los participantes de la misma sa
 
 ## ⚠️ Notas importantes
 
-- Las reglas de Firebase están abiertas en este proyecto. Cualquiera que conozca la URL puede leer o escribir en las salas. Revisá las reglas de seguridad si vas a dejarlo público con datos reales.
 - Las canciones de usuarios normales no se escriben en el repo. Solo las crea el admin desde `admin.html`.
 - Para que un cambio del admin aparezca en todos los dispositivos, el admin debe guardar en el repo y luego los usuarios recargar la página.
 - `canciones.json` pesa bastante; el admin carga el archivo raw del repo, no por la API de contenidos.
