@@ -1,5 +1,229 @@
 [
   {
+    "id": 1789401918409,
+    "title": "Clamo a Cristo",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "Tu nombre, Jesús\nCalma toda tempestad\n\nTu nombre, Jesús\nVida a los muertos da\n\nTu nombre, Jesús\nEs el que puede salvar\n\nY es digno de adorar\n\nClamo a Cristo\nClamo al hombre que sana\n\nReina en poder y victoria\nAlgo resucitará\n\nCada vez que clamo a Cristo\nClamo al hombre que salva\n\nDigno de toda la gloria\nAlgo resucitará\n\nCada vez que clamo a Él\n\nTengo un rey, ah\nQue a la muerte conquistó\n\nLas ganas, Él\nCon sus manos las tomó\n\nY con poder, oh\nLa serpiente aplastó\n\nResucitado ahora yo soy\n\nClamo a Cristo\nClamo al hombre que sana\n\nReina en poder y victoria\nAlgo resucitará\n\nCada vez que clamo a Cristo\nClamo al hombre que salva\n\nDigno de toda la gloria\nAlgo resucitará\n\nCada vez que clamo a Él\n\nCadenas caen\nCada vez que clamo a Él\n\nDemonios huyen\nCada vez que clamo a Él\n\nTodas las cadenas caen\nCada vez que clamo a Él\n\nTodos los demonios huyen\nCada vez que clamo a Él\n\nMuerte, ya no reinas más\nTumba, hoy vacía estás\n\nMuerte, ya no reinas más\nTumba, hoy vacía estás\n\nMuerte, ya no reinas más\nTumba, hoy vacía estás, eh\n\nLo muerto vivirá\nLo muerto vivirá\n\nLo muerto vivirá en tu nombre, Cristo\n\nLo muerto vivirá\nLo muerto vivirá\n\nLo muerto vivirá en tu nombre, Cristo",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "Tu nombre, Jesús\nCalma toda tempestad",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "Tu nombre, Jesús\nVida a los muertos da",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "Tu nombre, Jesús\nEs el que puede salvar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "Y es digno de adorar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "Clamo a Cristo\nClamo al hombre que sana",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "Reina en poder y victoria\nAlgo resucitará",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "Cada vez que clamo a Cristo\nClamo al hombre que salva",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "Digno de toda la gloria\nAlgo resucitará",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "Cada vez que clamo a Él",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "Tengo un rey, ah\nQue a la muerte conquistó",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "Las ganas, Él\nCon sus manos las tomó",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "Y con poder, oh\nLa serpiente aplastó",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "Resucitado ahora yo soy",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "Clamo a Cristo\nClamo al hombre que sana",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "Reina en poder y victoria\nAlgo resucitará",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "Cada vez que clamo a Cristo\nClamo al hombre que salva",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "Digno de toda la gloria\nAlgo resucitará",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 18,
+          "description": "",
+          "text": "Cada vez que clamo a Él",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 19,
+          "description": "",
+          "text": "Cadenas caen\nCada vez que clamo a Él",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 20,
+          "description": "",
+          "text": "Demonios huyen\nCada vez que clamo a Él",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 21,
+          "description": "",
+          "text": "Todas las cadenas caen\nCada vez que clamo a Él",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 22,
+          "description": "",
+          "text": "Todos los demonios huyen\nCada vez que clamo a Él",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 23,
+          "description": "",
+          "text": "Muerte, ya no reinas más\nTumba, hoy vacía estás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 24,
+          "description": "",
+          "text": "Muerte, ya no reinas más\nTumba, hoy vacía estás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 25,
+          "description": "",
+          "text": "Muerte, ya no reinas más\nTumba, hoy vacía estás, eh",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 26,
+          "description": "",
+          "text": "Lo muerto vivirá\nLo muerto vivirá",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 27,
+          "description": "",
+          "text": "Lo muerto vivirá en tu nombre, Cristo",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 28,
+          "description": "",
+          "text": "Lo muerto vivirá\nLo muerto vivirá",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 29,
+          "description": "",
+          "text": "Lo muerto vivirá en tu nombre, Cristo",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789304389422,
     "title": "Dejo en esa cruz",
     "artist": "",
