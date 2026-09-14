@@ -1,5 +1,208 @@
 [
   {
+    "id": 1789404355624,
+    "title": "FIESTA EN EL DESIERTO",
+    "artist": "Montesanto",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "EN SANTIAGO UNO, VERSO DOS\nESTÁ ESCRITO QUE TENGA GOZO\n\nCUANDO PASE POR DIVERSAS PRUEBAS\nPORQUE DE ALLÍ SALDRÉ VICTORIOSO\n\nMI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA, SOLO ALABANZA\n\nMI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA\n\nYO DANZO, DANZO\nDANZO, DANZO\n\nDANZO, DANZO\nEN EL PROCESO\n\nY GRITO, GRITO\nGRITO, GRITO\n\nGRITO, GRITO\n\"NO MORIRÉ\"\n\nDOY VUELTAS, VUELTAS\nVUELTAS, VUELTAS\n\nVUELTAS, VUELTAS\nNO ME AVERGÜENZO\n\nHAY FIESTA, FIESTA\nFIESTA, FIESTA, FIESTA\n\nFIESTA EN EL DESIERTO\n\nAUNQUE VENGA LA ENFERMEDAD\nMIENTRAS VIVA TE ALABARÉ\n\nAUNQUE MIS LABIOS QUIERAN CALLAR\nMIENTRAS VIVA TE ALABARÉ\n\nAUNQUE EL DESIERTO ME QUIERA SECAR\nMIENTRAS VIVA TE ALABARÉ\n\nAUNQUE LA HIGUERA NO FLOREZCA\nMIENTRAS VIVA TE ALABARÉ\n\nMI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA, SOLO ALABANZA\n\nMI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA\n\nYO DANZO, DANZO\nDANZO, DANZO\n\nDANZO, DANZO\nEN EL PROCESO\n\nY GRITO, GRITO\nGRITO, GRITO\n\nGRITO, GRITO\n\"NO MORIRÉ\"\n\nDOY VUELTAS, VUELTAS\nVUELTAS, VUELTAS\n\nVUELTAS, VUELTAS\nNO ME AVERGÜENZO\n\nHAY FIESTA, FIESTA\nFIESTA, FIESTA, FIESTA\n\nFIESTA EN EL DESIERTO",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "EN SANTIAGO UNO, VERSO DOS\nESTÁ ESCRITO QUE TENGA GOZO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "CUANDO PASE POR DIVERSAS PRUEBAS\nPORQUE DE ALLÍ SALDRÉ VICTORIOSO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "MI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA, SOLO ALABANZA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "MI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "YO DANZO, DANZO\nDANZO, DANZO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "DANZO, DANZO\nEN EL PROCESO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "Y GRITO, GRITO\nGRITO, GRITO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "GRITO, GRITO\n\"NO MORIRÉ\"",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "DOY VUELTAS, VUELTAS\nVUELTAS, VUELTAS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "VUELTAS, VUELTAS\nNO ME AVERGÜENZO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "HAY FIESTA, FIESTA\nFIESTA, FIESTA, FIESTA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "FIESTA EN EL DESIERTO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "AUNQUE VENGA LA ENFERMEDAD\nMIENTRAS VIVA TE ALABARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "AUNQUE MIS LABIOS QUIERAN CALLAR\nMIENTRAS VIVA TE ALABARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "AUNQUE EL DESIERTO ME QUIERA SECAR\nMIENTRAS VIVA TE ALABARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "AUNQUE LA HIGUERA NO FLOREZCA\nMIENTRAS VIVA TE ALABARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "MI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA, SOLO ALABANZA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 18,
+          "description": "",
+          "text": "MI LAMENTO CAMBIASTE POR DANZA\nYA NO HAY TRISTEZA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 19,
+          "description": "",
+          "text": "YO DANZO, DANZO\nDANZO, DANZO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 20,
+          "description": "",
+          "text": "DANZO, DANZO\nEN EL PROCESO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 21,
+          "description": "",
+          "text": "Y GRITO, GRITO\nGRITO, GRITO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 22,
+          "description": "",
+          "text": "GRITO, GRITO\n\"NO MORIRÉ\"",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 23,
+          "description": "",
+          "text": "DOY VUELTAS, VUELTAS\nVUELTAS, VUELTAS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 24,
+          "description": "",
+          "text": "VUELTAS, VUELTAS\nNO ME AVERGÜENZO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 25,
+          "description": "",
+          "text": "HAY FIESTA, FIESTA\nFIESTA, FIESTA, FIESTA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 26,
+          "description": "",
+          "text": "FIESTA EN EL DESIERTO",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789404255627,
     "title": "Piedra en la mano",
     "artist": "",
