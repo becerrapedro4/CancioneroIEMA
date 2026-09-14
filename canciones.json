@@ -4572,62 +4572,41 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "AL QUE ESTÁ SENTADO\nEN EL TRONO\n\nY AL CORDERO\nSEA EL HONOR\n\nY AL CORDERO \nSEA LA ALABANZA \n\nSEA LA GLORIA\nSEA LA HONRA\n\nSEA EL DOMINIO\n\nPOR LOS SIGLOS\nDE LOS SIGLOS\n\nPODEROSO DIOS\n\nPODEROSO DIOS//\nMI ALMA CLAMA POR TI",
+      "full_text": "Al que está sentado \nen el trono\n\nY al cordero, sea el honor\n\nSea la gloria, sea la honra\n\nSea el dominio por los siglos de los siglos\nPoderoso Dios\n\nPoderoso Dios\nPoderoso Dios\nMi alma clama por ti",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "AL QUE ESTÁ SENTADO\nEN EL TRONO",
+          "text": "Al que está sentado \nen el trono",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "Y AL CORDERO\nSEA EL HONOR",
+          "text": "Y al cordero, sea el honor",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "Y AL CORDERO \nSEA LA ALABANZA ",
+          "text": "Sea la gloria, sea la honra",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": "SEA LA GLORIA\nSEA LA HONRA",
+          "text": "Sea el dominio por los siglos de los siglos\nPoderoso Dios",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": "SEA EL DOMINIO",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 6,
-          "description": "",
-          "text": "POR LOS SIGLOS\nDE LOS SIGLOS",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 7,
-          "description": "",
-          "text": "PODEROSO DIOS",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 8,
-          "description": "",
-          "text": "PODEROSO DIOS//\nMI ALMA CLAMA POR TI",
+          "text": "Poderoso Dios\nPoderoso Dios\nMi alma clama por ti",
           "text_with_comment": null,
           "translations": null
         }
