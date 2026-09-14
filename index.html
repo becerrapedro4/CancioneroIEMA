@@ -927,7 +927,7 @@ function buildExportHTML(lst, isLive = false) {
     songs: songs.map(s => ({
       title: s.t || "Sin título",
       artist: s.a || "",
-      letra: (s.p?.length ? s.p.map(p => p.x || "").join("\n\n") : s.l || ""),
+      letra: songLyrics(s),
       stanzas: (s.p || []).map(p => ({ d: p.d || "", x: p.x || "" }))
     }))
   });
@@ -1131,8 +1131,11 @@ document.getElementById("d-edit").addEventListener("click",()=>{if(_detailSong)o
 // La revisa el admin desde admin.html; la canción no cambia sola.
 // ============================================================
 let _sugSong=null;
+function parasOf(song){
+  return song&&song.p&&song.p.length?song.p:[{d:"",x:(song&&song.l)||""}];
+}
 function songLyrics(song){
-  return parasToLyrics(song&&song.p&&song.p.length?song.p:[{d:"",x:(song&&song.l)||""}]);
+  return window.Sugerencias.letraDeParas(parasOf(song));
 }
 // El "antes" que revisa el admin es la letra que tiene la base del repo: los objetos
 // de las canciones se editan en el navegador (comparten referencia con SONGS), así que
@@ -1256,14 +1259,12 @@ document.getElementById("d-present").addEventListener("click", function() {
 // EDIT MODAL
 // ============================================================
 let _editSong=null;
-function lyricsToParas(raw){ return raw.split(/\n{2,}/).map(b=>b.trim()).filter(Boolean).map(x=>({d:"",x})); }
-function parasToLyrics(paras){ return (paras||[]).map(p=>p.x||"").join("\n\n"); }
 
 function openEditModal(song){
   _editSong=song;
   document.getElementById("edit-title").value=song.t||"";
   document.getElementById("edit-artist").value=song.a||"";
-  document.getElementById("edit-lyrics").value=parasToLyrics(song.p&&song.p.length?song.p:[{d:"",x:song.l||""}]);
+  document.getElementById("edit-lyrics").value=songLyrics(song);
   const st=document.getElementById("edit-status");st.textContent="";st.className="mstatus";
   document.getElementById("mov-edit").classList.add("open");
   updateSettingsBtn();
@@ -1273,12 +1274,12 @@ document.getElementById("edit-save").addEventListener("click",()=>{
   if(!_editSong)return;
   const title=document.getElementById("edit-title").value.trim();
   if(!title){const st=document.getElementById("edit-status");st.textContent="El título no puede estar vacío.";st.className="mstatus err";return;}
-  const paras=lyricsToParas(document.getElementById("edit-lyrics").value);
-  if(!paras.length){const st=document.getElementById("edit-status");st.textContent="La letra no puede estar vacía.";st.className="mstatus err";return;}
+  const paras=window.Sugerencias.aplicarParas(_editSong.p,document.getElementById("edit-lyrics").value);
+  if(!paras){const st=document.getElementById("edit-status");st.textContent="La letra no puede estar vacía.";st.className="mstatus err";return;}
   _editSong.t=title;
   _editSong.a=document.getElementById("edit-artist").value.trim();
   _editSong.p=paras;
-  _editSong.l=paras.map(p=>p.x).join("\n\n");
+  _editSong.l=window.Sugerencias.letraDeParas(paras);
   saveDB();applyFilter();renderSongList();
   showDetail(_editSong);
   document.getElementById("mov-edit").classList.remove("open");
@@ -1478,9 +1479,9 @@ document.getElementById("new-save").addEventListener("click",()=>{
   const title=document.getElementById("new-title").value.trim();
   const st=document.getElementById("new-status");
   if(!title){st.textContent="El título es obligatorio.";st.className="mstatus err";return;}
-  const paras=lyricsToParas(document.getElementById("new-lyrics").value);
-  if(!paras.length){st.textContent="Pegá la letra antes de guardar.";st.className="mstatus err";return;}
-  const newSong={ id:Date.now(), t:title, a:document.getElementById("new-artist").value.trim(), p:paras, l:paras.map(p=>p.x).join("\n\n") };
+  const paras=window.Sugerencias.aplicarParas([],document.getElementById("new-lyrics").value);
+  if(!paras){st.textContent="Pegá la letra antes de guardar.";st.className="mstatus err";return;}
+  const newSong={ id:Date.now(), t:title, a:document.getElementById("new-artist").value.trim(), p:paras, l:window.Sugerencias.letraDeParas(paras) };
   SONGS.unshift(newSong);
   saveDB();updateCount();applyFilter();page=1;renderSongList();
   document.getElementById("db-tag").textContent="(modificada)";
@@ -1693,8 +1694,7 @@ function presTrackStop() {
 
 function presStanzas(song) {
   if (song.p && song.p.length) return song.p.map(p => ({ d: p.d || "", x: p.x || "" }));
-  const raw = song.l || "";
-  return raw.split(/\n{2,}/).map((x, i) => ({ d: `Estrofa ${i+1}`, x: x.trim() })).filter(s => s.x);
+  return window.Sugerencias.bloques(song.l || "").map((x, i) => ({ d: `Estrofa ${i+1}`, x }));
 }
 
 function presCurrent() { return _presQueue[_presSongIdx] || null; }
