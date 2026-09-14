@@ -18153,7 +18153,7 @@
   {
     "id": 1777239884391,
     "title": "DIGNO Y SANTO",
-    "artist": "Autor desconocido",
+    "artist": "",
     "author": "",
     "note": "",
     "copyright": "",
@@ -18168,167 +18168,97 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "DIGNO Y SANTO  EL CORDERO\nQUE INMOLADO FUE\n\nCANTEN NUEVAS MELODIAS\nAL PIADOSO REY\n\nDIGNO Y SANTO EL CORDERO\nQUE INMOLADO FUE\n\nCANTEN NUEVAS  MELODIAS\nAL PIADOSO REY\n\nSANTO, SANTO, SANTO\nDIOS TODOPODEROSO\n\nQUIEN FUE, QUIEN ES\nY QUIEN VENDRÁ\n\nCON LA CREACION YO CANTO\nAL REY DE REYES\n\nTU ERES TODO\nTE ADORO POR SIEMPRE\n\nLO RODEA\nUN ARCOIRIS\n\nVOCES, TRUENOS \nRESPLANDOR\n\nSEAN HONOR Y GLORIA\nPODER Y FUERZA\n\nA TI EL UNICO REY\n\nSANTO, SANTO, SANTO\nDIOS TODOPODEROSO\n\nQUIEN FUE, QUIEN ES\nY QUIEN VENDRÁ\n\nCON LA CREACION YO CANTO\nAL REY DE REYES\n\nTU ERES TODO\nTE ADORO POR SIEMPRE\n\nTE MENCIONO Y ME ASOMBRO\nTU NOMBRE ES PODER\n\nJESÚS \nTU NOMBRE ES VIDA\n\nALIENTO Y AGUA VIVA\nMARAVILLADO ESTOY DE TI\n\nSANTO, SANTO, SANTO\nDIOS TODOPODEROSO\n\nQUIEN FUE, QUIEN ES\nY QUIEN VENDRA\n\nCON LA CREACION YO CANTO\nAL REY DE REYES\n\nTU ERES TODO\nTE ADORO POR SIEMPRE",
+      "full_text": "Digno y Santo\nEl cordero, inmolado en la cruz\n\nNuevo canto, levantaremos\nAl que en su trono esta\n\nSanto, Santo, Santo\nDios Todopoderoso\n\nQuién fue, Quién es, \ny Quién vendrá\n\nLa creacion hoy Canta\nHosanna al Gran Yo Soy\n\nTú eres digno\nPor siempre, y siempre\n\nTan grandioso, Asombroso\nCon solo decir Jesús\n\nCristo Tu nombre es grande\nFuente inagotable\n\nTu misterio\nGlorioso es\n\nSanto, Santo, Santo\nDios Todopoderoso\n\nQuién fue, Quién es,\ny Quién vendrá\n\nLa creación hoy Canta\nHosanna al Gran yo soy\n\nTú eres digno \nPor simpre, y siempre",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "DIGNO Y SANTO  EL CORDERO\nQUE INMOLADO FUE",
+          "text": "Digno y Santo\nEl cordero, inmolado en la cruz",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "CANTEN NUEVAS MELODIAS\nAL PIADOSO REY",
+          "text": "Nuevo canto, levantaremos\nAl que en su trono esta",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "DIGNO Y SANTO EL CORDERO\nQUE INMOLADO FUE",
+          "text": "Santo, Santo, Santo\nDios Todopoderoso",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": "CANTEN NUEVAS  MELODIAS\nAL PIADOSO REY",
+          "text": "Quién fue, Quién es, \ny Quién vendrá",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": "SANTO, SANTO, SANTO\nDIOS TODOPODEROSO",
+          "text": "La creacion hoy Canta\nHosanna al Gran Yo Soy",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
           "description": "",
-          "text": "QUIEN FUE, QUIEN ES\nY QUIEN VENDRÁ",
+          "text": "Tú eres digno\nPor siempre, y siempre",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 7,
           "description": "",
-          "text": "CON LA CREACION YO CANTO\nAL REY DE REYES",
+          "text": "Tan grandioso, Asombroso\nCon solo decir Jesús",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 8,
           "description": "",
-          "text": "TU ERES TODO\nTE ADORO POR SIEMPRE",
+          "text": "Cristo Tu nombre es grande\nFuente inagotable",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 9,
           "description": "",
-          "text": "LO RODEA\nUN ARCOIRIS",
+          "text": "Tu misterio\nGlorioso es",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 10,
           "description": "",
-          "text": "VOCES, TRUENOS \nRESPLANDOR",
+          "text": "Santo, Santo, Santo\nDios Todopoderoso",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 11,
           "description": "",
-          "text": "SEAN HONOR Y GLORIA\nPODER Y FUERZA",
+          "text": "Quién fue, Quién es,\ny Quién vendrá",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 12,
           "description": "",
-          "text": "A TI EL UNICO REY",
+          "text": "La creación hoy Canta\nHosanna al Gran yo soy",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 13,
           "description": "",
-          "text": "SANTO, SANTO, SANTO\nDIOS TODOPODEROSO",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 14,
-          "description": "",
-          "text": "QUIEN FUE, QUIEN ES\nY QUIEN VENDRÁ",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 15,
-          "description": "",
-          "text": "CON LA CREACION YO CANTO\nAL REY DE REYES",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 16,
-          "description": "",
-          "text": "TU ERES TODO\nTE ADORO POR SIEMPRE",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 17,
-          "description": "",
-          "text": "TE MENCIONO Y ME ASOMBRO\nTU NOMBRE ES PODER",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 18,
-          "description": "",
-          "text": "JESÚS \nTU NOMBRE ES VIDA",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 19,
-          "description": "",
-          "text": "ALIENTO Y AGUA VIVA\nMARAVILLADO ESTOY DE TI",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 20,
-          "description": "",
-          "text": "SANTO, SANTO, SANTO\nDIOS TODOPODEROSO",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 21,
-          "description": "",
-          "text": "QUIEN FUE, QUIEN ES\nY QUIEN VENDRA",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 22,
-          "description": "",
-          "text": "CON LA CREACION YO CANTO\nAL REY DE REYES",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 23,
-          "description": "",
-          "text": "TU ERES TODO\nTE ADORO POR SIEMPRE",
+          "text": "Tú eres digno \nPor simpre, y siempre",
           "text_with_comment": null,
           "translations": null
         }
