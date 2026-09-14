@@ -41506,13 +41506,13 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "HAY PODER, PODER\nSIN IGUAL PODER\n\nEN JESÚS, QUIEN MURIÓ\n\nHAY PODER, PODER\nSIN IGUAL PODER\n\nEN LA SANGRE QUE ÉL VERTIÓ\n\n¿QUIERES SER SALVO\nDE TODA MALDAD?\n\nTAN SOLO HAY PODER \nEN MI JESÚS\n\n¿QUIERES VIVIR\nY GOZAR SANTIDAD?\n\nTAN SOLO HAY PODER\nEN JESÚS \n\nHAY PODER, PODER\nSIN IGUAL PODER\n\nEN JESÚS\nQUIEN MURIÓ\n\nHAY PODER, PODER\nSIN IGUAL PODER\n\nEN LA SANGRE QUE ÉL VERTIÓ\n\n¿QUIERES SER LIBRE DE ORGULLO Y PASIÓN?\nTAN SOLO HAY PODER EN MI JESÚS\n\n¿QUIERES VENCER TODA CRUEL TENTACIÓN?\nTAN SOLO HAY PODER EN JESÚS\n\nHAY PODER, PODER SIN IGUAL\nPODER, EN JESÚS, QUIEN MURIÓ\n\nHAY PODER, PODER SIN IGUAL\nPODER, EN LA SANGRE QUE ÉL VERTIÓ\n\nHAY PODER, PODER SIN IGUAL\nPODER\nEN LA SANGRE QUE ÉL VERTIÓ\n\nHAY PODER EN JESÚS",
+      "full_text": "HAY PODER, SÍ\nSIN IGUAL PODER\n\nEN JESÚS, QUIEN MURIÓ\n\nHAY PODER, SÍ \nSIN IGUAL PODER\n\nEN LA SANGRE QUE ÉL VERTIÓ\n\n¿QUIERES SER LIBRE\nDE TODA MALDAD?\n\nJESÚS TE DARÁ \nSU SANTO PODER\n\n¿QUIERES VIVIR\nY GOZAR SANTIDAD?\n\nJESÚS TE DARÁ \nSU PODER\n\nHAY PODER, SÍ \nSIN IGUAL PODER\n\nEN JESÚS\nQUIEN MURIÓ\n\nHAY PODER, SÍ \nSIN IGUAL PODER\n\nEN LA SANGRE QUE ÉL VERTIÓ\n\n¿QUIERES SER LIBRE DE ORGULLO Y PASIÓN?\nJESÚS TE DARÁ, SU SANTO PODER\n\n¿QUIERES VENCER TODA CRUEL TENTACIÓN?\nJESÚS TE DARÁ SU PODER\n\nHAY PODER, SI, \nSIN IGUAL PODER,\n\nEN JESÚS, QUIEN MURIÓ\n\nHAY PODER, SÍ ,\nSIN IGUAL PODER,\n\nEN LA SANGRE QUE ÉL VERTIÓ",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "HAY PODER, PODER\nSIN IGUAL PODER",
+          "text": "HAY PODER, SÍ\nSIN IGUAL PODER",
           "text_with_comment": null,
           "translations": null
         },
@@ -41526,7 +41526,7 @@
         {
           "number": 3,
           "description": "",
-          "text": "HAY PODER, PODER\nSIN IGUAL PODER",
+          "text": "HAY PODER, SÍ \nSIN IGUAL PODER",
           "text_with_comment": null,
           "translations": null
         },
@@ -41540,14 +41540,14 @@
         {
           "number": 5,
           "description": "",
-          "text": "¿QUIERES SER SALVO\nDE TODA MALDAD?",
+          "text": "¿QUIERES SER LIBRE\nDE TODA MALDAD?",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
           "description": "",
-          "text": "TAN SOLO HAY PODER \nEN MI JESÚS",
+          "text": "JESÚS TE DARÁ \nSU SANTO PODER",
           "text_with_comment": null,
           "translations": null
         },
@@ -41561,14 +41561,14 @@
         {
           "number": 8,
           "description": "",
-          "text": "TAN SOLO HAY PODER\nEN JESÚS ",
+          "text": "JESÚS TE DARÁ \nSU PODER",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 9,
           "description": "",
-          "text": "HAY PODER, PODER\nSIN IGUAL PODER",
+          "text": "HAY PODER, SÍ \nSIN IGUAL PODER",
           "text_with_comment": null,
           "translations": null
         },
@@ -41582,7 +41582,7 @@
         {
           "number": 11,
           "description": "",
-          "text": "HAY PODER, PODER\nSIN IGUAL PODER",
+          "text": "HAY PODER, SÍ \nSIN IGUAL PODER",
           "text_with_comment": null,
           "translations": null
         },
@@ -41596,42 +41596,42 @@
         {
           "number": 13,
           "description": "",
-          "text": "¿QUIERES SER LIBRE DE ORGULLO Y PASIÓN?\nTAN SOLO HAY PODER EN MI JESÚS",
+          "text": "¿QUIERES SER LIBRE DE ORGULLO Y PASIÓN?\nJESÚS TE DARÁ, SU SANTO PODER",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 14,
           "description": "",
-          "text": "¿QUIERES VENCER TODA CRUEL TENTACIÓN?\nTAN SOLO HAY PODER EN JESÚS",
+          "text": "¿QUIERES VENCER TODA CRUEL TENTACIÓN?\nJESÚS TE DARÁ SU PODER",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 15,
           "description": "",
-          "text": "HAY PODER, PODER SIN IGUAL\nPODER, EN JESÚS, QUIEN MURIÓ",
+          "text": "HAY PODER, SI, \nSIN IGUAL PODER,",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 16,
           "description": "",
-          "text": "HAY PODER, PODER SIN IGUAL\nPODER, EN LA SANGRE QUE ÉL VERTIÓ",
+          "text": "EN JESÚS, QUIEN MURIÓ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 17,
           "description": "",
-          "text": "HAY PODER, PODER SIN IGUAL\nPODER\nEN LA SANGRE QUE ÉL VERTIÓ",
+          "text": "HAY PODER, SÍ ,\nSIN IGUAL PODER,",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 18,
           "description": "",
-          "text": "HAY PODER EN JESÚS",
+          "text": "EN LA SANGRE QUE ÉL VERTIÓ",
           "text_with_comment": null,
           "translations": null
         }
