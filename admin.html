@@ -187,7 +187,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
       <span id="sg-count" style="font-size:12px;font-weight:500;color:var(--muted)">—</span>
       <button class="btn sec" id="sg-filter" style="margin-left:auto;flex:0">Ver todas</button>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Los mandan los usuarios desde el buscador, estrofa por estrofa. Al aplicar, el cambio se guarda en <b id="sg-branch">mejoras</b> y después podés publicarlo con <b>🚀 Publicar en main</b>. Solo se cambia esa estrofa; el resto de la canción queda igual.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Los mandan los usuarios desde el buscador, con la <b>letra completa</b> como debería quedar. Al aplicar se reemplaza la letra de la canción, se guarda en <b id="sg-branch">mejoras</b> y después podés publicarlo con <b>🚀 Publicar en main</b>.</div>
     <div id="sg-list" style="max-height:460px;overflow-y:auto"><div style="color:var(--muted);text-align:center;padding:10px">Cargando…</div></div>
   </div>
 
@@ -1231,6 +1231,15 @@ function sgShow(kind, msg) {
   if (!st) return;
   st.className = "status " + kind; st.textContent = msg; st.style.display = "block";
 }
+function sgEstrofas(sg) {
+  const S = sgAPI();
+  const n = t => {
+    if (!String(t || '').trim()) return 0;
+    return (S ? S.buildLyrics(t).paragraphs.length : String(t).split(/\n{2,}/).filter(b => b.trim()).length);
+  };
+  const a = n(sg.antes), b = n(sg.propuesta);
+  return `letra completa (${a} → ${b} estrofa${b === 1 ? '' : 's'})`;
+}
 function sgBadge(estado) {
   if (estado === 'aplicada') return '<span style="font-size:11px;color:var(--green)">✔ aplicada</span>';
   if (estado === 'rechazada') return '<span style="font-size:11px;color:var(--red)">✕ rechazada</span>';
@@ -1257,17 +1266,16 @@ function renderSugerencias() {
     return;
   }
   cont.innerHTML = lista.map(s => {
-    const estrofa = (typeof s.idx === 'number' ? s.idx : 0) + 1;
     return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2)">
       <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px">
         <b style="font-size:14px">${esc(s.title || 'Sin título')}</b>
-        <span style="color:var(--muted);font-size:11px">${s.artist ? esc(s.artist) + ' · ' : ''}Estrofa ${estrofa} · ${hace(s.ts)} · de ${esc(s.autor || 'anónimo')}</span>
+        <span style="color:var(--muted);font-size:11px">${s.artist ? esc(s.artist) + ' · ' : ''}${sgEstrofas(s)} · ${hace(s.ts)} · de ${esc(s.autor || 'anónimo')}</span>
         ${sgBadge(s.estado)}
       </div>
-      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Ahora dice</div>
-      <div style="font-size:13px;white-space:pre-wrap;background:rgba(224,82,82,.06);border-left:2px solid rgba(224,82,82,.45);padding:6px 10px;border-radius:6px;margin-bottom:8px">${esc(s.antes || '')}</div>
-      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Propone</div>
-      <div style="font-size:13px;white-space:pre-wrap;background:rgba(76,175,125,.06);border-left:2px solid rgba(76,175,125,.45);padding:6px 10px;border-radius:6px">${esc(s.propuesta || '')}</div>
+      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Letra actual</div>
+      <div style="font-size:13px;white-space:pre-wrap;max-height:150px;overflow-y:auto;background:rgba(224,82,82,.06);border-left:2px solid rgba(224,82,82,.45);padding:6px 10px;border-radius:6px;margin-bottom:8px">${esc(s.antes || '')}</div>
+      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Letra propuesta</div>
+      <div style="font-size:13px;white-space:pre-wrap;max-height:150px;overflow-y:auto;background:rgba(76,175,125,.06);border-left:2px solid rgba(76,175,125,.45);padding:6px 10px;border-radius:6px">${esc(s.propuesta || '')}</div>
       ${s.nota ? `<div style="font-size:12px;color:var(--muted);margin-top:8px">💬 ${esc(s.nota)}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
         ${s.estado === 'pendiente' ? `<button class="btn pri" data-sg-ok="${esc(s.key)}">✔ Aplicar a la canción</button>
@@ -1291,26 +1299,24 @@ async function aplicarSugerencia(key) {
     sgShow('err', `✗ No encuentro “${sg.title}” en la base del repo. Puede ser una canción local del usuario o una que ya no existe.`);
     return;
   }
-  const m = S.matchParagraph(songs[i], sg);
-  if (m.idx < 0) { sgShow('err', '✗ Esa estrofa ya no existe en la canción: revisala a mano en el editor.'); return; }
-  if (!m.exacto) {
-    const seguir = confirm('El texto de esa estrofa ya no es el mismo que cuando se sugirió el cambio.\n¿Aplicar igual reemplazando la estrofa de esa posición?');
+  const propuesta = S.buildLyrics(sg.propuesta);
+  if (!propuesta.paragraphs.length) { sgShow('err', '✗ La letra propuesta está vacía: no hay nada que aplicar.'); return; }
+  const actual = S.letraDe(songs[i]);
+  if (S.normalizarLetra(actual) !== S.normalizarLetra(sg.antes)) {
+    const seguir = confirm('La letra de esta canción cambió desde que se sugirió el cambio.\n¿Aplicar igual? Se reemplaza la letra completa por la propuesta.');
     if (!seguir) {
-      sgShow('info', '↩ No se aplicó nada: el texto de esa estrofa cambió desde que se sugirió. Si querés, aplicala a mano en el editor.');
+      sgShow('info', '↩ No se aplicó nada: la letra actual no es la misma que cuando se sugirió. Si querés, aplicala a mano en el editor.');
       return;
     }
   }
 
-  const paras = (songs[i].lyrics && songs[i].lyrics.paragraphs) || [];
-  const nuevos = paras.map((p, k) => k === m.idx ? Object.assign({}, p, { text: sg.propuesta }) : p);
-  const updated = Object.assign({}, songs[i], {
-    lyrics: Object.assign({}, songs[i].lyrics, { paragraphs: nuevos, full_text: nuevos.map(p => p.text).join('\n\n') })
-  });
+  const updated = S.aplicarLetra(songs[i], sg.propuesta);
+  if (!updated) { sgShow('err', '✗ La letra propuesta está vacía: no hay nada que aplicar.'); return; }
   const newSongs = songs.map((s, k) => k === i ? updated : s);
   const ok = await saveToRepo(newSongs, `Aplicar sugerencia: ${songs[i].title}`);
   if (!ok) return;   // saveToRepo ya mostró el error
   await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
-  sgShow('ok', `✓ Cambio aplicado en “${songs[i].title}” (guardado en ${BRANCH}). Usá 🚀 Publicar en main para que lo vean todos.`);
+  sgShow('ok', `✓ Letra actualizada en “${songs[i].title}” (guardado en ${BRANCH}). Usá 🚀 Publicar en main para que lo vean todos.`);
 }
 
 async function rejectarSugerencia(key) {
