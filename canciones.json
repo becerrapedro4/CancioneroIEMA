@@ -1,5 +1,145 @@
 [
   {
+    "id": 1789403013637,
+    "title": "Una nube cuál la palma de una mano",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "Una nube cuál la palma de una mano se acerca\nEs la gran lluvia tardía de unción y poder\n\nSe percibe un viento recio soplando en la iglesia\nEs un gran avivamiento como en Pentecostés\n\nLas enfermedades van a desaparecer\nEl enemigo tiene que retroceder\n\nLa Gloria de Jehová cubre toda la iglesia\nLa voluntad de Dios dice que va a llover\n\nÉl dará lenguas de fuego a aquel que está adorando\nCon sus manos arriba y glorificando\n\nÉl quiere bautizarte con ese poder\nNo hay nada imposible si puedes creer\n\nEs la promesa de Dios\n\nSiento ya el fuego en mí ser\nDe la unción y el poder\n\nYa comienza a descender\nLa gloria de Dios y puedo contemplar\n\nAleluya y aquí\nGloria aleluya y atrás\n\nInvistiendo a su pueblo\nCon su gracia y renuevo\n\nVeo los cautivos ser libres\nLas cadena se están cayendo\n\nDe este lado hay poder\nDe este lado hay victoria\n\nAquí en el frente hay hermanos\nSiendo bautizados dando gloria\n\nAhí en el medio fuego cae\nLas enfermedades no resisten, salen\n\nPor el santo nombre de Jesús\n\nEs un gran avivamiento como en Pentecostés",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "Una nube cuál la palma de una mano se acerca\nEs la gran lluvia tardía de unción y poder",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "Se percibe un viento recio soplando en la iglesia\nEs un gran avivamiento como en Pentecostés",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "Las enfermedades van a desaparecer\nEl enemigo tiene que retroceder",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "La Gloria de Jehová cubre toda la iglesia\nLa voluntad de Dios dice que va a llover",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "Él dará lenguas de fuego a aquel que está adorando\nCon sus manos arriba y glorificando",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "Él quiere bautizarte con ese poder\nNo hay nada imposible si puedes creer",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "Es la promesa de Dios",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "Siento ya el fuego en mí ser\nDe la unción y el poder",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "Ya comienza a descender\nLa gloria de Dios y puedo contemplar",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "Aleluya y aquí\nGloria aleluya y atrás",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "Invistiendo a su pueblo\nCon su gracia y renuevo",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "Veo los cautivos ser libres\nLas cadena se están cayendo",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "De este lado hay poder\nDe este lado hay victoria",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "Aquí en el frente hay hermanos\nSiendo bautizados dando gloria",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "Ahí en el medio fuego cae\nLas enfermedades no resisten, salen",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "Por el santo nombre de Jesús",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "Es un gran avivamiento como en Pentecostés",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789402643036,
     "title": "Digno de alabar",
     "artist": "",
