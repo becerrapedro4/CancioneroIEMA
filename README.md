@@ -195,17 +195,26 @@ El admin las ve en **Admin → 💡 Cambios sugeridos en las letras**, con la le
 actual y la propuesta completas (cada una en su caja con scroll, más un resumen
 “letra completa (29 → 30 estrofas)”), quién la mandó y cuándo, y puede:
 
-- **✔ Aplicar a la canción** — reemplaza la letra entera en `canciones.json`
-  (rama de trabajo del admin) y recalcula el texto completo. Después hay que
+- **✔ Aplicar a la canción** — cambia **solo las estrofas que la persona
+  escribió distinto** en `canciones.json` (rama de trabajo del admin) y recalcula
+  el texto completo. Las estrofas que no se tocaron quedan byte por byte iguales
+  (número, descripción y texto con comentarios incluidos). Después hay que
   publicarla con **🚀 Publicar en main** para que la vean todos.
 - **✕ Rechazar** — la canción queda igual y la sugerencia se marca como rechazada.
 - **🗑 Quitar de la lista** — la borra (para limpiar las ya resueltas).
 
 Al aplicar se compara la letra actual del repo con la que la persona vio al
 sugerir (sin contar espacios ni saltos de más): si cambió, el admin recibe el
-aviso y puede cancelar sin tocar nada. Una sugerencia nunca pisa el trabajo de un
-usuario local: si la canción no está en la base del repo, el admin recibe el
+aviso y puede cancelar sin tocar nada. Si la canción **ya tiene** esa letra (dos
+personas sugirieron lo mismo, o el admin ya la arregló a mano), no escribe nada al
+repo: solo marca la sugerencia como aplicada. Una sugerencia nunca pisa el trabajo
+de un usuario local: si la canción no está en la base del repo, el admin recibe el
 aviso igual.
+
+El "antes" que revisa el admin es la letra de la base del repo, no la copia que
+el usuario tenga editada en su navegador: por eso el resumen del admin muestra lo
+que realmente hay guardado, y el aviso de “la letra cambió” solo aparece cuando
+cambió de verdad.
 
 ---
 
@@ -357,8 +366,9 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 - `/js/sugerencias.js` — sugerencias de cambio en las letras: las crea el usuario
-  (letra completa) y las resuelve el admin. Incluye el armado de la letra
-  (`buildLyrics`) y su aplicación a la canción (`aplicarLetra`).
+  (letra completa) y las resuelve el admin. Incluye el armado de estrofas
+  (`bloques`), la lectura de la letra guardada (`letraDe`) y la aplicación
+  quirúrgica del cambio (`aplicarLetra`).
 
 ---
 

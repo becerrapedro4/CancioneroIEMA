@@ -13,6 +13,12 @@
 //   letra y manda cómo quedaría entera. Así el admin ve el antes y el después
 //   completos y no hay que adivinar a qué estrofa se refería.
 //
+// CÓMO SE APLICA
+//   `aplicarLetra` compara la letra nueva con la que la canción ya tiene y deja
+//   intactas las estrofas que no cambiaron (mismo objeto: número, descripción,
+//   texto con comentarios y cualquier campo extra). Solo se reemplazan las
+//   estrofas que la persona escribió distinto.
+//
 // FORMA DE LOS DATOS
 //   rooms/_sugerencias/{key} = {
 //     songId, title, artist,     // a qué canción se refiere
@@ -41,26 +47,19 @@
       .join('\n');
   }
 
-  // De un texto con estrofas separadas por líneas en blanco arma la forma que
-  // usa canciones.json (lyrics.paragraphs + lyrics.full_text).
-  function buildLyrics(texto) {
-    var paragraphs = normalizarSaltos(texto)
+  // Estrofas de un texto: separadas por líneas en blanco, ya recortadas.
+  function bloques(texto) {
+    return normalizarSaltos(texto)
       .split(/\n{2,}/)
       .map(function (b) { return b.trim(); })
-      .filter(Boolean)
-      .map(function (text, i) {
-        return { number: i + 1, description: '', text: text, text_with_comment: null, translations: null };
-      });
-    return { paragraphs: paragraphs, full_text: paragraphs.map(function (p) { return p.text; }).join('\n\n') };
+      .filter(Boolean);
   }
 
-  // Copia de la canción con la letra reemplazada entera. Devuelve null si la
-  // letra propuesta no tiene ni una estrofa (así el admin nunca borra la letra
-  // por accidente).
-  function aplicarLetra(song, texto) {
-    var lyrics = buildLyrics(texto);
-    if (!lyrics.paragraphs.length) return null;
-    return Object.assign({}, song, { lyrics: Object.assign({}, song && song.lyrics, lyrics) });
+  // La letra "prolija": estrofas recortadas, CRLF normalizado y sin líneas
+  // en blanco de más. Es la forma en que se guarda una sugerencia, así lo que el
+  // admin ve en la propuesta es exactamente lo que va a quedar en la canción.
+  function limpiarLetra(texto) {
+    return bloques(texto).join('\n\n');
   }
 
   // La letra que la canción del repo tiene ahora, en texto plano.
@@ -70,11 +69,92 @@
     return (l.paragraphs || []).map(function (p) { return (p && p.text) || ''; }).join('\n\n');
   }
 
-  // La letra "prolija": estrofas recortadas, CRLF normalizado y sin líneas
-  // en blanco de más. Es la forma que se guarda y la que se aplica, así lo que
-  // el admin ve en la propuesta es exactamente lo que va a quedar en la canción.
-  function limpiarLetra(texto) {
-    return buildLyrics(texto).full_text;
+  // Estrofas idénticas entre las dos letras (subsecuencia común más larga): son
+  // las que se conservan tal cual. Devuelve pares [índice viejo, índice nuevo].
+  function alineacion(viejos, nuevos) {
+    var n = viejos.length, m = nuevos.length, i, j;
+    var dp = [];
+    for (i = 0; i <= n; i++) dp.push(new Array(m + 1).fill(0));
+    for (i = n - 1; i >= 0; i--) {
+      for (j = m - 1; j >= 0; j--) {
+        dp[i][j] = viejos[i] === nuevos[j]
+          ? dp[i + 1][j + 1] + 1
+          : Math.max(dp[i + 1][j], dp[i][j + 1]);
+      }
+    }
+    var pares = [];
+    i = 0; j = 0;
+    while (i < n && j < m) {
+      if (viejos[i] === nuevos[j]) { pares.push([i, j]); i++; j++; }
+      else if (dp[i + 1][j] >= dp[i][j + 1]) i++;
+      else j++;
+    }
+    return pares;
+  }
+
+  // Los números de estrofa se mantienen (así no se toca ninguna estrofa que la
+  // persona no cambió); solo se renumeran 1..n si la mezcla los dejó repetidos o
+  // desordenados, que es lo que pasa al insertar una estrofa en el medio.
+  function numerar(parrafos) {
+    var coherentes = parrafos.every(function (p, k) {
+      return typeof p.number === 'number' && p.number > (k ? parrafos[k - 1].number : 0);
+    });
+    if (!coherentes) parrafos.forEach(function (p, k) { p.number = k + 1; });
+  }
+
+  // Arma los párrafos de la letra nueva sobre los que ya tiene la canción: los
+  // huecos entre estrofas idénticas se emparejan en orden, así una estrofa
+  // corregida hereda el número, la descripción y el resto de los campos de la
+  // estrofa que reemplaza, y una estrofa agregada nace vacía.
+  function fusionar(viejos, nuevos) {
+    var textos = viejos.map(function (p) { return String((p && p.text) || '').trim(); });
+    var corte = alineacion(textos, nuevos);
+    corte.push([textos.length, nuevos.length]);   // cierra el último hueco
+    var out = [], i = 0, j = 0;
+    corte.forEach(function (a, idx) {
+      var disponibles = a[0] - i;
+      var propuestos = a[1] - j;
+      for (var k = 0; k < propuestos; k++) {
+        var viejo = k < disponibles ? viejos[i + k] : null;
+        out.push(viejo
+          // estrofa corregida: se cambia el texto y se suelta el texto con comentarios
+          ? Object.assign({}, viejo, { text: nuevos[j + k], text_with_comment: null })
+          : { number: out.length ? out[out.length - 1].number + 1 : 1, description: '', text: nuevos[j + k], text_with_comment: null, translations: null });
+      }
+      // Las estrofas del hueco que se quedan sin reemplazo se borran (la persona las
+      // sacó), salvo las que no tienen texto: esas no las tocó nadie y borrarlas
+      // cambiaría la canción sin que nadie lo haya pedido.
+      for (var s = propuestos; s < disponibles; s++) {
+        var sobra = viejos[i + s];
+        if (!String((sobra && sobra.text) || '').trim()) out.push(Object.assign({}, sobra));
+      }
+      i = a[0]; j = a[1];
+      if (idx < corte.length - 1) { out.push(Object.assign({}, viejos[i])); i++; j++; }
+    });
+    numerar(out);
+    return out;
+  }
+
+  // Copia de la canción con la letra nueva aplicada. Solo cambian las estrofas
+  // que la persona modificó: las demás quedan con sus bytes tal cual (número,
+  // descripción, texto con comentarios y cualquier campo extra). Devuelve null si
+  // la letra propuesta no tiene ni una estrofa, así el admin nunca borra una
+  // letra por accidente.
+  function aplicarLetra(song, texto) {
+    var nuevos = bloques(texto);
+    if (!nuevos.length) return null;
+    var lyricsViejas = (song && song.lyrics) || {};
+    var paragraphs = fusionar(lyricsViejas.paragraphs || [], nuevos);
+    var lyrics = Object.assign({}, lyricsViejas, {
+      paragraphs: paragraphs,
+      full_text: paragraphs.map(function (p) { return p.text; }).join('\n\n')
+    });
+    // El texto con comentarios se recalcula con la misma regla que usa el repo
+    // (el comentario si lo hay, el texto si no) para que no quede desfasado.
+    if (lyricsViejas.full_text_with_comment) {
+      lyrics.full_text_with_comment = paragraphs.map(function (p) { return p.text_with_comment || p.text; }).join('\n\n');
+    }
+    return Object.assign({}, song, { lyrics: lyrics });
   }
 
   // Devuelve el motivo del rechazo, o null si la sugerencia es válida.
@@ -138,13 +218,9 @@
   }
 
   window.Sugerencias = {
-    BASE: BASE,
-    MAX: MAX,
+    bloques: bloques,
     letraDe: letraDe,
-    normalizarSaltos: normalizarSaltos,
     normalizarLetra: normalizarLetra,
-    limpiarLetra: limpiarLetra,
-    buildLyrics: buildLyrics,
     aplicarLetra: aplicarLetra,
     validar: validar,
     enviar: enviar,

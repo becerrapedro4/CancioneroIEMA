@@ -1232,11 +1232,7 @@ function sgShow(kind, msg) {
   st.className = "status " + kind; st.textContent = msg; st.style.display = "block";
 }
 function sgEstrofas(sg) {
-  const S = sgAPI();
-  const n = t => {
-    if (!String(t || '').trim()) return 0;
-    return (S ? S.buildLyrics(t).paragraphs.length : String(t).split(/\n{2,}/).filter(b => b.trim()).length);
-  };
+  const n = t => (sgAPI() ? sgAPI().bloques(t).length : 0);
   const a = n(sg.antes), b = n(sg.propuesta);
   return `letra completa (${a} → ${b} estrofa${b === 1 ? '' : 's'})`;
 }
@@ -1299,8 +1295,7 @@ async function aplicarSugerencia(key) {
     sgShow('err', `✗ No encuentro “${sg.title}” en la base del repo. Puede ser una canción local del usuario o una que ya no existe.`);
     return;
   }
-  const propuesta = S.buildLyrics(sg.propuesta);
-  if (!propuesta.paragraphs.length) { sgShow('err', '✗ La letra propuesta está vacía: no hay nada que aplicar.'); return; }
+  if (!S.bloques(sg.propuesta).length) { sgShow('err', '✗ La letra propuesta está vacía: no hay nada que aplicar.'); return; }
   const actual = S.letraDe(songs[i]);
   if (S.normalizarLetra(actual) !== S.normalizarLetra(sg.antes)) {
     const seguir = confirm('La letra de esta canción cambió desde que se sugirió el cambio.\n¿Aplicar igual? Se reemplaza la letra completa por la propuesta.');
@@ -1312,6 +1307,13 @@ async function aplicarSugerencia(key) {
 
   const updated = S.aplicarLetra(songs[i], sg.propuesta);
   if (!updated) { sgShow('err', '✗ La letra propuesta está vacía: no hay nada que aplicar.'); return; }
+  // Puede pasar que la canción ya tenga esa letra (dos personas sugirieron lo mismo,
+  // o el admin ya la arregló a mano): no se escribe nada al repo.
+  if (JSON.stringify(updated.lyrics.paragraphs) === JSON.stringify((songs[i].lyrics && songs[i].lyrics.paragraphs) || [])) {
+    await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
+    sgShow('ok', `✓ “${songs[i].title}” ya tenía esa letra: no hubo nada que cambiar.`);
+    return;
+  }
   const newSongs = songs.map((s, k) => k === i ? updated : s);
   const ok = await saveToRepo(newSongs, `Aplicar sugerencia: ${songs[i].title}`);
   if (!ok) return;   // saveToRepo ya mostró el error
