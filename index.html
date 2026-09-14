@@ -626,6 +626,8 @@ const PAGE=60;
 let deleteMarked=new Set();
 let isAdmin=false;
 let deletedIds=new Set();
+let repoSongs=[];        // copia del repo tal como vino
+let repoLyricsById=new Map();   // letra de cada canción del repo, como texto (no se toca al editar)
 
 let liveConfig = {
   title: "Cancionero",
@@ -1132,6 +1134,13 @@ let _sugSong=null;
 function songLyrics(song){
   return parasToLyrics(song&&song.p&&song.p.length?song.p:[{d:"",x:(song&&song.l)||""}]);
 }
+// El "antes" que revisa el admin es la letra que tiene la base del repo: los objetos
+// de las canciones se editan en el navegador (comparten referencia con SONGS), así que
+// se guarda el texto tal como vino al cargar.
+function repoLyrics(song){
+  const t=repoLyricsById.get(song.id);
+  return t===undefined?songLyrics(song):t;
+}
 function openSuggest(song,texto){
   if(!song)return;
   const antes=songLyrics(song);
@@ -1164,7 +1173,7 @@ document.getElementById("sug-send").addEventListener("click",async()=>{
   if(!_sugSong)return;
   const S=window.Sugerencias;
   if(!S){fail("No se pudo cargar el módulo de sugerencias");return;}
-  const antes=songLyrics(_sugSong);
+  const antes=repoLyrics(_sugSong);
   const propuesta=document.getElementById("sug-text").value;
   const autor=document.getElementById("sug-auto").value.trim();
   const nota=document.getElementById("sug-note").value.trim();
@@ -1864,12 +1873,13 @@ _presRoom = localStorage.getItem('pres_room') || _presRoom;   // por si ensureRo
   }catch(e){console.warn("No se pudo cargar listas.json:",e);}
 
   // 1. Repo como fuente de verdad (cache-busting para updates inmediatos)
-  let repoSongs=[];
+
   try{
     const res=await fetch("canciones.json?v="+Date.now());
     if(!res.ok)throw new Error("HTTP "+res.status);
     const raw=await res.json();
     repoSongs=raw.map(slimSong).filter(s=>!deletedIds.has(s.id));
+    repoLyricsById=new Map(repoSongs.map(s=>[s.id,s.l||""]));
   }catch(e){console.warn("No se pudo cargar canciones.json:",e);}
 
   // 2. LocalStorage: solo conservar canciones CREADAS POR EL USUARIO
