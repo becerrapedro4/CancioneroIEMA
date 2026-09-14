@@ -19,6 +19,12 @@
 //   texto con comentarios y cualquier campo extra). Solo se reemplazan las
 //   estrofas que la persona escribió distinto.
 //
+//   Ese armado es el ÚNICO del proyecto: los dos caminos de edición lo usan —
+//   el editor del buscador (estrofas livianas `{d, x}`, `aplicarParas` y
+//   `letraDeParas`) y el editor del admin (párrafos del repo, `aplicarLetra`) —
+//   así ninguna edición borra lo que la canción ya tenía en las estrofas que
+//   nadie tocó.
+//
 // FORMA DE LOS DATOS
 //   rooms/_sugerencias/{key} = {
 //     songId, title, artist,     // a qué canción se refiere
@@ -102,12 +108,34 @@
     if (!coherentes) parrafos.forEach(function (p, k) { p.number = k + 1; });
   }
 
+  // Cada formato de párrafo dice cómo leer su texto, cómo reemplazarlo y cómo
+  // crear uno nuevo. Son los dos que hay en el proyecto: los párrafos del repo
+  // (`{number, description, text, …}`) y las estrofas livianas del buscador
+  // (`{d, x}`).
+  var FORMATOS = {
+    repo: {
+      texto: function (p) { return p.text; },
+      // estrofa corregida: se cambia el texto y se suelta el texto con comentarios
+      reemplazar: function (viejo, texto) { return Object.assign({}, viejo, { text: texto, text_with_comment: null }); },
+      crear: function (texto, anterior) {
+        return { number: anterior ? anterior.number + 1 : 1, description: '', text: texto, text_with_comment: null, translations: null };
+      },
+      numerar: numerar
+    },
+    local: {
+      texto: function (p) { return p.x; },
+      reemplazar: function (viejo, texto) { return Object.assign({}, viejo, { x: texto }); },
+      crear: function (texto) { return { d: '', x: texto }; },
+      numerar: function () {}
+    }
+  };
+
   // Arma los párrafos de la letra nueva sobre los que ya tiene la canción: los
   // huecos entre estrofas idénticas se emparejan en orden, así una estrofa
   // corregida hereda el número, la descripción y el resto de los campos de la
   // estrofa que reemplaza, y una estrofa agregada nace vacía.
-  function fusionar(viejos, nuevos) {
-    var textos = viejos.map(function (p) { return String((p && p.text) || '').trim(); });
+  function fusionar(viejos, nuevos, formato) {
+    var textos = viejos.map(function (p) { return String(formato.texto(p) || '').trim(); });
     var corte = alineacion(textos, nuevos);
     corte.push([textos.length, nuevos.length]);   // cierra el último hueco
     var out = [], i = 0, j = 0;
@@ -116,35 +144,38 @@
       var propuestos = a[1] - j;
       for (var k = 0; k < propuestos; k++) {
         var viejo = k < disponibles ? viejos[i + k] : null;
-        out.push(viejo
-          // estrofa corregida: se cambia el texto y se suelta el texto con comentarios
-          ? Object.assign({}, viejo, { text: nuevos[j + k], text_with_comment: null })
-          : { number: out.length ? out[out.length - 1].number + 1 : 1, description: '', text: nuevos[j + k], text_with_comment: null, translations: null });
+        out.push(viejo ? formato.reemplazar(viejo, nuevos[j + k])
+                       : formato.crear(nuevos[j + k], out[out.length - 1]));
       }
       // Las estrofas del hueco que se quedan sin reemplazo se borran (la persona las
       // sacó), salvo las que no tienen texto: esas no las tocó nadie y borrarlas
       // cambiaría la canción sin que nadie lo haya pedido.
       for (var s = propuestos; s < disponibles; s++) {
         var sobra = viejos[i + s];
-        if (!String((sobra && sobra.text) || '').trim()) out.push(Object.assign({}, sobra));
+        if (!String(formato.texto(sobra) || '').trim()) out.push(Object.assign({}, sobra));
       }
       i = a[0]; j = a[1];
       if (idx < corte.length - 1) { out.push(Object.assign({}, viejos[i])); i++; j++; }
     });
-    numerar(out);
+    formato.numerar(out);
     return out;
   }
 
   // Copia de la canción con la letra nueva aplicada. Solo cambian las estrofas
   // que la persona modificó: las demás quedan con sus bytes tal cual (número,
-  // descripción, texto con comentarios y cualquier campo extra). Devuelve null si
-  // la letra propuesta no tiene ni una estrofa, así el admin nunca borra una
-  // letra por accidente.
+  // descripción, texto con comentarios y cualquier campo extra).
+  //
+  // Devuelve null cuando la propuesta no trae ninguna estrofa y la canción SÍ
+  // tiene letra: así una letra nunca se borra por accidente. Una canción que ya
+  // venía sin letra (en el repo hay cuatro con una estrofa " ") se puede seguir
+  // editando y se queda igual.
   function aplicarLetra(song, texto) {
-    var nuevos = bloques(texto);
-    if (!nuevos.length) return null;
     var lyricsViejas = (song && song.lyrics) || {};
-    var paragraphs = fusionar(lyricsViejas.paragraphs || [], nuevos);
+    var viejos = lyricsViejas.paragraphs || [];
+    var nuevos = bloques(texto);
+    var tenia = viejos.some(function (p) { return String((p && p.text) || '').trim(); });
+    if (!nuevos.length && tenia) return null;
+    var paragraphs = fusionar(viejos, nuevos, FORMATOS.repo);
     var lyrics = Object.assign({}, lyricsViejas, {
       paragraphs: paragraphs,
       full_text: paragraphs.map(function (p) { return p.text; }).join('\n\n')
@@ -155,6 +186,19 @@
       lyrics.full_text_with_comment = paragraphs.map(function (p) { return p.text_with_comment || p.text; }).join('\n\n');
     }
     return Object.assign({}, song, { lyrics: lyrics });
+  }
+
+  // Lo mismo para las estrofas livianas del buscador ({d, x}): al editar la letra,
+  // las estrofas que nadie tocó conservan su descripción y su texto tal cual.
+  function aplicarParas(parrafos, texto) {
+    var nuevos = bloques(texto);
+    if (!nuevos.length) return null;
+    return fusionar(parrafos || [], nuevos, FORMATOS.local);
+  }
+
+  // La letra completa en texto plano a partir de esas estrofas.
+  function letraDeParas(parrafos) {
+    return (parrafos || []).map(function (p) { return (p && p.x) || ''; }).join('\n\n');
   }
 
   // Devuelve el motivo del rechazo, o null si la sugerencia es válida.
@@ -222,6 +266,8 @@
     letraDe: letraDe,
     normalizarLetra: normalizarLetra,
     aplicarLetra: aplicarLetra,
+    aplicarParas: aplicarParas,
+    letraDeParas: letraDeParas,
     validar: validar,
     enviar: enviar,
     escuchar: escuchar,

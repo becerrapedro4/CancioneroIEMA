@@ -243,7 +243,10 @@ No puede:
 Además de todo lo de usuario, puede:
 
 - Entrar a `admin.html` con contraseña.
-- Editar canciones y guardar cambios en el repo.
+- Editar canciones y guardar cambios en el repo. El editor guarda **solo las
+  estrofas que se cambiaron**: las demás quedan byte por byte iguales (número,
+  descripción, texto con comentarios y campos extra), aunque se reescriba la letra
+  entera en el formulario. No deja guardar una canción con la letra vacía.
 - Crear y eliminar canciones.
 - Configurar botón HTML, estilo, color de acento.
 - Usar el editor en vivo.
@@ -366,9 +369,13 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 - `/js/sugerencias.js` — sugerencias de cambio en las letras: las crea el usuario
-  (letra completa) y las resuelve el admin. Incluye el armado de estrofas
-  (`bloques`), la lectura de la letra guardada (`letraDe`) y la aplicación
-  quirúrgica del cambio (`aplicarLetra`).
+  (letra completa) y las resuelve el admin. Es además el **único dueño de
+  convertir una letra editada en los párrafos de la canción**: expone el armado
+  de estrofas (`bloques`), la lectura de la letra guardada (`letraDe`) y la
+  aplicación quirúrgica (`aplicarLetra` para los párrafos del repo,
+  `aplicarParas` / `letraDeParas` para las estrofas livianas `{d, x}` del
+  buscador). Los dos editores (el del buscador y el del admin) lo usan, así que
+  ninguna edición borra lo que la canción ya tenía en las estrofas que nadie tocó.
 
 ---
 

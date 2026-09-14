@@ -623,15 +623,15 @@ document.getElementById("ed-save").addEventListener("click", async () => {
   const title = document.getElementById("ed-title").value.trim();
   if (!title) { alert("El título es obligatorio"); return; }
   const artist = document.getElementById("ed-artist").value.trim();
-  const lyricsRaw = document.getElementById("ed-lyrics").value;
-  const paragraphs = lyricsRaw.split(/\n{2,}/).map(b => b.trim()).filter(Boolean).map((text, i) => ({
-    number: i + 1, description: "", text, text_with_comment: null, translations: null
-  }));
-  const full_text = paragraphs.map(p => p.text).join("\n\n");
-
-  const updated = { ...songs[selectedIdx], title, artist, lyrics: { ...songs[selectedIdx].lyrics, full_text, paragraphs } };
+  const song = songs[selectedIdx];
+  // La conversión de la letra editada a párrafos la hace el módulo: solo cambia
+  // las estrofas que se editaron y conserva número, descripción, texto con
+  // comentarios y campos extra de las demás (ver js/sugerencias.js).
+  const conLetra = sgAPI() ? sgAPI().aplicarLetra(song, document.getElementById("ed-lyrics").value) : null;
+  if (!conLetra) { alert("La letra no puede quedar vacía"); return; }
+  const updated = { ...conLetra, title, artist };
   const newSongs = songs.map((s, i) => i === selectedIdx ? updated : s);
-  await saveToRepo(newSongs, `${songs[selectedIdx].title ? "Actualizar" : "Agregar"}: ${title}`);
+  await saveToRepo(newSongs, `${song.title ? "Actualizar" : "Agregar"}: ${title}`);
 });
 
 // Track dirty state
