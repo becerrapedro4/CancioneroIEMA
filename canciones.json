@@ -1,5 +1,110 @@
 [
   {
+    "id": 1789425880265,
+    "title": "Tendrás que renacer",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "UN HOMBRE LLEGÓSE DE\nNOCHE A JESÚS\nBUSCANDO LA SENDA DE\nVIDA Y DE LUZ\n\nMÁS CRISTO LE DIJO SI A\nDIOS QUIERES VER\nTENDRÁS QUE RENACER\n\nTENDRÁS QUE RENACER//\n\nDE CIERTO, DE CIERTO TE DIGO A TI\nTENDRÁS QUE RENACER\n\nY TU, SI EN EL CIELO QUISIERES ENTRAR\nY CON LOS BENDITOS ALLÍ DESCANSAR\n\nSI VIDA ETERNA QUISIERES TENER\nTENDRÁS QUE RENACER\n\nAMIGO NO DEBES JAMÁS DESECHAR\nPALABRAS QUE CRISTO DIGNOSE HABLAR\n\nSI TU ALMA NO QUIERES LLEGAR A PERDER\nTENDRÁS QUE RENACER\n\nHERMANOS SE HAN IDO CON\nCRISTO A MORAR\n\nLOS CUALES QUERRAS\nAQUEL DÍA ENCONTRAR\n\nPUES ESTE MENSAJE HOY\nDEBES CREER\n\nTENDRÁS QUE RENACER",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "UN HOMBRE LLEGÓSE DE\nNOCHE A JESÚS\nBUSCANDO LA SENDA DE\nVIDA Y DE LUZ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "MÁS CRISTO LE DIJO SI A\nDIOS QUIERES VER\nTENDRÁS QUE RENACER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "TENDRÁS QUE RENACER//",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "DE CIERTO, DE CIERTO TE DIGO A TI\nTENDRÁS QUE RENACER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "Y TU, SI EN EL CIELO QUISIERES ENTRAR\nY CON LOS BENDITOS ALLÍ DESCANSAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "SI VIDA ETERNA QUISIERES TENER\nTENDRÁS QUE RENACER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "AMIGO NO DEBES JAMÁS DESECHAR\nPALABRAS QUE CRISTO DIGNOSE HABLAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "SI TU ALMA NO QUIERES LLEGAR A PERDER\nTENDRÁS QUE RENACER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "HERMANOS SE HAN IDO CON\nCRISTO A MORAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "LOS CUALES QUERRAS\nAQUEL DÍA ENCONTRAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "PUES ESTE MENSAJE HOY\nDEBES CREER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "TENDRÁS QUE RENACER",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789404355624,
     "title": "FIESTA EN EL DESIERTO",
     "artist": "Montesanto",
