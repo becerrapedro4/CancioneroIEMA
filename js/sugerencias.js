@@ -8,53 +8,82 @@
 //   base solo permiten leer y escribir dentro de `rooms`, así que las sugerencias
 //   viajan en un "cuarto" reservado que ninguna página real usa.
 //
+// QUÉ SE SUGIERE
+//   La LETRA COMPLETA de la canción, no una estrofa suelta: el usuario edita la
+//   letra y manda cómo quedaría entera. Así el admin ve el antes y el después
+//   completos y no hay que adivinar a qué estrofa se refería.
+//
 // FORMA DE LOS DATOS
 //   rooms/_sugerencias/{key} = {
 //     songId, title, artist,     // a qué canción se refiere
-//     idx, antes, propuesta,     // nº de estrofa, texto original y texto nuevo
+//     antes,                     // letra actual completa (para comparar)
+//     propuesta,                 // letra nueva completa
 //     nota, autor, ts,
 //     estado,                    // 'pendiente' | 'aplicada' | 'rechazada'
-//     resueltoTs
+//     resueltoTs, resueltoPor
 //   }
 (function () {
   var BASE = 'rooms/_sugerencias';
-  var MAX = 6000;   // largo máximo de una propuesta
+  var MAX = 20000;   // largo máximo de una letra propuesta
   var ESTADOS = ['pendiente', 'aplicada', 'rechazada'];
 
-  // Los párrafos de una canción, sea la forma del repo (lyrics.paragraphs[].text)
-  // o la del buscador (p:[{d,x}]).
-  function paragraphs(song) {
-    if (!song) return [];
-    if (song.lyrics && Array.isArray(song.lyrics.paragraphs)) {
-      return song.lyrics.paragraphs.map(function (p) { return (p && p.text) || ''; });
-    }
-    if (Array.isArray(song.p)) return song.p.map(function (p) { return (p && p.x) || ''; });
-    return [];
+  // Saltos de línea como los usa el resto del proyecto (LF).
+  function normalizarSaltos(texto) {
+    return String(texto || '').replace(/\r\n?/g, '\n');
   }
 
-  // En qué estrofa cae una sugerencia. Primero busca por texto exacto (así
-  // aguanta que se hayan agregado o borrado estrofas), y si ese texto ya no
-  // está, cae a la posición que se sugirió.
-  function matchParagraph(song, sug) {
-    var ps = paragraphs(song);
-    var antes = String((sug && sug.antes) || '').trim();
-    if (antes) {
-      for (var i = 0; i < ps.length; i++) {
-        if (String(ps[i]).trim() === antes) return { idx: i, exacto: true };
-      }
-    }
-    var idx = (sug && typeof sug.idx === 'number') ? sug.idx : -1;
-    if (idx >= 0 && idx < ps.length) return { idx: idx, exacto: false };
-    return { idx: -1, exacto: false };
+  // Para comparar dos letras: espacios y saltos de línea de más no cuentan.
+  function normalizarLetra(texto) {
+    return normalizarSaltos(texto)
+      .split('\n')
+      .map(function (l) { return l.replace(/\s+/g, ' ').trim(); })
+      .filter(Boolean)
+      .join('\n');
+  }
+
+  // De un texto con estrofas separadas por líneas en blanco arma la forma que
+  // usa canciones.json (lyrics.paragraphs + lyrics.full_text).
+  function buildLyrics(texto) {
+    var paragraphs = normalizarSaltos(texto)
+      .split(/\n{2,}/)
+      .map(function (b) { return b.trim(); })
+      .filter(Boolean)
+      .map(function (text, i) {
+        return { number: i + 1, description: '', text: text, text_with_comment: null, translations: null };
+      });
+    return { paragraphs: paragraphs, full_text: paragraphs.map(function (p) { return p.text; }).join('\n\n') };
+  }
+
+  // Copia de la canción con la letra reemplazada entera. Devuelve null si la
+  // letra propuesta no tiene ni una estrofa (así el admin nunca borra la letra
+  // por accidente).
+  function aplicarLetra(song, texto) {
+    var lyrics = buildLyrics(texto);
+    if (!lyrics.paragraphs.length) return null;
+    return Object.assign({}, song, { lyrics: Object.assign({}, song && song.lyrics, lyrics) });
+  }
+
+  // La letra que la canción del repo tiene ahora, en texto plano.
+  function letraDe(song) {
+    var l = (song && song.lyrics) || {};
+    if (l.full_text) return l.full_text;
+    return (l.paragraphs || []).map(function (p) { return (p && p.text) || ''; }).join('\n\n');
+  }
+
+  // La letra "prolija": estrofas recortadas, CRLF normalizado y sin líneas
+  // en blanco de más. Es la forma que se guarda y la que se aplica, así lo que
+  // el admin ve en la propuesta es exactamente lo que va a quedar en la canción.
+  function limpiarLetra(texto) {
+    return buildLyrics(texto).full_text;
   }
 
   // Devuelve el motivo del rechazo, o null si la sugerencia es válida.
   function validar(sug) {
     if (!sug || sug.songId === undefined || sug.songId === null || sug.songId === '') return 'Falta la canción';
     var prop = String(sug.propuesta || '').trim();
-    if (!prop) return 'Escribí el texto que proponés';
-    if (prop.length > MAX) return 'El texto propuesto es demasiado largo';
-    if (prop === String(sug.antes || '').trim()) return 'El texto es igual al original: no hay ningún cambio';
+    if (!prop) return 'La letra propuesta está vacía';
+    if (prop.length > MAX) return 'La letra propuesta es demasiado larga';
+    if (normalizarLetra(prop) === normalizarLetra(sug.antes)) return 'La letra es igual a la original: no hay ningún cambio';
     return null;
   }
 
@@ -66,17 +95,16 @@
       songId: sug.songId,
       title: String(sug.title || '').slice(0, 200),
       artist: String(sug.artist || '').slice(0, 200),
-      idx: typeof sug.idx === 'number' ? sug.idx : null,
-      antes: String(sug.antes || ''),
-      propuesta: String(sug.propuesta).trim(),
-      nota: String(sug.nota || '').slice(0, 300),
+      antes: limpiarLetra(sug.antes),
+      propuesta: limpiarLetra(sug.propuesta),
+      nota: String(sug.nota || '').trim().slice(0, 300),
       autor: String(sug.autor || '').trim().slice(0, 60) || 'anónimo',
       ts: Date.now(),
       estado: 'pendiente'
     }).then(function (ref) { return ref.key; });
   }
 
-  function normalizar(val) {
+  function normalizarLista(val) {
     var out = [];
     Object.keys(val || {}).forEach(function (k) {
       var s = val[k] || {};
@@ -89,7 +117,7 @@
   function escuchar(cb) {
     if (!window.db) return function () {};
     var ref = window.db.ref(BASE).limitToLast(200);
-    var handler = ref.on('value', function (s) { cb(normalizar(s.val())); });
+    var handler = ref.on('value', function (s) { cb(normalizarLista(s.val())); });
     return function () { ref.off('value', handler); };
   }
 
@@ -112,8 +140,12 @@
   window.Sugerencias = {
     BASE: BASE,
     MAX: MAX,
-    paragraphs: paragraphs,
-    matchParagraph: matchParagraph,
+    letraDe: letraDe,
+    normalizarSaltos: normalizarSaltos,
+    normalizarLetra: normalizarLetra,
+    limpiarLetra: limpiarLetra,
+    buildLyrics: buildLyrics,
+    aplicarLetra: aplicarLetra,
     validar: validar,
     enviar: enviar,
     escuchar: escuchar,
