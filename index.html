@@ -605,7 +605,9 @@ function toast(msg, ms=2200) {
   const el = document.getElementById("toast") || (()=>{
     const t=document.createElement("div");
     t.id="toast";
-    t.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;opacity:0;transition:opacity .3s";
+    // pointer-events:none para que el aviso (que queda en el DOM con opacity:0) no
+    // se coma los clicks de los botones que tiene debajo.
+    t.style.cssText="position:fixed;bottom:80px;left:50%;transform:translateX(-50%);background:#222;color:#fff;padding:12px 24px;border-radius:10px;font-size:14px;z-index:999;opacity:0;pointer-events:none;transition:opacity .3s";
     document.body.appendChild(t);
     return t;
   })();
@@ -1155,6 +1157,7 @@ function openSuggest(song,texto){
   document.getElementById("sug-note").value="";
   document.getElementById("sug-auto").value=localStorage.getItem("sug_autor")||"";
   document.getElementById("sug-status").className="mstatus";
+  document.getElementById("sug-send").disabled=false;
   document.getElementById("mov-suggest").classList.add("open");
   updateSettingsBtn();
   document.getElementById("sug-text").focus();
@@ -1172,8 +1175,9 @@ document.getElementById("sug-close").addEventListener("click",closeSuggest);
 document.getElementById("sug-cancel").addEventListener("click",closeSuggest);
 document.getElementById("sug-send").addEventListener("click",async()=>{
   const status=document.getElementById("sug-status");
-  const fail=m=>{status.className="mstatus err";status.textContent="✗ "+m;};
-  if(!_sugSong)return;
+  const btn=document.getElementById("sug-send");
+  const fail=m=>{btn.disabled=false;status.className="mstatus err";status.textContent="✗ "+m;};
+  if(!_sugSong||btn.disabled)return;   // deshabilitado mientras se envía: ignora el doble click
   const S=window.Sugerencias;
   if(!S){fail("No se pudo cargar el módulo de sugerencias");return;}
   const antes=repoLyrics(_sugSong);
@@ -1182,6 +1186,7 @@ document.getElementById("sug-send").addEventListener("click",async()=>{
   const nota=document.getElementById("sug-note").value.trim();
   const err=S.validar({songId:_sugSong.id,antes,propuesta});
   if(err){fail(err);return;}
+  btn.disabled=true;
   status.className="mstatus ok";status.textContent="Enviando…";
   try{
     await S.enviar({songId:_sugSong.id,title:_sugSong.t,artist:_sugSong.a,antes,propuesta,nota,autor});
