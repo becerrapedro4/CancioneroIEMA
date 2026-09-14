@@ -1,5 +1,208 @@
 [
   {
+    "id": 1789403503338,
+    "title": "Queremos fuego",
+    "artist": "Rama Cutuli ft. Pablo Silvestri",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "TIEMPO DE SALVACIÓN\nESTE ES EL TIEMPO DE UNA REVOLUCIÓN\n\nES EL MOMENTO DE ABRIR EL CORAZÓN\nY QUE DEL CIELO LLUEVA EL FUEGO\n\nESTA ES LA HORA DE MANIFESTAR\n\nY VER LA GLORIA, \nYO QUIERO ADORAR\n\nES EL MOMENTO DE ESTAR BAJO LA UNCIÓN\nY QUE DEL CIELO LLUEVA EL FUEGO\n\nVEN, ENCIÉNDENOS\nABRIMOS HOY EL CORAZÓN\n\nHAZ TU OBRA, OH DIOS\nRESPONDE A NUESTRO CLAMOR\n\nQUEREMOS FUEGO, \nENCIÉNDENOS\n\nCOMO EXPLOSIÓN DE GLORIA,\nDESCIENDE HOY\n\nFUEGO QUE TRANSFORMA, \nENVUÉLVENOS\n\nQUE EL AVIVAMIENTO COMIENCE\n\nTIEMPO DE SALVACIÓN\nESTE ES EL TIEMPO DE UNA REVOLUCIÓN\n\nES EL MOMENTO DE ABRIR EL CORAZÓN\nY QUE DEL CIELO LLUEVA EL FUEGO\n\nESTA ES LA HORA DE MANIFESTAR\nY VER LA GLORIA, YO QUIERO ADORAR\n\nES EL MOMENTO DE ESTAR BAJO LA UNCIÓN\nY QUE DEL CIELO LLUEVA EL FUEGO\n\nVEN, ENCIÉNDENOS\nABRIMOS HOY EL CORAZÓN\n\nHAZ TU OBRA, OH DIOS\nRESPONDE A NUESTRO CLAMOR\n\nQUEREMOS FUEGO\nENCIÉNDENOS\n\nCOMO EXPLOSIÓN DE GLORIA\nDESCIENDE HOY\n\nFUEGO QUE TRANSFORMA\nENVUÉLVENOS\n\nQUE EL AVIVAMIENTO COMIENCE\n\nQUEREMOS FUEGO\nENCIÉNDENOS\n\nCOMO EXPLOSIÓN DE GLORIA\nDESCIENDE HOY\n\nFUEGO QUE TRANSFORMA\nENVUÉLVENOS\n\nQUE EL AVIVAMIENTO COMIENCE\n\nQUEREMOS FUEGO",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "TIEMPO DE SALVACIÓN\nESTE ES EL TIEMPO DE UNA REVOLUCIÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "ES EL MOMENTO DE ABRIR EL CORAZÓN\nY QUE DEL CIELO LLUEVA EL FUEGO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "ESTA ES LA HORA DE MANIFESTAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "Y VER LA GLORIA, \nYO QUIERO ADORAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "ES EL MOMENTO DE ESTAR BAJO LA UNCIÓN\nY QUE DEL CIELO LLUEVA EL FUEGO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "VEN, ENCIÉNDENOS\nABRIMOS HOY EL CORAZÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "HAZ TU OBRA, OH DIOS\nRESPONDE A NUESTRO CLAMOR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "QUEREMOS FUEGO, \nENCIÉNDENOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "COMO EXPLOSIÓN DE GLORIA,\nDESCIENDE HOY",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "FUEGO QUE TRANSFORMA, \nENVUÉLVENOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "QUE EL AVIVAMIENTO COMIENCE",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "TIEMPO DE SALVACIÓN\nESTE ES EL TIEMPO DE UNA REVOLUCIÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "ES EL MOMENTO DE ABRIR EL CORAZÓN\nY QUE DEL CIELO LLUEVA EL FUEGO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "ESTA ES LA HORA DE MANIFESTAR\nY VER LA GLORIA, YO QUIERO ADORAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "ES EL MOMENTO DE ESTAR BAJO LA UNCIÓN\nY QUE DEL CIELO LLUEVA EL FUEGO",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "VEN, ENCIÉNDENOS\nABRIMOS HOY EL CORAZÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "HAZ TU OBRA, OH DIOS\nRESPONDE A NUESTRO CLAMOR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 18,
+          "description": "",
+          "text": "QUEREMOS FUEGO\nENCIÉNDENOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 19,
+          "description": "",
+          "text": "COMO EXPLOSIÓN DE GLORIA\nDESCIENDE HOY",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 20,
+          "description": "",
+          "text": "FUEGO QUE TRANSFORMA\nENVUÉLVENOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 21,
+          "description": "",
+          "text": "QUE EL AVIVAMIENTO COMIENCE",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 22,
+          "description": "",
+          "text": "QUEREMOS FUEGO\nENCIÉNDENOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 23,
+          "description": "",
+          "text": "COMO EXPLOSIÓN DE GLORIA\nDESCIENDE HOY",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 24,
+          "description": "",
+          "text": "FUEGO QUE TRANSFORMA\nENVUÉLVENOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 25,
+          "description": "",
+          "text": "QUE EL AVIVAMIENTO COMIENCE",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 26,
+          "description": "",
+          "text": "QUEREMOS FUEGO",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789403013637,
     "title": "Una nube cuál la palma de una mano",
     "artist": "",
