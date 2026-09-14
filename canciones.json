@@ -1,5 +1,145 @@
 [
   {
+    "id": 1789403793957,
+    "title": "Lembranzas",
+    "artist": "Eli soares",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "LEVANTA ESA CABEZA\nPARA DE LLORAR\n\nCREE EN LO QUE ÉL TE PROMETIÓ\n\nDIOS NO ES UN HOMBRE PARA MENTIR\nLO QUE PROMETIÓ, ÉL TE LO VA A CUMPLIR\n\nRECUERDOS DE MOMENTOS DE DOLOR\nSON MARCAS DE UN PASADO QUE QUEDÓ ATRÁS\n\nHISTORIAS DE TRIBULACIÓN\nCONSTRUYEN FORTALEZAS EN EL CORAZÓN\n\nNO TODO EN LA VIDA SALE BIEN\nHAY COSAS QUE SUCEDEN QUE NOS HACEN CRECER\n\nLA VIDA TRAE SIEMPRE UNA LECCIÓN\n\nLEVANTA ESA CABEZA\nPARA DE LLORAR\n\nCREE EN LO QUE ÉL TE PROMETIÓ\nDIOS NO ES UN HOMBRE PARA MENTIR\n\nLO QUE PROMETIÓ,\nÉL TE LO VA A CUMPLIR\n\nRECUERDOS DE MOMENTOS DE DOLOR\nSON MARCAS DE UN PASADO QUE QUEDÓ ATRÁS\n\nHISTORIAS DE TRIBULACIÓN\nCONSTRUYEN FORTALEZAS EN EL CORAZÓN\n\nNO TODO EN LA VIDA SALE BIEN\nHAY COSAS QUE SUCEDEN QUE NOS HACEN CRECER\n\nLA VIDA TRAE SIEMPRE UNA LECCIÓN\n\nLEVANTA ESA CABEZA\nPARA DE LLORAR\n\nCREE EN LO QUE ÉL TE PROMETIÓ\n\nDIOS NO ES UN HOMBRE PARA MENTIR\nLO QUE PROMETIÓ, ÉL TE LO VA A CUMPLIR",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "LEVANTA ESA CABEZA\nPARA DE LLORAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "CREE EN LO QUE ÉL TE PROMETIÓ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "DIOS NO ES UN HOMBRE PARA MENTIR\nLO QUE PROMETIÓ, ÉL TE LO VA A CUMPLIR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "RECUERDOS DE MOMENTOS DE DOLOR\nSON MARCAS DE UN PASADO QUE QUEDÓ ATRÁS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "HISTORIAS DE TRIBULACIÓN\nCONSTRUYEN FORTALEZAS EN EL CORAZÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "NO TODO EN LA VIDA SALE BIEN\nHAY COSAS QUE SUCEDEN QUE NOS HACEN CRECER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "LA VIDA TRAE SIEMPRE UNA LECCIÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "LEVANTA ESA CABEZA\nPARA DE LLORAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "CREE EN LO QUE ÉL TE PROMETIÓ\nDIOS NO ES UN HOMBRE PARA MENTIR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "LO QUE PROMETIÓ,\nÉL TE LO VA A CUMPLIR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "RECUERDOS DE MOMENTOS DE DOLOR\nSON MARCAS DE UN PASADO QUE QUEDÓ ATRÁS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "HISTORIAS DE TRIBULACIÓN\nCONSTRUYEN FORTALEZAS EN EL CORAZÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "NO TODO EN LA VIDA SALE BIEN\nHAY COSAS QUE SUCEDEN QUE NOS HACEN CRECER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "LA VIDA TRAE SIEMPRE UNA LECCIÓN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "LEVANTA ESA CABEZA\nPARA DE LLORAR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "CREE EN LO QUE ÉL TE PROMETIÓ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "DIOS NO ES UN HOMBRE PARA MENTIR\nLO QUE PROMETIÓ, ÉL TE LO VA A CUMPLIR",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789403503338,
     "title": "Queremos fuego",
     "artist": "Rama Cutuli ft. Pablo Silvestri",
