@@ -1285,7 +1285,16 @@ function renderSugerencias() {
   cont.querySelectorAll('[data-sg-del]').forEach(b => b.addEventListener('click', () => quitarSugerencia(b.dataset.sgDel)));
 }
 
-async function aplicarSugerencia(key) {
+// Un doble click en “Aplicar” hacía dos commits con el mismo cambio: mientras una
+// aplicación está en curso, la misma sugerencia se ignora.
+const _sgEnCurso = new Set();
+function aplicarSugerencia(key) {
+  if (_sgEnCurso.has(key)) return Promise.resolve();
+  _sgEnCurso.add(key);
+  return aplicarSugerenciaAhora(key).finally(() => _sgEnCurso.delete(key));
+}
+
+async function aplicarSugerenciaAhora(key) {
   const S = sgAPI();
   const sg = sugerencias.find(s => s.key === key);
   if (!S || !sg) return;
