@@ -191,6 +191,18 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
     <div id="sg-list" style="max-height:460px;overflow-y:auto"><div style="color:var(--muted);text-align:center;padding:10px">Cargando…</div></div>
   </div>
 
+  <!-- CANCIONES REPETIDAS -->
+  <div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="font-size:15px;font-weight:600">🧹 Canciones repetidas</div>
+      <span id="dup-count" style="font-size:12px;font-weight:500;color:var(--muted)">—</span>
+      <button class="btn sec" id="dup-reload" style="margin-left:auto;flex:0">↻ Revisar de nuevo</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Grupos de canciones que son la misma: <b>el mismo título</b> escrito distinto (tildes, mayúsculas, signos o espacios) o <b>la misma letra con otro título</b>. Al resolver un grupo queda la que elijas y se borran las demás en <b id="dup-branch">mejoras</b>; después publicalo con <b>🚀 Publicar en main</b>. <b>No se cambia nada hasta que elijas</b>, y la canción que queda se guarda tal cual está.</div>
+    <div id="dup-status" class="status" style="display:none"></div>
+    <div id="dup-list"><div style="color:var(--muted);text-align:center;padding:10px">—</div></div>
+  </div>
+
   <!-- CONFIG: MISC -->
   <div style="margin-top:20px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px">
     <div style="font-size:16px;font-weight:600;margin-bottom:16px">⚙️ Configuración</div>
@@ -321,6 +333,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
 <script src="js/texto.js"></script>
+<script src="js/duplicadas.js"></script>
 <script src="js/sugerencias.js"></script>
 <script>
 const db = window.db;
@@ -446,6 +459,7 @@ async function loadSongs() {
 
     renderList();
     renderExportTargets();
+    renderDuplicadas();
     st.className = "status ok"; st.textContent = `✓ ${songs.length} canciones cargadas${fileSha ? ` (SHA: ${fileSha.slice(0,7)})` : ""}`;
   } catch (e) {
     console.error("loadSongs error:", e);
@@ -476,6 +490,7 @@ async function saveToRepo(newSongs, message) {
     isDirty = false;
     st.className = "status ok"; st.textContent = `✓ Guardado — commit ${data.commit.sha.slice(0,7)}`;
     renderList();
+    renderDuplicadas();
     return true;
   } catch (e) {
     st.className = "status err"; st.textContent = "✗ Error al guardar: " + e.message;
@@ -862,12 +877,17 @@ let listsSha = null;
 let glIdx = -1;
 let glPickSel = new Set();
 
-function glStatus(msg, kind) {
-  const st = document.getElementById("gl-status");
-  st.textContent = msg;
+// La línea de estado de cada panel (listas globales, sugerencias, repetidas) se
+// muestra siempre igual: un solo lugar decide cómo.
+function panelStatus(elId, kind, msg) {
+  const st = document.getElementById(elId);
+  if (!st) return;
   st.className = "status " + (kind || "info");
+  st.textContent = msg;
   st.style.display = "block";
 }
+
+function glStatus(msg, kind) { panelStatus("gl-status", kind, msg); }
 
 async function fetchListsSha() {
   const pat = getPat();
@@ -1246,11 +1266,7 @@ let sugerencias = [];
 let _sgFilter = 'pendiente';
 
 function sgAPI() { return window.Sugerencias || null; }
-function sgShow(kind, msg) {
-  const st = document.getElementById("status");
-  if (!st) return;
-  st.className = "status " + kind; st.textContent = msg; st.style.display = "block";
-}
+function sgShow(kind, msg) { panelStatus("status", kind, msg); }
 function sgEstrofas(sg) {
   const n = t => (sgAPI() ? sgAPI().bloques(t).length : 0);
   const a = n(sg.antes), b = n(sg.propuesta);
@@ -1377,6 +1393,139 @@ async function quitarSugerencia(key) {
   const S = sgAPI();
   if (S) S.escuchar(list => { sugerencias = list; renderSugerencias(); });
   renderSugerencias();
+})();
+
+/* ── CANCIONES REPETIDAS ── */
+// Los grupos los arma js/duplicadas.js (mismo título escrito distinto o misma
+// letra con otro título). Acá solo se muestran, se elige cuál queda y se guarda
+// con el mismo guardado y publicación de siempre. Nada se toca hasta que el
+// admin resuelve el grupo; los grupos que decide dejar como están se recuerdan
+// en este navegador para que la lista no vuelva a pedirlos.
+const DUP_IGNORADOS = 'dup_ignorados';
+let dupIgnorados = [];
+try { dupIgnorados = JSON.parse(localStorage.getItem(DUP_IGNORADOS) || '[]') || []; } catch (e) {}
+const _dupEnCurso = new Set();
+
+function dupShow(kind, msg) { panelStatus('dup-status', kind, msg); }
+
+function tarjetaDuplicadas(g) {
+  const firma = Duplicadas.firma(g);
+  const tipo = g.tipo === 'titulo' ? 'mismo título, escrito distinto' : 'misma letra, otro título';
+  const filas = g.canciones.map(s => {
+    const i = Duplicadas.info(s);
+    const marcada = String(s.id) === String(g.elegida.id);
+    const idx = songs.indexOf(s);
+    const detalles = [i.artist, i.estrofas + ' estrofa' + (i.estrofas !== 1 ? 's' : ''),
+      i.comentarios ? i.comentarios + ' con comentarios' : '',
+      i.descripciones ? i.descripciones + ' descripciones' : '',
+      i.largo + ' caracteres de letra'].filter(Boolean).join(' · ');
+    return `<label style="display:flex;gap:10px;align-items:flex-start;padding:8px 10px;border:1px solid ${marcada ? 'rgba(76,175,125,.45)' : 'var(--border)'};border-radius:8px;background:${marcada ? 'rgba(76,175,125,.06)' : 'transparent'};margin-bottom:6px;cursor:pointer">
+      <input type="radio" name="dup-${esc(firma)}" value="${esc(s.id)}" ${marcada ? 'checked' : ''} style="margin-top:3px">
+      <div style="flex:1;min-width:0">
+        <div style="font-size:13px;font-weight:600;word-break:break-word">${esc(i.title)}</div>
+        <div style="font-size:11px;color:var(--muted)">${esc(detalles)}</div>
+        ${marcada ? `<div style="font-size:11px;color:var(--green)">✓ Conviene esta: ${esc(g.elegida.motivos.join(', '))}</div>` : ''}
+      </div>
+      ${idx >= 0 ? `<button class="btn sec" data-dup-ver="${idx}" style="flex:0;padding:4px 8px;font-size:11px">Ver letra</button>` : ''}
+    </label>`;
+  }).join('');
+  const borrar = g.canciones.length - 1;
+  return `<div data-dup-card="${esc(firma)}" style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2)">
+    <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px">
+      <span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.28);padding:2px 6px;border-radius:20px">${tipo}</span>
+      <span style="font-size:12px;color:var(--muted)">${g.canciones.length} canciones${g.mismaLetra ? ' · la letra es la misma' : ' · la letra cambia'}</span>
+    </div>
+    ${filas}
+    <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
+      <button class="btn pri" data-dup-ok="${esc(firma)}">✔ Quedarme con la elegida y borrar ${borrar}</button>
+      <button class="btn sec" data-dup-no="${esc(firma)}">🗐 Dejar el grupo como está</button>
+    </div>
+  </div>`;
+}
+
+function renderDuplicadas() {
+  const cont = document.getElementById('dup-list');
+  if (!cont || !window.Duplicadas) return;
+  const cnt = document.getElementById('dup-count');
+  const br = document.getElementById('dup-branch');
+  if (br) br.textContent = BRANCH;
+  if (!songs.length) {
+    cnt.textContent = '—';
+    cont.innerHTML = '<div style="color:var(--muted);text-align:center;padding:10px">Cargá tu token de GitHub y tocá ↻ para tener la base de canciones.</div>';
+    return;
+  }
+  const todos = Duplicadas.grupos(songs);
+  const grupos = todos.filter(g => dupIgnorados.indexOf(Duplicadas.firma(g)) < 0);
+  const nCanciones = grupos.reduce((a, g) => a + g.canciones.length, 0);
+  cnt.textContent = grupos.length
+    ? `${grupos.length} grupo${grupos.length !== 1 ? 's' : ''} · ${nCanciones} canciones` + (todos.length !== grupos.length ? ` (${todos.length - grupos.length} ya marcados “como está”)` : '')
+    : 'sin repetidas';
+  cont.innerHTML = grupos.length
+    ? grupos.map(tarjetaDuplicadas).join('')
+    : '<div style="color:var(--muted);text-align:center;padding:10px">No hay grupos para revisar 🎉</div>';
+  cont.querySelectorAll('[data-dup-ver]').forEach(b => b.addEventListener('click', e => {
+    e.preventDefault();
+    selectSong(+b.dataset.dupVer);
+    document.getElementById('editor').scrollIntoView({ block: 'nearest' });
+  }));
+  cont.querySelectorAll('[data-dup-no]').forEach(b => b.addEventListener('click', () => {
+    const f = b.dataset.dupNo;
+    if (dupIgnorados.indexOf(f) < 0) dupIgnorados.push(f);
+    try { localStorage.setItem(DUP_IGNORADOS, JSON.stringify(dupIgnorados)); } catch (e) {}
+    dupShow('info', '↷ Grupo dejado como está (queda anotado en este navegador; ↻ Revisar de nuevo lo trae de vuelta).');
+    renderDuplicadas();
+  }));
+  cont.querySelectorAll('[data-dup-ok]').forEach(b => b.addEventListener('click', () => resolverDuplicadas(b.dataset.dupOk)));
+}
+
+async function resolverDuplicadas(firma) {
+  if (_dupEnCurso.has(firma) || !songs.length) return;
+  const g = Duplicadas.grupos(songs).find(x => Duplicadas.firma(x) === firma);
+  if (!g) return;
+  const card = document.querySelector('[data-dup-card="' + firma + '"]');
+  const radio = card ? card.querySelector('input[type=radio]:checked') : null;
+  const conservarId = radio ? radio.value : g.elegida.id;
+  const queda = g.canciones.find(s => String(s.id) === String(conservarId));
+  const borrar = g.canciones.filter(s => String(s.id) !== String(conservarId)).map(s => s.id);
+  if (!queda || !borrar.length) return;
+  const nombres = g.canciones.filter(s => String(s.id) !== String(conservarId)).map(s => '“' + (s.title || 'Sin título') + '”').join(', ');
+  if (!confirm(`¿Quedarte con “${queda.title}” y borrar ${borrar.length} canción${borrar.length !== 1 ? 'es' : ''} (${nombres})?\n\nSe guarda en ${BRANCH}; después publicalo con 🚀 Publicar en main.`)) return;
+
+  _dupEnCurso.add(firma);
+  const btn = card && card.querySelector('[data-dup-ok]');
+  if (btn) btn.disabled = true;
+  dupShow('info', '💾 Guardando la canción que queda y borrando las repetidas…');
+  try {
+    const res = Duplicadas.resolver(songs, borrar, conservarId);
+    if (!await saveToRepo(res.canciones, `Depurar repetidas: ${queda.title}`)) {
+      dupShow('err', '✗ No se guardó nada. Revisá el token y volvé a intentar.');
+      return;
+    }
+    // Las listas globales que nombraban a las borradas pasan a apuntar a la que queda.
+    const rem = Duplicadas.remapearListas(globalLists, borrar, conservarId);
+    let extra = '';
+    if (rem.cambios.length) {
+      globalLists = rem.listas;
+      await saveListsToRepo(`Listas globales: reapuntar ${rem.cambios.map(c => c.name).join(', ')}`);
+      renderGlobalLists();
+      extra = ` y ${rem.cambios.length} lista${rem.cambios.length !== 1 ? 's' : ''} de la iglesia reapuntada${rem.cambios.length !== 1 ? 's' : ''} (${rem.cambios.map(c => c.name).join(', ')})`;
+    }
+    dupShow('ok', `✓ “${queda.title}” queda sola: ${borrar.length} canción${borrar.length !== 1 ? 'es' : ''} borrada${borrar.length !== 1 ? 's' : ''}${extra}. Usá 🚀 Publicar en main para que lo vean todos.`);
+  } finally {
+    _dupEnCurso.delete(firma);
+    renderDuplicadas();
+  }
+}
+
+(function initDuplicadas() {
+  const b = document.getElementById('dup-reload');
+  if (b) b.addEventListener('click', () => {
+    dupIgnorados = [];
+    try { localStorage.removeItem(DUP_IGNORADOS); } catch (e) {}
+    dupShow('info', '↻ Grupos recalculados; vuelven también los que habías dejado “como está”.');
+    renderDuplicadas();
+  });
+  renderDuplicadas();
 })();
 
 /* ── HELPER ── */
