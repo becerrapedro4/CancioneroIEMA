@@ -183,11 +183,11 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
   <!-- CAMBIOS SUGERIDOS EN LAS LETRAS -->
   <div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
-      <div style="font-size:15px;font-weight:600">💡 Cambios sugeridos en las letras</div>
+      <div style="font-size:15px;font-weight:600">💡 Cambios sugeridos</div>
       <span id="sg-count" style="font-size:12px;font-weight:500;color:var(--muted)">—</span>
       <button class="btn sec" id="sg-filter" style="margin-left:auto;flex:0">Ver todas</button>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Los mandan los usuarios desde el buscador, con la <b>letra completa</b> como debería quedar. Al aplicar se reemplaza la letra de la canción, se guarda en <b id="sg-branch">mejoras</b> y después podés publicarlo con <b>🚀 Publicar en main</b>.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Los mandan los usuarios desde el buscador: cambios en la <b>letra</b> (completa, como debería quedar), <b>canciones nuevas</b> y pedidos de <b>borrar</b> una canción. Nada del repo cambia hasta que apruebes: al aprobar se guarda en <b id="sg-branch">mejoras</b> y después lo publicás con <b>🚀 Publicar en main</b>.</div>
     <div id="sg-list" style="max-height:460px;overflow-y:auto"><div style="color:var(--muted);text-align:center;padding:10px">Cargando…</div></div>
   </div>
 
@@ -1269,8 +1269,21 @@ function sgAPI() { return window.Sugerencias || null; }
 function sgShow(kind, msg) { panelStatus("status", kind, msg); }
 function sgEstrofas(sg) {
   const n = t => (sgAPI() ? sgAPI().bloques(t).length : 0);
+  const est = b => `${b} estrofa${b === 1 ? '' : 's'}`;
+  const tipo = sgTipo(sg);
+  if (tipo === 'agregar') return `canción nueva · ${est(n(sg.propuesta))}`;
+  if (tipo === 'eliminar') return `borrar · ${est(n(sg.antes))}`;
   const a = n(sg.antes), b = n(sg.propuesta);
   return `letra completa (${a} → ${b} estrofa${b === 1 ? '' : 's'})`;
+}
+function sgTipo(sg) {
+  const S = sgAPI();
+  return S ? S.tipoDe(sg) : (sg.tipo || 'letra');
+}
+function sgTipoBadge(tipo) {
+  if (tipo === 'agregar') return '<span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.28);padding:2px 6px;border-radius:20px">➕ canción nueva</span>';
+  if (tipo === 'eliminar') return '<span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--red);background:rgba(224,82,82,.1);border:1px solid rgba(224,82,82,.3);padding:2px 6px;border-radius:20px">🗑 borrar canción</span>';
+  return '<span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);background:var(--surface);border:1px solid var(--border);padding:2px 6px;border-radius:20px">✏️ cambio de letra</span>';
 }
 function sgBadge(estado) {
   if (estado === 'aplicada') return '<span style="font-size:11px;color:var(--green)">✔ aplicada</span>';
@@ -1297,20 +1310,28 @@ function renderSugerencias() {
     cont.innerHTML = `<div style="color:var(--muted);text-align:center;padding:10px">${_sgFilter === 'pendiente' ? 'No hay cambios sugeridos pendientes' : 'Todavía no llegó ninguna sugerencia'}</div>`;
     return;
   }
+  const caja = (etiqueta, texto, fondo, borde) => !String(texto || '').trim() ? '' :
+    `<div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">${etiqueta}</div>
+      <div style="font-size:13px;white-space:pre-wrap;max-height:150px;overflow-y:auto;background:${fondo};border-left:2px solid ${borde};padding:6px 10px;border-radius:6px;margin-bottom:8px">${esc(texto)}</div>`;
+  const ROJO = 'rgba(224,82,82,.06)', ROJO_B = 'rgba(224,82,82,.45)';
+  const VERDE = 'rgba(76,175,125,.06)', VERDE_B = 'rgba(76,175,125,.45)';
   cont.innerHTML = lista.map(s => {
+    const tipo = sgTipo(s);
+    const letras = tipo === 'agregar' ? caja('Letra de la canción nueva', s.propuesta, VERDE, VERDE_B)
+      : tipo === 'eliminar' ? caja('Letra de la canción que se pide borrar', s.antes, ROJO, ROJO_B)
+      : caja('Letra actual', s.antes, ROJO, ROJO_B) + caja('Letra propuesta', s.propuesta, VERDE, VERDE_B);
+    const accion = tipo === 'agregar' ? '✔ Agregar al cancionero' : tipo === 'eliminar' ? '✔ Borrar del cancionero' : '✔ Aplicar a la canción';
     return `<div style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2)">
       <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px">
+        ${sgTipoBadge(tipo)}
         <b style="font-size:14px">${esc(s.title || 'Sin título')}</b>
         <span style="color:var(--muted);font-size:11px">${s.artist ? esc(s.artist) + ' · ' : ''}${sgEstrofas(s)} · ${hace(s.ts)} · de ${esc(s.autor || 'anónimo')}</span>
         ${sgBadge(s.estado)}
       </div>
-      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Letra actual</div>
-      <div style="font-size:13px;white-space:pre-wrap;max-height:150px;overflow-y:auto;background:rgba(224,82,82,.06);border-left:2px solid rgba(224,82,82,.45);padding:6px 10px;border-radius:6px;margin-bottom:8px">${esc(s.antes || '')}</div>
-      <div style="font-size:11px;letter-spacing:1px;text-transform:uppercase;color:var(--muted);margin-bottom:3px">Letra propuesta</div>
-      <div style="font-size:13px;white-space:pre-wrap;max-height:150px;overflow-y:auto;background:rgba(76,175,125,.06);border-left:2px solid rgba(76,175,125,.45);padding:6px 10px;border-radius:6px">${esc(s.propuesta || '')}</div>
+      ${letras}
       ${s.nota ? `<div style="font-size:12px;color:var(--muted);margin-top:8px">💬 ${esc(s.nota)}</div>` : ''}
       <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap">
-        ${s.estado === 'pendiente' ? `<button class="btn pri" data-sg-ok="${esc(s.key)}">✔ Aplicar a la canción</button>
+        ${s.estado === 'pendiente' ? `<button class="btn pri" data-sg-ok="${esc(s.key)}">${accion}</button>
         <button class="btn sec" data-sg-no="${esc(s.key)}">✕ Rechazar</button>` : ''}
         <button class="btn danger" data-sg-del="${esc(s.key)}">🗑 Quitar de la lista</button>
       </div>
@@ -1335,6 +1356,9 @@ async function aplicarSugerenciaAhora(key) {
   const sg = sugerencias.find(s => s.key === key);
   if (!S || !sg) return;
   if (!songs.length) { sgShow('err', '✗ Primero cargá tu token de GitHub y tocá ↻ para tener la base de canciones.'); return; }
+  const tipo = sgTipo(sg);
+  if (tipo === 'agregar') return agregarSugerida(S, sg, key);
+  if (tipo === 'eliminar') return borrarSugerida(S, sg, key);
   const i = songs.findIndex(s => String(s.id) === String(sg.songId));
   if (i < 0) {
     sgShow('err', `✗ No encuentro “${sg.title}” en la base del repo. Puede ser una canción local del usuario o una que ya no existe.`);
@@ -1364,6 +1388,45 @@ async function aplicarSugerenciaAhora(key) {
   if (!ok) return;   // saveToRepo ya mostró el error
   await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
   sgShow('ok', `✓ Letra actualizada en “${songs[i].title}” (guardado en ${BRANCH}). Usá 🚀 Publicar en main para que lo vean todos.`);
+}
+
+// Una canción nueva propuesta desde el buscador: entra a la base del repo con el
+// mismo guardado de siempre (en la rama de trabajo; se publica después).
+async function agregarSugerida(S, sg, key) {
+  const nueva = sg.cancion;
+  if (!nueva || !nueva.title) { sgShow('err', '✗ La sugerencia no trae la canción nueva.'); return; }
+  const clave = Texto.clave(nueva.title);
+  const ya = songs.find(s => Texto.clave(s.title) === clave);
+  if (ya && !confirm(`Ya hay una canción “${ya.title}” en la base.\n¿Agregar “${nueva.title}” igual?`)) return;
+  const usados = new Set(songs.map(s => String(s.id)));
+  const agregada = Texto.cancion(Object.assign({}, nueva, { id: usados.has(String(nueva.id)) ? Date.now() : nueva.id }));
+  if (!await saveToRepo(songs.concat(agregada), `Agregar sugerido: ${agregada.title}`)) return;
+  await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
+  sgShow('ok', `✓ “${agregada.title}” agregada al cancionero (guardada en ${BRANCH}). Usá 🚀 Publicar en main para que la vean todos.`);
+}
+
+// Un pedido de borrar: sale de la base del repo y de las listas de la iglesia que
+// la nombraban (así ninguna lista queda con un hueco).
+async function borrarSugerida(S, sg, key) {
+  const i = songs.findIndex(s => String(s.id) === String(sg.songId));
+  if (i < 0) {
+    await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
+    sgShow('info', `↩ “${sg.title}” ya no está en la base: no había nada que borrar.`);
+    return;
+  }
+  const borrada = songs[i];
+  if (!confirm(`¿Borrar “${borrada.title}” del cancionero (${BRANCH})?\n\nSe va para todos cuando la publiques, y las listas de la iglesia que la nombraban quedan sin ella.`)) return;
+  if (!await saveToRepo(songs.filter(s => String(s.id) !== String(borrada.id)), `Borrar sugerido: ${borrada.title}`)) return;
+  if (window.Duplicadas) {
+    const rem = Duplicadas.remapearListas(globalLists, [borrada.id], null);
+    if (rem.cambios.length) {
+      globalLists = rem.listas;
+      await saveListsToRepo(`Listas globales: quitar “${borrada.title}”`);
+      renderGlobalLists();
+    }
+  }
+  await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
+  sgShow('ok', `✓ “${borrada.title}” borrada del cancionero (guardado en ${BRANCH}). Usá 🚀 Publicar en main para que lo vean todos.`);
 }
 
 async function rejectarSugerencia(key) {
