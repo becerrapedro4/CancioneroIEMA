@@ -7397,52 +7397,6 @@
     }
   },
   {
-    "id": 1777239884899,
-    "title": "ALELUYA",
-    "artist": "AUTOR DESCONOCIDO",
-    "author": "",
-    "note": "",
-    "copyright": "",
-    "language": "",
-    "key": "",
-    "bpm": 0,
-    "time_sig": "",
-    "midi": {
-      "code": 0,
-      "velocity": 0
-    },
-    "order": "",
-    "arrangements": [],
-    "lyrics": {
-      "full_text": "DIOS TE AMA",
-      "full_text_with_comment": null,
-      "paragraphs": [
-        {
-          "number": 1,
-          "description": "",
-          "text": "DIOS TE AMA",
-          "text_with_comment": null,
-          "translations": null
-        }
-      ]
-    },
-    "streaming": {
-      "audio": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      },
-      "backing_track": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      }
-    },
-    "extras": {
-      "extra": ""
-    }
-  },
-  {
     "id": 1777239884313,
     "title": "ALELUYA DIOS ES REY",
     "artist": "AUTOR DESCONOCIDO",
