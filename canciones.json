@@ -74330,48 +74330,90 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "SEMBRARÉ LA SIMIENTE PRECISOSA\nDEL GLORIOSO EVANGELIO DE AMOR\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR\n\nSEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\nSEGARÉ, SEGARÉ\nAL HALLARE EN LA CASA DE DIOS\n\nSEMBRARÉ EN CORAZONES SENSIBLES\nLA DOCTRINA DEL DIOS DEL PERDÓN\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR\n\nSEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\nSEGARÉ, SEGARÉ\nAL HALLARE EN LA CASA DE DIOS\n\nSEMBRARÉ EN CORAZONES DE MÁRMOL\nLA BENDITA PALABRA DE DIOS\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR\n\nSEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\nSEGARÉ, SEGARÉ\nAL HALLARE EN LA CASA DE DIOS",
+      "full_text": "SEMBRARÉ LA SIMIENTE PRECIOSA\nDEL GLORIOSO EVANGELIO DE AMOR\n\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR\n\nSEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\n\nSEGARÉ, SEGARÉ\nAL HALLARME EN LA CASA DE DIOS\n\nSEMBRARÉ EN CORAZONES SENSIBLES\nLA DOCTRINA DEL DIOS DEL PERDÓN\n\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR\n\nSEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\n\nSEGARÉ, SEGARÉ\nAL HALLARME EN LA CASA DE DIOS\n\nSEMBRARÉ EN CORAZONES DE MÁRMOL\nLA BENDITA PALABRA DE DIOS\n\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR\n\nSEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\n\nSEGARÉ, SEGARÉ\nAL HALLARME EN LA CASA DE DIOS",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "SEMBRARÉ LA SIMIENTE PRECISOSA\nDEL GLORIOSO EVANGELIO DE AMOR\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR",
+          "text": "SEMBRARÉ LA SIMIENTE PRECIOSA\nDEL GLORIOSO EVANGELIO DE AMOR",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "CORO",
-          "text": "SEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\nSEGARÉ, SEGARÉ\nAL HALLARE EN LA CASA DE DIOS",
+          "text": "SEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "SEMBRARÉ EN CORAZONES SENSIBLES\nLA DOCTRINA DEL DIOS DEL PERDÓN\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR",
+          "text": "SEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "CORO",
-          "text": "SEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\nSEGARÉ, SEGARÉ\nAL HALLARE EN LA CASA DE DIOS",
+          "text": "SEGARÉ, SEGARÉ\nAL HALLARME EN LA CASA DE DIOS",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": "SEMBRARÉ EN CORAZONES DE MÁRMOL\nLA BENDITA PALABRA DE DIOS\nSEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR",
+          "text": "SEMBRARÉ EN CORAZONES SENSIBLES\nLA DOCTRINA DEL DIOS DEL PERDÓN",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
           "description": "CORO",
-          "text": "SEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR\nSEGARÉ, SEGARÉ\nAL HALLARE EN LA CASA DE DIOS",
+          "text": "SEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "SEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "SEGARÉ, SEGARÉ\nAL HALLARME EN LA CASA DE DIOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "SEMBRARÉ EN CORAZONES DE MÁRMOL\nLA BENDITA PALABRA DE DIOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "SEMBRARÉ, SEMBRARÉ MIENTRAS VIVA\nDEJARÉ EL RESULTADO AL SEÑOR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "SEMBRARÉ, SEMBRARÉ\nMIENTRAS VIVA SIMIENTE DE AMOR",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "SEGARÉ, SEGARÉ\nAL HALLARME EN LA CASA DE DIOS",
           "text_with_comment": null,
           "translations": null
         }
