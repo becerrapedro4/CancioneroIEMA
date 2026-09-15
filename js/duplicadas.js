@@ -42,11 +42,11 @@
   // que el resultado no dependa del orden en que llegaron.
   function elegir(canciones) {
     var infos = canciones.map(info);
-    // Lo que importa es no perder contenido: primero las estrofas con texto,
-    // después los datos que cuelgan de ellas (comentarios, descripciones) y al
-    // final el artista y el largo. Con puntajes iguales gana la más antigua.
+    // Lo que importa es no perder contenido: manda la letra que hay guardada (en
+    // caracteres), después las estrofas con texto y los datos que cuelgan de ellas
+    // (comentarios, descripciones). Con puntajes iguales gana la más antigua.
     var punta = function (i) {
-      return i.estrofas * 10 + i.comentarios * 5 + i.descripciones * 3 + (i.artist ? 2 : 0) + i.largo / 1000;
+      return i.largo / 10 + i.estrofas * 2 + i.comentarios * 5 + i.descripciones * 3 + (i.artist ? 2 : 0);
     };
     var mejor = 0;
     infos.forEach(function (i, k) { if (punta(i) > punta(infos[mejor])) mejor = k; });
@@ -55,6 +55,8 @@
     var maxDe = function (f) { return Math.max.apply(null, otros.map(f).concat([0])); };
 
     var motivos = [];
+    var masLargo = maxDe(function (i) { return i.largo; });
+    if (elegida.largo > masLargo) motivos.push('tiene más letra (' + elegida.largo + ' contra ' + masLargo + ' caracteres)');
     var masEstr = maxDe(function (i) { return i.estrofas; });
     if (elegida.estrofas > masEstr) motivos.push('tiene más estrofas (' + elegida.estrofas + ' contra ' + masEstr + ')');
     var masCom = maxDe(function (i) { return i.comentarios; });
@@ -87,6 +89,57 @@
     return out;
   }
 
+  // ── Letra muy parecida (no idéntica) ──
+  // Dos copias de la misma canción casi nunca se guardan con la letra idéntica:
+  // cambia un corte de estrofa, una coma, una palabra. Se comparan por las
+  // palabras distintas de cada letra y se avisa cuando comparten el 90% o más.
+  var CAP = 25;           // palabras que están en más de 25 canciones no distinguen
+  var MIN_PALABRAS = 15;  // una letra con menos palabras propias no se compara
+  var UMBRAL = 90;
+
+  function palabrasUtiles(lista) {
+    var sets = lista.map(function (s) {
+      var set = new Set();
+      String(letraDe(s)).split(/[^\p{L}\p{N}]+/u).forEach(function (w) {
+        var k = T.clave(w);
+        if (k.length >= 4) set.add(k);
+      });
+      return set;
+    });
+    var freq = new Map();
+    sets.forEach(function (set) { set.forEach(function (w) { freq.set(w, (freq.get(w) || 0) + 1); }); });
+    return sets.map(function (set) {
+      var utiles = new Set();
+      set.forEach(function (w) { if (freq.get(w) <= CAP) utiles.add(w); });
+      return utiles;
+    });
+  }
+
+  function paresParecidos(lista, sets) {
+    var n = lista.length, index = new Map(), contador = new Int32Array(n * n), tocados = [];
+    sets.forEach(function (set, i) { set.forEach(function (w) {
+      if (!index.has(w)) index.set(w, []);
+      index.get(w).push(i);
+    }); });
+    index.forEach(function (donde) {
+      for (var a = 0; a < donde.length; a++) {
+        for (var b = a + 1; b < donde.length; b++) {
+          var k = donde[a] * n + donde[b];
+          if (contador[k]++ === 0) tocados.push(k);
+        }
+      }
+    });
+    var out = [];
+    tocados.forEach(function (k) {
+      var a = Math.floor(k / n), b = k % n;
+      var min = Math.min(sets[a].size, sets[b].size);
+      if (min < MIN_PALABRAS) return;
+      var pct = Math.round(100 * contador[k] / min);
+      if (pct >= UMBRAL) out.push({ a: a, b: b, pct: pct });
+    });
+    return out;
+  }
+
   function armar(tipo, g) {
     var e = elegir(g.canciones);
     // La elegida primero: es la que viene marcada en la tarjeta del admin.
@@ -110,18 +163,54 @@
   //   'letra'  — la misma letra con otro título (no se muestra si ya se ve como
   //              un solo grupo de título).
   function grupos(songs) {
-    var lista = songs || [], out = [];
+    var lista = songs || [], out = [], juntos = {};
+    var marcar = function (canciones) {
+      for (var i = 0; i < canciones.length; i++) {
+        for (var j = i + 1; j < canciones.length; j++) juntos[canciones[i].id + '|' + canciones[j].id] = true;
+      }
+    };
     agrupar(lista, function (s) { return T.clave(s.title); }).forEach(function (g) {
-      out.push(armar('titulo', g));
+      var grupo = armar('titulo', g);
+      out.push(grupo);
+      marcar(grupo.canciones);
     });
     agrupar(lista, function (s) { return T.clave(letraDe(s)); }).forEach(function (g) {
       var titulos = {};
       g.canciones.forEach(function (s) { titulos[T.clave(s.title)] = true; });
       if (Object.keys(titulos).length < 2) return;
-      out.push(armar('letra', g));
+      var grupo = armar('letra', g);
+      out.push(grupo);
+      marcar(grupo.canciones);
     });
+
+    // Letra casi igual con otro título: se juntan los pares parecidos que no sean
+    // ya el mismo grupo, y se unen en un solo grupo los que se encadenan.
+    var sets = palabrasUtiles(lista);
+    var pares = paresParecidos(lista, sets).filter(function (p) {
+      return !juntos[lista[p.a].id + '|' + lista[p.b].id] && !juntos[lista[p.b].id + '|' + lista[p.a].id];
+    });
+    var raiz = {};
+    var buscar = function (id) { while (raiz[id] !== undefined && raiz[id] !== id) { raiz[id] = raiz[raiz[id]]; id = raiz[id]; } return raiz[id] === undefined ? id : raiz[id]; };
+    var unir = function (x, y) { var rx = buscar(x), ry = buscar(y); if (rx !== ry) raiz[ry] = rx; };
+    pares.forEach(function (p) { unir(lista[p.a].id, lista[p.b].id); });
+    var componentes = new Map();
+    pares.forEach(function (p) {
+      var r = buscar(lista[p.a].id);
+      if (!componentes.has(r)) componentes.set(r, { canciones: [], pct: 100, ids: {} });
+      var c = componentes.get(r);
+      c.pct = Math.min(c.pct, p.pct);
+      [lista[p.a], lista[p.b]].forEach(function (s) { if (!c.ids[s.id]) { c.ids[s.id] = true; c.canciones.push(s); } });
+    });
+    componentes.forEach(function (c) {
+      if (c.canciones.length < 2) return;
+      var grupo = armar('parecida', { clave: c.canciones.map(function (s) { return s.id; }).sort(function (x, y) { return x - y; }).join('+'), canciones: c.canciones });
+      grupo.similitud = c.pct;
+      out.push(grupo);
+    });
+
+    var orden = { titulo: 0, letra: 1, parecida: 2 };
     return out.sort(function (a, b) {
-      if (a.tipo !== b.tipo) return a.tipo === 'titulo' ? -1 : 1;
+      if (a.tipo !== b.tipo) return orden[a.tipo] - orden[b.tipo];
       return b.canciones.length - a.canciones.length;
     });
   }
