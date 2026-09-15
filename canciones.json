@@ -7333,46 +7333,60 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "ALEGRENSE! ALEGRENSE! CON SONRISA\nALEGRENSE! ALEGRENSE!\n\nLOS QUE CONFIAN EN EL SEÑOR ALEGRENSE.\nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\nLOS QUE CONFIAN EN EL SEÑOR ALEGRENSE\n\nCON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\n \nLOS QUE CONFIAN EN EL SEÑOR ALEGRENSE\n\nCON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n\nCON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\nLOS QUE CONFIAN EN EL SEÑOR...\n\nALEGRENSE!",
+      "full_text": "ALEGRENSE! ALEGRENSE! \nALEGRENSE! ALEGRENSE!\n\nLOS QUE CONFIAN EN EL SEÑOR ALEGRENSE.\n\nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\n\nLOS QUE CONFÍAN EN EL SEÑOR ALEGRENSE\n\nCON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\n \nLOS QUE CONFÍAN EN EL SEÑOR ALEGRENSE\n\nCON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n\nCON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\nLOS QUE CONFÍAN EN EL SEÑOR...\n\nALEGRENSE!",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "ALEGRENSE! ALEGRENSE! CON SONRISA\nALEGRENSE! ALEGRENSE!",
+          "text": "ALEGRENSE! ALEGRENSE! \nALEGRENSE! ALEGRENSE!",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "LOS QUE CONFIAN EN EL SEÑOR ALEGRENSE.\nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\nLOS QUE CONFIAN EN EL SEÑOR ALEGRENSE",
+          "text": "LOS QUE CONFIAN EN EL SEÑOR ALEGRENSE.",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": "CON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\n \nLOS QUE CONFIAN EN EL SEÑOR ALEGRENSE",
+          "text": "ALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": "CON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!",
+          "text": "LOS QUE CONFÍAN EN EL SEÑOR ALEGRENSE",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": "CON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\nLOS QUE CONFIAN EN EL SEÑOR...",
+          "text": "CON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\n \nLOS QUE CONFÍAN EN EL SEÑOR ALEGRENSE",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
+          "description": "",
+          "text": "CON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "CON VOCES DE JUBILO EXALTEN SU NOMBRE PORQUE EL NOS DEFIENDE, ALEGRENSE!\n \nALEGRENSE! ALEGRENSE!\nALEGRENSE! ALEGRENSE!\nLOS QUE CONFÍAN EN EL SEÑOR...",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
           "description": "",
           "text": "ALEGRENSE!",
           "text_with_comment": null,
