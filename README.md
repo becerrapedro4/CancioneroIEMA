@@ -235,6 +235,36 @@ cambió de verdad.
 
 ---
 
+### Canciones repetidas (depuración)
+
+En **Admin → 🧹 Canciones repetidas** aparecen los grupos de canciones que son la
+misma, en dos formas:
+
+- **Mismo título, escrito distinto**: difieren solo en tildes, mayúsculas, signos
+  o espacios (`PODEROSO DIOS` dos veces, `EN EL NOMBRE DE JESUS` y
+  `En El Nombre de Jesús`, `¿QUÉ NIÑO ES ESTE?` y `QUE NIÑO ES ESTE`…).
+- **Misma letra, otro título**: la letra es idéntica pero el título no
+  (`VENID Y ADOREMOS` y `VENID FIELES TODOS`).
+
+Cada grupo muestra las canciones que lo forman con lo que las diferencia (artista,
+cantidad de estrofas, comentarios, descripciones, largo de la letra), cuál
+conviene conservar (la más completa; si empatan, la más antigua) y **por qué**. El
+admin elige una y resuelve:
+
+- **✔ Quedarme con la elegida y borrar las demás** — guarda en `mejoras` la base
+  sin las repetidas y reapunta a la que queda las listas globales que nombraban a
+  las borradas. La canción que queda se guarda tal cual está: no se le toca
+  ninguna estrofa, descripción ni texto con comentarios. Después hay que publicar
+  con **🚀 Publicar en main**.
+- **🗐 Dejar el grupo como está** — no cambia nada y el grupo queda anotado en ese
+  navegador (↻ Revisar de nuevo lo trae de vuelta).
+
+**No se cambia nada hasta que el admin resuelve.** La herramienta no fusiona
+letras ni une títulos: solo detecta, recomienda y borra lo repetido cuando el
+admin lo confirma.
+
+---
+
 ## 🔐 Admin vs usuario
 
 ### Usuario normal
@@ -342,7 +372,8 @@ Para que los cambios del admin se reflejen en todos lados:
 4. Cuando guarda, el admin hace commit directo a `mejoras` del repo con el contenido actualizado.
 5. GitHub Pages reconstruye y los cambios aparecen en la próxima recarga.
 
-El mismo mecanismo sirve para listas globales (`listas.json`).
+El mismo mecanismo sirve para listas globales (`listas.json`) y para la
+  depuración de canciones repetidas (que además reapunta las listas globales).
 
 ---
 
@@ -384,6 +415,10 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/control.html`, `/login.html` — redirección a index.
 - `/js/firebase-init.js` — configuración de Firebase única del proyecto.
 - `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
+- `/js/duplicadas.js` — canciones repetidas: agrupa las que son la misma (el
+  mismo título escrito distinto o la misma letra con otro título), dice cuál
+  conviene conservar y por qué, y devuelve la lista nueva y las listas globales
+  reapuntadas. No escribe nada: el admin decide desde su panel.
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 - `/js/texto.js` — la forma canónica del texto del cancionero: `titulo` / `mayus`
   (mayúsculas y espacios colapsados), `cancion` / `parrafos` / `estrofas` (dejan
