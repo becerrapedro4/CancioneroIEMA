@@ -39,9 +39,25 @@
   var MAX = 20000;   // largo máximo de una letra propuesta
   var ESTADOS = ['pendiente', 'aplicada', 'rechazada'];
 
+  // Mayúsculas: la forma canónica del texto del cancionero (ver js/texto.js).
+  // Todo lo que este módulo escribe pasa por acá, así una letra tecleada en
+  // minúsculas se guarda igual que las demás.
+  function mayus(v) {
+    return window.Texto ? window.Texto.mayus(v) : String(v == null ? '' : v).toLocaleUpperCase('es');
+  }
+
+  // Mayúsculas de los párrafos que ya tenía la canción, para comparar contra la
+  // letra nueva sin depender de cómo vino guardada (ver js/texto.js).
+  function canonParrafos(lista) {
+    return window.Texto ? window.Texto.parrafos(lista) : (lista || []);
+  }
+  function canonEstrofas(lista) {
+    return window.Texto ? window.Texto.estrofas(lista) : (lista || []);
+  }
+
   // Saltos de línea como los usa el resto del proyecto (LF).
   function normalizarSaltos(texto) {
-    return String(texto || '').replace(/\r\n?/g, '\n');
+    return mayus(String(texto || '').replace(/\r\n?/g, '\n'));
   }
 
   // Para comparar dos letras: espacios y saltos de línea de más no cuentan.
@@ -171,7 +187,7 @@
   // editando y se queda igual.
   function aplicarLetra(song, texto) {
     var lyricsViejas = (song && song.lyrics) || {};
-    var viejos = lyricsViejas.paragraphs || [];
+    var viejos = canonParrafos(lyricsViejas.paragraphs);
     var nuevos = bloques(texto);
     var tenia = viejos.some(function (p) { return String((p && p.text) || '').trim(); });
     if (!nuevos.length && tenia) return null;
@@ -193,7 +209,7 @@
   function aplicarParas(parrafos, texto) {
     var nuevos = bloques(texto);
     if (!nuevos.length) return null;
-    return fusionar(parrafos || [], nuevos, FORMATOS.local);
+    return fusionar(canonEstrofas(parrafos), nuevos, FORMATOS.local);
   }
 
   // La letra completa en texto plano a partir de esas estrofas.

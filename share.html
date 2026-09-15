@@ -56,6 +56,7 @@ footer{text-align:center;padding:28px;color:var(--muted);font-size:11px;letter-s
 
 <footer>Cancionero IEMA</footer>
 
+<script src="js/texto.js"></script>
 <script>
 const params = new URLSearchParams(location.search);
 const listName = decodeURIComponent(params.get("name") || "Lista");
@@ -76,7 +77,8 @@ async function loadList() {
     if (!res.ok) throw new Error("HTTP " + res.status);
     const raw = await res.json();
     const idSet = new Set(hashIds);
-    const songs = raw.filter(s => idSet.has(s.id));
+    // Forma canónica del cancionero: MAYÚSCULAS (ver js/texto.js)
+    const songs = raw.map(Texto.cancion).filter(s => idSet.has(s.id));
     // Mantener el orden del link
     songs.sort((a, b) => hashIds.indexOf(a.id) - hashIds.indexOf(b.id));
 

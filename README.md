@@ -130,6 +130,22 @@ Redirigen a `index.html`. Se mantienen para no romper enlaces viejos.
 - El repo es la fuente de verdad para usuarios normales.
 - Las canciones creadas por el admin se mantienen como “locales” porque tienen ID string propio.
 
+### Forma del texto y búsquedas
+
+- **Mayúsculas siempre**: sin importar de dónde venga la canción (repo, JSON
+  importado, `localStorage` o tecleada a mano), el título, el artista, el autor y
+  la letra se guardan y se muestran en mayúsculas. Se aplica al cargar y al
+  guardar, en el buscador, en el admin y en las páginas que leen el cancionero
+  (`share.html`), así que una canción escrita en minúsculas no se distingue de
+  las demás.
+- **Búsquedas sin tildes ni signos**: todos los buscadores (el del buscador de
+  canciones, el panel de borrado, la lista del admin, el selector de canciones de
+  las listas globales y la búsqueda en la Biblia) comparan sin distinguir tildes,
+  mayúsculas, espacios ni signos de puntuación: “me gozare asi como david” y
+  “me gozaré, así como David” encuentran lo mismo, y el texto resaltado sigue
+  siendo el original.
+- Las dos reglas viven en un solo módulo, `js/texto.js` (ver estructura del repo).
+
 ### Presentación individual
 
 Desde el detalle de una canción se puede:
@@ -204,10 +220,11 @@ actual y la propuesta completas (cada una en su caja con scroll, más un resumen
 - **🗑 Quitar de la lista** — la borra (para limpiar las ya resueltas).
 
 Al aplicar se compara la letra actual del repo con la que la persona vio al
-sugerir (sin contar espacios ni saltos de más): si cambió, el admin recibe el
+sugerir (sin contar espacios, saltos de más ni mayúsculas): si cambió, el admin recibe el
 aviso y puede cancelar sin tocar nada. Si la canción **ya tiene** esa letra (dos
 personas sugirieron lo mismo, o el admin ya la arregló a mano), no escribe nada al
-repo: solo marca la sugerencia como aplicada. Una sugerencia nunca pisa el trabajo
+repo: solo marca la sugerencia como aplicada. Lo que se escriba en minúsculas se
+guarda en mayúsculas, igual que el resto del cancionero. Una sugerencia nunca pisa el trabajo
 de un usuario local: si la canción no está en la base del repo, el admin recibe el
 aviso igual.
 
@@ -368,6 +385,12 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/js/firebase-init.js` — configuración de Firebase única del proyecto.
 - `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
+- `/js/texto.js` — la forma canónica del texto del cancionero: `titulo` / `mayus`
+  (mayúsculas y espacios colapsados), `cancion` / `parrafos` / `estrofas` (dejan
+  una canción o unas estrofas en esa forma) y las claves de búsqueda
+  (`clave`, `buscar`, `recorte`, `resaltar`), que comparan sin tildes ni signos y
+  devuelven el hallazgo en coordenadas del texto original para poder recortarlo y
+  resaltarlo. Lo usan `index.html`, `admin.html`, `biblia.html` y `share.html`.
 - `/js/sugerencias.js` — sugerencias de cambio en las letras: las crea el usuario
   (letra completa) y las resuelve el admin. Es además el **único dueño de
   convertir una letra editada en los párrafos de la canción**: expone el armado
@@ -376,6 +399,9 @@ El PAT se guarda en `localStorage` del navegador del admin.
   `aplicarParas` / `letraDeParas` para las estrofas livianas `{d, x}` del
   buscador). Los dos editores (el del buscador y el del admin) lo usan, así que
   ninguna edición borra lo que la canción ya tenía en las estrofas que nadie tocó.
+  Todo lo que este módulo escribe pasa por `js/texto.js`, así que una letra
+  tecleada en minúsculas se guarda en mayúsculas como las demás, y una sugerencia
+  que solo cambia mayúsculas se rechaza por no ser un cambio.
 
 ---
 
@@ -406,6 +432,9 @@ La sala se elige desde la configuración. Todos los participantes de la misma sa
 - Las canciones de usuarios normales no se escriben en el repo. Solo las crea el admin desde `admin.html`.
 - Para que un cambio del admin aparezca en todos los dispositivos, el admin debe guardar en el repo y luego los usuarios recargar la página.
 - `canciones.json` pesa bastante; el admin carga el archivo raw del repo, no por la API de contenidos.
+- Las canciones del repo que estaban en minúsculas se ven y se guardan en
+  mayúsculas al cargarlas; el archivo del repo se pone al día cuando el admin
+  guarda o publica (nunca antes, y sin cambiar ninguna letra).
 
 ---
 

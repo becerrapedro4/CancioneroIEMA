@@ -41,6 +41,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 .verse-item.presenting{background:rgba(245,166,35,.07);border-left:3px solid var(--accent);padding-left:13px}
 .verse-num{font-size:11px;font-weight:600;color:var(--accent);min-width:26px;padding-top:3px;text-align:right;flex-shrink:0}
 .verse-text{font-size:14px;line-height:1.8;color:var(--text)}
+.verse-text mark{background:transparent;color:var(--accent);font-weight:600}
 .verse-ref{font-size:11px;color:var(--muted);margin-top:3px}
 
 /* CHAPTER GRID */
@@ -130,6 +131,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',system-ui
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
+<script src="js/texto.js"></script>
 <script src="js/rooms-index.js"></script>
 <script>
 /* ── FIREBASE (ver js/firebase-init.js) ── */
@@ -755,13 +757,6 @@ function renderChapterGrid(){
   }));
 }
 
-// 🔥 Función para normalizar texto (eliminar tildes y mayúsculas)
-function normalizeText(text) {
-  return text.toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "");
-}
-
 function renderSearch(){
   if (!BIBLE || !BIBLE.length) {
     setContent(`<div class="no-results">No hay datos disponibles</div>`);
@@ -773,8 +768,9 @@ function renderSearch(){
     return;
   }
   
-  // 🔥 Normalizar la búsqueda (sin tildes, minúsculas)
-  const qNormalized = normalizeText(q);
+  // La búsqueda no distingue tildes, mayúsculas ni signos de puntuación
+  // (js/texto.js); el resaltado respeta el texto original.
+  const qNormalized = Texto.clave(q);
   const results=[];
   
   for(let bi=0; bi<BIBLE.length && results.length<300; bi++){
@@ -782,9 +778,7 @@ function renderSearch(){
     for(let ci=0; ci<book.chapters.length && results.length<300; ci++){
       const ch=book.chapters[ci];
       for(let vi=0; vi<ch.length; vi++){
-        // 🔥 Comparar texto normalizado
-        const verseNormalized = normalizeText(ch[vi]);
-        if(verseNormalized.includes(qNormalized)){
+        if(Texto.clave(ch[vi]).includes(qNormalized)){
           results.push({
             book:book.name,
             bi, ci, vi,
@@ -801,12 +795,10 @@ function renderSearch(){
     return;
   }
   
-  // 🔥 Destacar coincidencias (también sin tildes)
-  const re = new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&").split('').join('[\\u0300-\\u036f]*?'), "gi");
   
   let html=`<div class="results-count">${results.length}${results.length>=300?"+":""} resultado${results.length!==1?"s":""}</div><div class="verse-list">`;
   results.forEach(r=>{
-    const hi=escHtml(r.text).replace(re, match => `<b style="color:var(--accent)">${match}</b>`);
+    const hi=Texto.resaltar(r.text,q);
     const isP=presentingRef===r.ref;
     html+=`<div class="verse-item${isP?" presenting":""}" data-ref="${r.ref}" data-text="${escAttr(r.text)}" data-book="${escAttr(r.book)}">
       <span class="verse-num">${r.vi+1}</span>

@@ -320,6 +320,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="js/firebase-init.js"></script>
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
+<script src="js/texto.js"></script>
 <script src="js/sugerencias.js"></script>
 <script>
 const db = window.db;
@@ -387,6 +388,22 @@ async function enterApp() {
   if (window.RoomsIndex) window.RoomsIndex.prune(30, localRoom());
 }
 
+/* ── CLAVES DE BÚSQUEDA ── */
+// Las canciones se buscan por texto sin tildes ni signos (ver js/texto.js). La
+// clave se arma una vez por canción y se rehace cuando cambia la lista.
+let songKeys = new Map();
+function claveSong(s) {
+  const k = songKeys.get(s.id);
+  return k === undefined ? claveDe(s) : k;
+}
+function claveDe(s) {
+  return Texto.clave((s.title || "") + " " + (s.artist || "") + " " + ((s.lyrics && s.lyrics.full_text) || ""));
+}
+function indexSongs() {
+  songKeys = new Map();
+  songs.forEach(s => songKeys.set(s.id, claveDe(s)));
+}
+
 /* ── GITHUB API ── */
 function getPat() {
   const pat = document.getElementById("pat-input").value.trim();
@@ -407,7 +424,9 @@ async function loadSongs() {
     const rawRes = await fetch(rawUrl + "?v=" + Date.now());
     if (!rawRes.ok) throw new Error(`No se pudo cargar ${FILE}: HTTP ${rawRes.status}`);
     const rawText = await rawRes.text();
-    songs = JSON.parse(rawText);
+    // Forma canónica: MAYÚSCULAS en título, artista y letra (ver js/texto.js)
+    songs = JSON.parse(rawText).map(Texto.cancion);
+    indexSongs();
     lastSavedSongsJson = JSON.stringify(songs, null, 2);
     console.log("Songs loaded:", songs.length);
 
@@ -452,6 +471,7 @@ async function saveToRepo(newSongs, message) {
     const data = await res.json();
     fileSha = data.content.sha;
     songs = newSongs;
+    indexSongs();
     lastSavedSongsJson = JSON.stringify(songs, null, 2);
     isDirty = false;
     st.className = "status ok"; st.textContent = `✓ Guardado — commit ${data.commit.sha.slice(0,7)}`;
@@ -551,8 +571,8 @@ document.getElementById("btn-publish-main").addEventListener("click", publishToM
 
 /* ── RENDER LIST ── */
 function renderList() {
-  const q = document.getElementById("search").value.trim().toLowerCase();
-  const filtered = q ? songs.filter(s => (s.title || "").toLowerCase().includes(q) || (s.artist || "").toLowerCase().includes(q)) : songs;
+  const q = Texto.clave(document.getElementById("search").value);
+  const filtered = q ? songs.filter(s => claveSong(s).includes(q)) : songs;
   const el = document.getElementById("song-items");
   el.innerHTML = filtered.map((s, i) => {
     const realIdx = songs.indexOf(s);
@@ -620,9 +640,9 @@ document.getElementById("ed-delete").addEventListener("click", async () => {
 });
 
 document.getElementById("ed-save").addEventListener("click", async () => {
-  const title = document.getElementById("ed-title").value.trim();
+  const title = Texto.titulo(document.getElementById("ed-title").value);
   if (!title) { alert("El título es obligatorio"); return; }
-  const artist = document.getElementById("ed-artist").value.trim();
+  const artist = Texto.titulo(document.getElementById("ed-artist").value);
   const song = songs[selectedIdx];
   // La conversión de la letra editada a párrafos la hace el módulo: solo cambia
   // las estrofas que se editaron y conserva número, descripción, texto con
@@ -951,10 +971,10 @@ function glMove(i, dir) {
 }
 
 function renderPicker() {
-  const q = document.getElementById("gl-search").value.trim().toLowerCase();
+  const q = Texto.clave(document.getElementById("gl-search").value);
   const current = new Set(globalLists[glIdx] ? globalLists[glIdx].songIds : []);
 
-  const base = q ? songs.filter(s => (s.title || "").toLowerCase().includes(q) || (s.artist || "").toLowerCase().includes(q)) : songs;
+  const base = q ? songs.filter(s => claveSong(s).includes(q)) : songs;
   const el = document.getElementById("gl-picker-list");
   const shown = base.slice(0, 400);
   el.innerHTML = shown.length ? shown.map(s => {
