@@ -231,7 +231,9 @@
   }
 
   // Las listas globales que nombraban a las canciones borradas pasan a apuntar a
-  // la que queda (sin repetirla), así ninguna lista queda con un hueco.
+  // la que queda (sin repetirla), así ninguna lista queda con un hueco. Con
+  // `conservarId` en null la canción se fue del cancionero y la lista deja de
+  // nombrarla (es lo que usa el admin cuando aprueba un pedido de borrar).
   function remapearListas(listas, borrar, conservarId) {
     var fuera = {};
     (borrar || []).forEach(function (id) { if (String(id) !== String(conservarId)) fuera[String(id)] = true; });
@@ -243,8 +245,9 @@
         var esLaQueQueda = String(id) === String(conservarId);
         if (borrada) reemplazos++;
         // Las referencias a las borradas pasan a la que queda; si ya estaba en la
-        // lista, no se repite.
+        // lista, no se repite. Si no queda ninguna, la lista pierde esa posición.
         if (borrada || esLaQueQueda) {
+          if (conservarId === null || conservarId === undefined) return;
           if (puesta) return;
           puesta = true;
           nuevos.push(conservarId);

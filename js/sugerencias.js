@@ -9,9 +9,15 @@
 //   viajan en un "cuarto" reservado que ninguna página real usa.
 //
 // QUÉ SE SUGIERE
-//   La LETRA COMPLETA de la canción, no una estrofa suelta: el usuario edita la
-//   letra y manda cómo quedaría entera. Así el admin ve el antes y el después
-//   completos y no hay que adivinar a qué estrofa se refería.
+//   Tres cosas, todas con el mismo formato y el mismo camino:
+//     'letra'    — la LETRA COMPLETA de la canción, no una estrofa suelta: el
+//                  usuario edita la letra y manda cómo quedaría entera. Así el
+//                  admin ve el antes y el después completos y no hay que adivinar
+//                  a qué estrofa se refería.
+//     'agregar'  — una canción NUEVA creada desde el buscador (viaja entera, en la
+//                  forma del repo, en `cancion`).
+//     'eliminar' — el pedido de borrar una canción del cancionero.
+//   Nada de esto toca el repo: el admin aprueba o rechaza y recién ahí se guarda.
 //
 // CÓMO SE APLICA
 //   `aplicarLetra` compara la letra nueva con la que la canción ya tiene y deja
@@ -27,9 +33,11 @@
 //
 // FORMA DE LOS DATOS
 //   rooms/_sugerencias/{key} = {
+//     tipo,                      // 'letra' | 'agregar' | 'eliminar'
 //     songId, title, artist,     // a qué canción se refiere
 //     antes,                     // letra actual completa (para comparar)
 //     propuesta,                 // letra nueva completa
+//     cancion,                   // solo en 'agregar': la canción nueva entera
 //     nota, autor, ts,
 //     estado,                    // 'pendiente' | 'aplicada' | 'rechazada'
 //     resueltoTs, resueltoPor
@@ -38,6 +46,45 @@
   var BASE = 'rooms/_sugerencias';
   var MAX = 20000;   // largo máximo de una letra propuesta
   var ESTADOS = ['pendiente', 'aplicada', 'rechazada'];
+  var TIPOS = ['letra', 'agregar', 'eliminar'];
+
+  // Qué pide la sugerencia. Las que se mandaron antes de que existieran los tipos
+  // son cambios de letra.
+  function tipoDe(sug) {
+    var t = sug && sug.tipo;
+    return TIPOS.indexOf(t) >= 0 ? t : 'letra';
+  }
+
+  // La canción nueva que propone el buscador, en la forma exacta del repo, así el
+  // admin la agrega tal cual la escribió el usuario.
+  function cancionNueva(song) {
+    var c = (window.Texto ? window.Texto.cancion(song) : song) || {};
+    var l = c.lyrics || {};
+    var paras = (l.paragraphs || []).map(function (p, i) {
+      return {
+        number: i + 1,
+        description: String((p && p.description) || ''),
+        text: String((p && p.text) || ''),
+        text_with_comment: (p && p.text_with_comment) || null,
+        translations: (p && p.translations) || null
+      };
+    });
+    return {
+      id: c.id,
+      title: String(c.title || '').slice(0, 200),
+      artist: String(c.artist || '').slice(0, 200),
+      author: String(c.author || ''), note: String(c.note || ''),
+      copyright: String(c.copyright || ''), language: String(c.language || ''),
+      key: String(c.key || ''), bpm: c.bpm || 0, time_sig: String(c.time_sig || ''),
+      midi: c.midi == null ? null : c.midi, order: String(c.order || ''),
+      arrangements: c.arrangements || [],
+      lyrics: {
+        full_text: paras.map(function (p) { return p.text; }).join('\n\n'),
+        full_text_with_comment: null,
+        paragraphs: paras
+      }
+    };
+  }
 
   // Mayúsculas: la forma canónica del texto del cancionero (ver js/texto.js).
   // Todo lo que este módulo escribe pasa por acá, así una letra tecleada en
@@ -217,9 +264,21 @@
     return (parrafos || []).map(function (p) { return (p && p.x) || ''; }).join('\n\n');
   }
 
-  // Devuelve el motivo del rechazo, o null si la sugerencia es válida.
+  // Devuelve el motivo del rechazo, o null si la sugerencia es válida. Cada tipo
+  // pide lo suyo: una letra nueva completa, una canción nueva con letra, o una
+  // canción que exista para poder borrarla.
   function validar(sug) {
-    if (!sug || sug.songId === undefined || sug.songId === null || sug.songId === '') return 'Falta la canción';
+    if (!sug) return 'Falta la sugerencia';
+    var tipo = tipoDe(sug);
+    if (tipo === 'agregar') {
+      var nueva = cancionNueva(sug.cancion || {});
+      if (!nueva.title) return 'Falta el título de la canción nueva';
+      if (!bloques(nueva.lyrics.full_text).length) return 'La canción nueva no tiene letra';
+      if (nueva.lyrics.full_text.length > MAX) return 'La letra de la canción nueva es demasiado larga';
+      return null;
+    }
+    if (sug.songId === undefined || sug.songId === null || sug.songId === '') return 'Falta la canción';
+    if (tipo === 'eliminar') return null;
     var prop = String(sug.propuesta || '').trim();
     if (!prop) return 'La letra propuesta está vacía';
     if (prop.length > MAX) return 'La letra propuesta es demasiado larga';
@@ -231,17 +290,22 @@
     var err = validar(sug);
     if (err) return Promise.reject(new Error(err));
     if (!window.db) return Promise.reject(new Error('Firebase no disponible'));
-    return window.db.ref(BASE).push({
-      songId: sug.songId,
-      title: String(sug.title || '').slice(0, 200),
-      artist: String(sug.artist || '').slice(0, 200),
-      antes: limpiarLetra(sug.antes),
-      propuesta: limpiarLetra(sug.propuesta),
+    var tipo = tipoDe(sug);
+    var cancion = tipo === 'agregar' ? cancionNueva(sug.cancion) : null;
+    var datos = {
+      tipo: tipo,
+      songId: cancion ? cancion.id : sug.songId,
+      title: String((cancion ? cancion.title : sug.title) || '').slice(0, 200),
+      artist: String((cancion ? cancion.artist : sug.artist) || '').slice(0, 200),
+      antes: tipo === 'agregar' ? '' : limpiarLetra(sug.antes),
+      propuesta: tipo === 'eliminar' ? '' : limpiarLetra(cancion ? cancion.lyrics.full_text : sug.propuesta),
       nota: String(sug.nota || '').trim().slice(0, 300),
       autor: String(sug.autor || '').trim().slice(0, 60) || 'anónimo',
       ts: Date.now(),
       estado: 'pendiente'
-    }).then(function (ref) { return ref.key; });
+    };
+    if (cancion) datos.cancion = cancion;
+    return window.db.ref(BASE).push(datos).then(function (ref) { return ref.key; });
   }
 
   function normalizarLista(val) {
@@ -278,6 +342,8 @@
   }
 
   window.Sugerencias = {
+    tipoDe: tipoDe,
+    cancionNueva: cancionNueva,
     bloques: bloques,
     letraDe: letraDe,
     normalizarLetra: normalizarLetra,

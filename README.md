@@ -198,35 +198,52 @@ Las salas conocidas salen del índice de presencia (`rooms/_salas`, ver Firebase
 que publican el stage y los presentadores; las que no se usan hace un mes se
 borran solas al entrar al admin.
 
-### Sugerencias de cambio en las letras
+### Sugerencias de cambio en el cancionero
 
-Cualquier usuario puede proponer una corrección de letra desde el buscador: abre
-la canción, toca **✏️ Editar**, corrige la letra y en el mismo editor toca
-**“💡 Sugerir cambio”**. Se abre un formulario con **la letra completa** como
-quedaría, donde puede dejar su nombre y un comentario, y la manda. **La canción
-no cambia**: queda como propuesta pendiente. (El detalle de la canción no tiene
-botones por estrofa: la sugerencia se hace editando la letra.)
+El usuario trabaja libre en su navegador: sus canciones y sus listas viven en el
+`localStorage` y **no tocan el repo**. Lo que sí puede hacer es *avisarle al
+admin*, y son tres cosas, todas con el mismo camino y el mismo canal:
 
-El admin las ve en **Admin → 💡 Cambios sugeridos en las letras**, con la letra
-actual y la propuesta completas (cada una en su caja con scroll, más un resumen
-“letra completa (29 → 30 estrofas)”), quién la mandó y cuándo, y puede:
+- **Cambiar una letra** — abre la canción, toca **✏️ Editar**, corrige la letra y
+  en el mismo editor toca **“💡 Sugerir cambio”**. Se abre un formulario con **la
+  letra completa** como quedaría, donde puede dejar su nombre y un comentario.
+  (El detalle de la canción no tiene botones por estrofa: la sugerencia se hace
+  editando la letra.)
+- **Agregar una canción** — la crea desde el buscador (**✏️ Nueva canción**) y se
+  le manda al admin entera, tal como la escribió.
+- **Borrar una canción** — la borra de su buscador y, si esa canción está en el
+  cancionero del repo, le pide al admin que la saque del cancionero de todos.
+
+En los tres casos **nada del repo cambia**: queda como propuesta pendiente hasta
+que el admin la apruebe.
+
+El admin las ve en **Admin → 💡 Cambios sugeridos**, cada tarjeta con su etiqueta
+(✏️ cambio de letra / ➕ canción nueva / 🗑 borrar canción), quién la mandó y
+cuándo, y puede:
 
 - **✔ Aplicar a la canción** — cambia **solo las estrofas que la persona
   escribió distinto** en `canciones.json` (rama de trabajo del admin) y recalcula
   el texto completo. Las estrofas que no se tocaron quedan byte por byte iguales
-  (número, descripción y texto con comentarios incluidos). Después hay que
-  publicarla con **🚀 Publicar en main** para que la vean todos.
-- **✕ Rechazar** — la canción queda igual y la sugerencia se marca como rechazada.
+  (número, descripción y texto con comentarios incluidos).
+- **✔ Agregar al cancionero** — suma la canción nueva a la base. Si ya hay una
+  del mismo título, avisa y pregunta antes de agregarla igual.
+- **✔ Borrar del cancionero** — la saca de la base y, si estaba en alguna **lista
+  global**, la quita de esa lista (así ninguna lista queda con un hueco).
+- **✕ Rechazar** — todo queda igual y la sugerencia se marca como rechazada.
 - **🗑 Quitar de la lista** — la borra (para limpiar las ya resueltas).
+
+Después de aprobar hay que publicar con **🚀 Publicar en main** para que lo vean
+todos.
 
 Al aplicar se compara la letra actual del repo con la que la persona vio al
 sugerir (sin contar espacios, saltos de más ni mayúsculas): si cambió, el admin recibe el
 aviso y puede cancelar sin tocar nada. Si la canción **ya tiene** esa letra (dos
 personas sugirieron lo mismo, o el admin ya la arregló a mano), no escribe nada al
-repo: solo marca la sugerencia como aplicada. Lo que se escriba en minúsculas se
-guarda en mayúsculas, igual que el resto del cancionero. Una sugerencia nunca pisa el trabajo
-de un usuario local: si la canción no está en la base del repo, el admin recibe el
-aviso igual.
+repo: solo marca la sugerencia como aplicada. Un pedido de borrar de una canción
+que ya no está marca la sugerencia como aplicada sin escribir. Lo que se escriba
+en minúsculas se guarda en mayúsculas, igual que el resto del cancionero. Una
+sugerencia nunca pisa el trabajo de un usuario local: si la canción no está en la
+base del repo, el admin recibe el aviso igual.
 
 El "antes" que revisa el admin es la letra de la base del repo, no la copia que
 el usuario tenga editada en su navegador: por eso el resumen del admin muestra lo
@@ -433,8 +450,9 @@ El PAT se guarda en `localStorage` del navegador del admin.
   (`clave`, `buscar`, `recorte`, `resaltar`), que comparan sin tildes ni signos y
   devuelven el hallazgo en coordenadas del texto original para poder recortarlo y
   resaltarlo. Lo usan `index.html`, `admin.html`, `biblia.html` y `share.html`.
-- `/js/sugerencias.js` — sugerencias de cambio en las letras: las crea el usuario
-  (letra completa) y las resuelve el admin. Es además el **único dueño de
+- `/js/sugerencias.js` — sugerencias del usuario al admin: las tres tienen el
+  mismo formato y el mismo canal (`tipo` = `letra` / `agregar` / `eliminar`), las
+  crea el usuario y las resuelve el admin. Es además el **único dueño de
   convertir una letra editada en los párrafos de la canción**: expone el armado
   de estrofas (`bloques`), la lectura de la letra guardada (`letraDe`) y la
   aplicación quirúrgica (`aplicarLetra` para los párrafos del repo,
@@ -453,10 +471,13 @@ La app usa Firebase Realtime Database para sincronizar en vivo:
 
 - `rooms/<sala>/currentSong` — canción actual del presentador.
 - `rooms/<sala>/messages` — mensajes del stage.
-- `rooms/_sugerencias/<id>` — sugerencias de cambio en las letras que mandan los
-  usuarios (`{ songId, title, artist, antes, propuesta, nota, autor, ts, estado }`,
-  donde `antes` y `propuesta` son la **letra completa**), con `estado` en
-  `pendiente` / `aplicada` / `rechazada`. También dentro de `rooms/` por las
+- `rooms/_sugerencias/<id>` — sugerencias que mandan los usuarios
+  (`{ tipo, songId, title, artist, antes, propuesta, cancion, nota, autor, ts, estado }`).
+  `tipo` es `letra` (por defecto, incluidas las viejas que no lo traían),
+  `agregar` (con la canción nueva entera en `cancion`, en la forma del repo) o
+  `eliminar`; en `letra` y `eliminar`, `antes` es la **letra completa** y en
+  `letra` y `agregar`, `propuesta` es la letra que quedaría. `estado` va de
+  `pendiente` a `aplicada` / `rechazada`. También dentro de `rooms/` por las
   mismas reglas.
 - `rooms/_salas/<sala>` — índice de presencia (quién está activo y dónde). No es
   una sala real: es un "cuarto" reservado donde el `stage` y los presentadores

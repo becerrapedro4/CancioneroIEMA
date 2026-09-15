@@ -1158,6 +1158,20 @@ function repoLyrics(song){
   const t=repoLyricsById.get(song.id);
   return t===undefined?songLyrics(song):t;
 }
+// Le avisa al admin que desde acá se agregó o se borró una canción. El cancionero
+// del repo NO se toca: queda como sugerencia pendiente hasta que el admin la
+// apruebe desde admin.html y la publique en main (ver js/sugerencias.js).
+function avisarAlAdmin(sug, que){
+  const S=window.Sugerencias;
+  if(!S){toast("\u26a0\ufe0f No se pudo avisar al admin (falta el m\u00f3dulo de sugerencias)",4000);return;}
+  const err=S.validar(sug);
+  if(err){toast("\u26a0\ufe0f No se pudo avisar al admin: "+err,4000);return;}
+  Promise.resolve(S.enviar(sug)).then(()=>{
+    toast(`\ud83d\udce8 Le avisamos al admin para ${que} \u00ab${sug.title}\u00bb en el cancionero de todos`,3600);
+  }).catch(e=>{
+    toast("\u26a0\ufe0f Se guardó acá, pero no se pudo avisar al admin: "+(e&&e.message||""),4500);
+  });
+}
 function openSuggest(song,texto){
   if(!song)return;
   const antes=songLyrics(song);
@@ -1213,12 +1227,21 @@ document.getElementById("sug-send").addEventListener("click",async()=>{
 // ============================================================
 document.getElementById("d-delete").addEventListener("click",()=>{
   if(!_detailSong)return;
-  if(!confirm(`¿Eliminar "${_detailSong.t}"?\nEsta acción no se puede deshacer.`))return;
-  deletedIds.add(_detailSong.id);saveDeletedIds();
-  SONGS=SONGS.filter(s=>s.id!==_detailSong.id);
+  const song=_detailSong;
+  // Si está en la base del repo, además de borrarla acá se le pide al admin que la
+  // borre del cancionero de todos (él decide: no se toca el repo todavía).
+  const enRepo=repoLyricsById.has(song.id);
+  const aviso=enRepo
+    ?`¿Eliminar "${song.t}"?\n\nSe borra de este dispositivo y le mandamos el aviso al admin para que la borre del cancionero de todos.`
+    :`¿Eliminar "${song.t}"?\nEsta acción no se puede deshacer.`;
+  if(!confirm(aviso))return;
+  const antes=repoLyrics(song);
+  deletedIds.add(song.id);saveDeletedIds();
+  SONGS=SONGS.filter(s=>s.id!==song.id);
   saveDB();updateCount();applyFilter();page=1;renderSongList();
   closeDetail();
   _detailSong=null;
+  if(enRepo)avisarAlAdmin({tipo:"eliminar",songId:song.id,title:song.t,artist:song.a,antes}, "borrar");
 });
 document.getElementById("search").addEventListener("input",e=>{query=e.target.value;page=1;applyFilter();renderSongList();});
 document.getElementById("lm-btn").addEventListener("click",()=>{page++;renderSongList();});
@@ -1504,8 +1527,11 @@ document.getElementById("new-save").addEventListener("click",()=>{
   indexSong(newSong);
   saveDB();updateCount();applyFilter();page=1;renderSongList();
   document.getElementById("db-tag").textContent="(modificada)";
-  st.textContent=`✓ "${title}" agregada al cancionero.`;st.className="mstatus ok";
+  st.textContent=`✓ "${title}" agregada acá.`;st.className="mstatus ok";
   initNewPanel();
+  // La canción nueva también se le propone al admin, que decide si entra al
+  // cancionero de todos (recién ahí se escribe en el repo).
+  avisarAlAdmin({tipo:"agregar",songId:newSong.id,title,artist:newSong.a,cancion:toHolyricsFormat(newSong)}, "sumar");
   setTimeout(()=>document.getElementById("new-title").focus(),100);
 });
 
