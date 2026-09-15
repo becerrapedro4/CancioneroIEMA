@@ -245,6 +245,12 @@ misma, en dos formas:
   `En El Nombre de Jesús`, `¿QUÉ NIÑO ES ESTE?` y `QUE NIÑO ES ESTE`…).
 - **Misma letra, otro título**: la letra es idéntica pero el título no
   (`VENID Y ADOREMOS` y `VENID FIELES TODOS`).
+- **Letra muy parecida, otro título**: la letra coincide en el 90% o más de sus
+  palabras distintas (`COMO DIJISTE` y `VEN SEÑOR` al 96%, `DING DONG LLEGÓ
+  NAVIDAD` y `DING DIN DONG`, `POR SU GRACIA ( GOOD GRACE )` y `POR TU GRACIA`…).
+  Esta última forma es orientativa: dos canciones distintas que comparten el
+  estribillo pueden aparecer juntas, y por eso el admin decide (o elige **dejar el
+  grupo como está**).
 
 Cada grupo muestra las canciones que lo forman con lo que las diferencia (artista,
 cantidad de estrofas, comentarios, descripciones, largo de la letra), cuál
@@ -416,7 +422,8 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/js/firebase-init.js` — configuración de Firebase única del proyecto.
 - `/js/export-html.js` — generador del HTML exportable (lo usan index y admin).
 - `/js/duplicadas.js` — canciones repetidas: agrupa las que son la misma (el
-  mismo título escrito distinto o la misma letra con otro título), dice cuál
+  mismo título escrito distinto, la misma letra con otro título o la letra casi
+  igual —90% o más de las palabras distintas—), dice cuál
   conviene conservar y por qué, y devuelve la lista nueva y las listas globales
   reapuntadas. No escribe nada: el admin decide desde su panel.
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.

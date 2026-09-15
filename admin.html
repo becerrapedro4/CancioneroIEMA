@@ -198,7 +198,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
       <span id="dup-count" style="font-size:12px;font-weight:500;color:var(--muted)">—</span>
       <button class="btn sec" id="dup-reload" style="margin-left:auto;flex:0">↻ Revisar de nuevo</button>
     </div>
-    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Grupos de canciones que son la misma: <b>el mismo título</b> escrito distinto (tildes, mayúsculas, signos o espacios) o <b>la misma letra con otro título</b>. Al resolver un grupo queda la que elijas y se borran las demás en <b id="dup-branch">mejoras</b>; después publicalo con <b>🚀 Publicar en main</b>. <b>No se cambia nada hasta que elijas</b>, y la canción que queda se guarda tal cual está.</div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Grupos de canciones que son la misma: <b>el mismo título</b> escrito distinto (tildes, mayúsculas, signos o espacios), <b>la misma letra con otro título</b> o <b>la letra casi igual</b> (coincide en un 90% o más). Al resolver un grupo queda la que elijas y se borran las demás en <b id="dup-branch">mejoras</b>; después publicalo con <b>🚀 Publicar en main</b>. <b>No se cambia nada hasta que elijas</b>, y la canción que queda se guarda tal cual está.</div>
     <div id="dup-status" class="status" style="display:none"></div>
     <div id="dup-list"><div style="color:var(--muted);text-align:center;padding:10px">—</div></div>
   </div>
@@ -1410,7 +1410,10 @@ function dupShow(kind, msg) { panelStatus('dup-status', kind, msg); }
 
 function tarjetaDuplicadas(g) {
   const firma = Duplicadas.firma(g);
-  const tipo = g.tipo === 'titulo' ? 'mismo título, escrito distinto' : 'misma letra, otro título';
+  const tipo = g.tipo === 'titulo' ? 'mismo título, escrito distinto'
+    : g.tipo === 'letra' ? 'misma letra, otro título' : 'letra muy parecida, otro título';
+  const detalleLetra = g.mismaLetra ? ' · la letra es la misma'
+    : g.tipo === 'parecida' ? ` · la letra coincide en un ${g.similitud}%` : ' · la letra cambia';
   const filas = g.canciones.map(s => {
     const i = Duplicadas.info(s);
     const marcada = String(s.id) === String(g.elegida.id);
@@ -1433,7 +1436,7 @@ function tarjetaDuplicadas(g) {
   return `<div data-dup-card="${esc(firma)}" style="border:1px solid var(--border);border-radius:10px;padding:12px;margin-bottom:10px;background:var(--surface2)">
     <div style="display:flex;gap:8px;align-items:baseline;flex-wrap:wrap;margin-bottom:8px">
       <span style="font-size:10px;letter-spacing:1px;text-transform:uppercase;color:var(--accent);background:rgba(245,166,35,.12);border:1px solid rgba(245,166,35,.28);padding:2px 6px;border-radius:20px">${tipo}</span>
-      <span style="font-size:12px;color:var(--muted)">${g.canciones.length} canciones${g.mismaLetra ? ' · la letra es la misma' : ' · la letra cambia'}</span>
+      <span style="font-size:12px;color:var(--muted)">${g.canciones.length} canciones${detalleLetra}</span>
     </div>
     ${filas}
     <div style="display:flex;gap:8px;margin-top:8px;flex-wrap:wrap">
