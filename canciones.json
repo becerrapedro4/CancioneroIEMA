@@ -7076,7 +7076,7 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "YO TE CONOCÍ EN UN MOMENTO FEO\nME ENCONTRABA SOLO DENTRO DE UN AGUJERO\n\nYA MI MUNDO ESTABA CASI DESTRUIDO\nQUÉ TRISTE FUE LA SOLEDAD\n\nPERO FUE TAN GRANDE EL AMOR QUE TUVISTE\nQUE HA CAMBIADO TODO CON LO QUE ME DISTE\n\nPOR TU GRAN AMOR SIENTE PAZ MI CORAZÓN\nPORQUE AQUEL VIEJO PASADO SE BORRÓ\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\n\nQUIERO DARTE GRACIAS CON ESTA ALABANZA\nY MOSTRARLE AL MUNDO TU LUZ DE ESPERANZA\n\nTU PALABRA NUNCA VOLVERÁ VACÍA\nEL CREER EN TI ES UNA GARANTÍA, YO LO SÉ\n\nPASARÁN LOS DÍAS, PASARÁN LOS AÑOS\nQUEDARÁN BORRADOS MUCHOS DESENGAÑOS\nMENTIRÁS DEL MAL, NO ME DEJABAN RESPIRAR\nPERO PRONTO TU SOCORRO ME LIBRÓ\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+      "full_text": "YO TE CONOCÍ EN UN MOMENTO FEO\nME ENCONTRABA SOLO DENTRO DE UN AGUJERO\n\nYA MI MUNDO ESTABA CASI DESTRUIDO\nQUÉ TRISTE FUE LA SOLEDAD\n\nPERO FUE TAN GRANDE EL AMOR QUE TUVISTE\nQUE HA CAMBIADO TODO CON LO QUE ME DISTE\n\nPOR TU GRAN AMOR SIENTE PAZ MI CORAZÓN\nPORQUE AQUEL VIEJO PASADO SE BORRÓ\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\n\nQUIERO DARTE GRACIAS CON ESTA ALABANZA\nY MOSTRARLE AL MUNDO TU LUZ DE ESPERANZA\n\nTU PALABRA NUNCA VOLVERÁ VACÍA\nEL CREER EN TI ES UNA GARANTÍA, YO LO SÉ\n\nPASARÁN LOS DÍAS, PASARÁN LOS AÑOS\nQUEDARÁN BORRADOS MUCHOS DESENGAÑOS\n\nMENTIRÁS DEL MAL, NO ME DEJABAN RESPIRAR\nPERO PRONTO TU SOCORRO ME LIBRÓ\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\n\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\n\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA.",
       "full_text_with_comment": null,
       "paragraphs": [
         {
@@ -7152,7 +7152,91 @@
         {
           "number": 11,
           "description": "",
-          "text": "PASARÁN LOS DÍAS, PASARÁN LOS AÑOS\nQUEDARÁN BORRADOS MUCHOS DESENGAÑOS\nMENTIRÁS DEL MAL, NO ME DEJABAN RESPIRAR\nPERO PRONTO TU SOCORRO ME LIBRÓ\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nCONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA\nTE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS\nALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+          "text": "PASARÁN LOS DÍAS, PASARÁN LOS AÑOS\nQUEDARÁN BORRADOS MUCHOS DESENGAÑOS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 12,
+          "description": "",
+          "text": "MENTIRÁS DEL MAL, NO ME DEJABAN RESPIRAR\nPERO PRONTO TU SOCORRO ME LIBRÓ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 13,
+          "description": "",
+          "text": "ALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 14,
+          "description": "",
+          "text": "TE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 15,
+          "description": "",
+          "text": "ALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 16,
+          "description": "",
+          "text": "CONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 17,
+          "description": "",
+          "text": "ALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 18,
+          "description": "",
+          "text": "TE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 19,
+          "description": "",
+          "text": "ALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 20,
+          "description": "",
+          "text": "CONTIGO SEGURO ESTOY\nDE NOCHE Y DE DÍA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 21,
+          "description": "",
+          "text": "ALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 22,
+          "description": "",
+          "text": "TE ENTREGO MI CORAZÓN\nSANA MIS HERIDAS",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 23,
+          "description": "",
+          "text": "ALEGRA MI VIDA, SEÑOR\nALEGRA MI VIDA.",
           "text_with_comment": null,
           "translations": null
         }
