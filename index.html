@@ -9,6 +9,7 @@
 <script src="js/firebase-init.js"></script>
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
+<script src="js/texto.js"></script>
 <script src="js/sugerencias.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
@@ -568,9 +569,13 @@ const db = window.db;
 // FUNCIONES DE AYUDA
 // ============================================================
 function esc(s){return String(s).replace(/[&<>"]/g,c=>({'&':'&','<':'<','>':'>','"':'&quot;'}[c]));}
-function hlHtml(text,q){ if(!q||q.length<2)return esc(text); const re=new RegExp(q.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"),"gi"); return esc(text).replace(re,m=>`<mark>${m}</mark>`); }
-function snip(text,q){ if(!q||q.length<2||!text)return null; const i=text.toLowerCase().indexOf(q.toLowerCase()); if(i===-1)return null; const s=Math.max(0,i-25),e=Math.min(text.length,i+q.length+45); return(s>0?"…":"")+text.slice(s,e)+(e<text.length?"…":""); }
-function slimSong(s){ return{id:s.id,t:s.title||s.t||"",a:s.artist||s.a||"", l:s.lyrics?.full_text||s.l||"", p:s.lyrics?.paragraphs?.map(p=>({d:p.description||p.d||"",x:p.text||p.x||""}))||s.p||[]}; }
+// El resaltado y el recorte de la búsqueda viven en js/texto.js: comparan sin
+// tildes ni signos y marcan la coincidencia en el texto original.
+function hlText(text,q){ return (q||"").trim().length<2?esc(text):Texto.resaltar(text,q); }
+
+// Toda canción que entra (del repo o de localStorage) pasa a su forma canónica:
+// MAYÚSCULAS en título, artista y letra. Es el único lugar donde se decide.
+function slimSong(s){ return{id:s.id,t:Texto.titulo(s.title||s.t||""),a:Texto.titulo(s.artist||s.a||""), l:Texto.mayus(s.lyrics?.full_text||s.l||""), p:Texto.estrofas(s.lyrics?.paragraphs?.map(p=>({d:p.description||p.d||"",x:p.text||p.x||""}))||s.p||[])}; }
 function toHolyricsFormat(s){ return{id:s.id,title:s.t,artist:s.a,author:"",note:"",copyright:"",language:"",key:"",bpm:0.0,time_sig:"",midi:null,order:"",arrangements:[], lyrics:{full_text:s.l,full_text_with_comment:null, paragraphs:s.p.map((par,i)=>({number:i+1,description:par.d,text:par.x,text_with_comment:null,translations:null}))}, streaming:null,extras:null}; }
 function uid(){return Date.now()+"_"+Math.random().toString(36).slice(2,7);}
 
@@ -629,6 +634,13 @@ let deleteMarked=new Set();
 let isAdmin=false;
 let deletedIds=new Set();
 let repoSongs=[];        // copia del repo tal como vino
+
+// Clave de búsqueda de cada canción (título, artista y letra sin tildes ni
+// signos). Se arma al cargar y al editar; el buscador compara contra esto.
+let songKeys=new Map();
+function indexSong(s){songKeys.set(s.id,Texto.clave((s.t||"")+" "+(s.a||"")+" "+(s.l||"")));}
+function reindexSongs(){songKeys=new Map();SONGS.forEach(indexSong);}
+function buscarClave(s){const k=songKeys.get(s.id);return k===undefined?Texto.clave((s.t||"")+" "+(s.a||"")+" "+(s.l||"")):k;}
 let repoLyricsById=new Map();   // letra de cada canción del repo, como texto (no se toca al editar)
 
 let liveConfig = {
@@ -681,8 +693,8 @@ function loadDeletedIds(){try{const s=localStorage.getItem("holyrics_deleted");i
 // FILTER & RENDER
 // ============================================================
 function applyFilter(){
-  const q=query.trim().toLowerCase();
-  filtered=!q?SONGS:SONGS.filter(s=>(s.t||"").toLowerCase().includes(q)||(s.l||"").toLowerCase().includes(q));
+  const q=Texto.clave(query);
+  filtered=!q?SONGS:SONGS.filter(s=>buscarClave(s).includes(q));
 }
 function renderInfo(){
   const t=filtered.length,sh=Math.min(page*PAGE,t);
@@ -696,13 +708,13 @@ function renderSongList(){
   el.innerHTML=!items.length
     ?`<div class="empty"><div class="empty-icon">🎶</div><div>Sin resultados</div></div>`
     :items.map((s,i)=>{
-      const idx=SONGS.indexOf(s),sn=snip(s.l,q),isSel=selected.has(s.id);
+      const idx=SONGS.indexOf(s),sn=Texto.recorte(s.l,q),isSel=selected.has(s.id);
       return`<div class="song-row${isSel?" selected":""}" data-idx="${idx}" data-sid="${s.id}">
         ${selectMode?`<div class="schk">${isSel?"✓":""}</div>`:`<span class="snum">${i+1}</span>`}
         <div class="sinfo">
-          <div class="stitle">${hlHtml(s.t||"Sin título",q)}</div>
+          <div class="stitle">${hlText(s.t||"Sin título",q)}</div>
           ${s.a?`<div class="sartist">${esc(s.a)}</div>`:""}
-          ${sn?`<div class="ssnip">${hlHtml(sn,q)}</div>`:""}
+          ${sn?`<div class="ssnip">${hlText(sn,q)}</div>`:""}
         </div>
         ${!selectMode?`<span class="sarrow">›</span>`:""}
       </div>`;
@@ -732,7 +744,7 @@ function showDetail(song){
   document.getElementById("d-artist").textContent=song.a||"";
   document.getElementById("d-artist").style.display=song.a?"":"none";
   document.getElementById("d-body").innerHTML=song.p?.length
-    ?song.p.map((par,i)=>`<div class="lyric-block">${par.d?`<div class="lyric-desc">${esc(par.d)}</div>`:""}<div class="lyric-text">${hlHtml(par.x||"",q)}</div>${i<song.p.length-1?'<hr class="lyric-div">':""}</div>`).join("")
+    ?song.p.map((par,i)=>`<div class="lyric-block">${par.d?`<div class="lyric-desc">${esc(par.d)}</div>`:""}<div class="lyric-text">${hlText(par.x||"",q)}</div>${i<song.p.length-1?'<hr class="lyric-div">':""}</div>`).join("")
     :`<div style="color:var(--muted);font-size:14px">Sin letra</div>`;
   document.getElementById("detail-ov").classList.add("open");
   updateSettingsBtn();
@@ -1277,14 +1289,15 @@ function openEditModal(song){
 }
 document.getElementById("edit-save").addEventListener("click",()=>{
   if(!_editSong)return;
-  const title=document.getElementById("edit-title").value.trim();
+  const title=Texto.titulo(document.getElementById("edit-title").value);
   if(!title){const st=document.getElementById("edit-status");st.textContent="El título no puede estar vacío.";st.className="mstatus err";return;}
   const paras=window.Sugerencias.aplicarParas(_editSong.p,document.getElementById("edit-lyrics").value);
   if(!paras){const st=document.getElementById("edit-status");st.textContent="La letra no puede estar vacía.";st.className="mstatus err";return;}
   _editSong.t=title;
-  _editSong.a=document.getElementById("edit-artist").value.trim();
+  _editSong.a=Texto.titulo(document.getElementById("edit-artist").value);
   _editSong.p=paras;
   _editSong.l=window.Sugerencias.letraDeParas(paras);
+  indexSong(_editSong);
   saveDB();applyFilter();renderSongList();
   showDetail(_editSong);
   document.getElementById("mov-edit").classList.remove("open");
@@ -1481,13 +1494,14 @@ document.getElementById("new-clear").addEventListener("click",()=>{
   if(confirm("¿Limpiar el formulario?"))initNewPanel();
 });
 document.getElementById("new-save").addEventListener("click",()=>{
-  const title=document.getElementById("new-title").value.trim();
+  const title=Texto.titulo(document.getElementById("new-title").value);
   const st=document.getElementById("new-status");
   if(!title){st.textContent="El título es obligatorio.";st.className="mstatus err";return;}
   const paras=window.Sugerencias.aplicarParas([],document.getElementById("new-lyrics").value);
   if(!paras){st.textContent="Pegá la letra antes de guardar.";st.className="mstatus err";return;}
-  const newSong={ id:Date.now(), t:title, a:document.getElementById("new-artist").value.trim(), p:paras, l:window.Sugerencias.letraDeParas(paras) };
+  const newSong={ id:Date.now(), t:title, a:Texto.titulo(document.getElementById("new-artist").value), p:paras, l:window.Sugerencias.letraDeParas(paras) };
   SONGS.unshift(newSong);
+  indexSong(newSong);
   saveDB();updateCount();applyFilter();page=1;renderSongList();
   document.getElementById("db-tag").textContent="(modificada)";
   st.textContent=`✓ "${title}" agregada al cancionero.`;st.className="mstatus ok";
@@ -1575,8 +1589,8 @@ document.getElementById("live-reset").addEventListener("click", () => {
 let delQuery="";
 function renderDelList(){
   document.getElementById("del-count").textContent=deleteMarked.size;
-  const q=delQuery.trim().toLowerCase();
-  const items=!q?SONGS:SONGS.filter(s=>(s.t||"").toLowerCase().includes(q)||(s.a||"").toLowerCase().includes(q));
+  const q=Texto.clave(delQuery);
+  const items=!q?SONGS:SONGS.filter(s=>buscarClave(s).includes(q));
   document.getElementById("del-list").innerHTML=items.map(s=>{
     const marked=deleteMarked.has(s.id);
     return`<div class="admin-row${marked?" marked":""}" data-id="${s.id}">
@@ -1903,6 +1917,7 @@ _presRoom = localStorage.getItem('pres_room') || _presRoom;   // por si ensureRo
   // 3. Unir: repo primero, después creaciones locales, ordenar alfabéticamente
   SONGS=[...repoSongs,...localOnly];
   SONGS.sort((a,b)=>(a.t||"").localeCompare(b.t||"","es"));
+  reindexSongs();
   saveDB();
 
   if(repoSongs.length){
