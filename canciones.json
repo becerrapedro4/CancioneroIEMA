@@ -7668,66 +7668,6 @@
     }
   },
   {
-    "id": 1777239884688,
-    "title": "ALELUYA EL SEÑOR REINA HOY CON PODER",
-    "artist": "AUTOR DESCONOCIDO",
-    "author": "",
-    "note": "",
-    "copyright": "",
-    "language": "",
-    "key": "",
-    "bpm": 0,
-    "time_sig": "",
-    "midi": {
-      "code": 0,
-      "velocity": 0
-    },
-    "order": "",
-    "arrangements": [],
-    "lyrics": {
-      "full_text": "ALELUYA ALELUYA\nEL SEÑOR REINA HOY CON PODER\n\nALELUYA ALELUYA\nSANTO SANTO\nNUESTRO DIOS ES PODEROSO\nDIGNO DE ALABAR\nDIGNO DE ALABAR\n\nEL ES SANTO\nSANTO\nNUESTRO DIOS ES\nPODEROSO\nDIGNO DE ALABAR\nDIGNO DE ALABAR\nAMEN",
-      "full_text_with_comment": null,
-      "paragraphs": [
-        {
-          "number": 1,
-          "description": "",
-          "text": "ALELUYA ALELUYA\nEL SEÑOR REINA HOY CON PODER",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 2,
-          "description": "",
-          "text": "ALELUYA ALELUYA\nSANTO SANTO\nNUESTRO DIOS ES PODEROSO\nDIGNO DE ALABAR\nDIGNO DE ALABAR",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 3,
-          "description": "",
-          "text": "EL ES SANTO\nSANTO\nNUESTRO DIOS ES\nPODEROSO\nDIGNO DE ALABAR\nDIGNO DE ALABAR\nAMEN",
-          "text_with_comment": null,
-          "translations": null
-        }
-      ]
-    },
-    "streaming": {
-      "audio": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      },
-      "backing_track": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      }
-    },
-    "extras": {
-      "extra": ""
-    }
-  },
-  {
     "id": 1777239884713,
     "title": "ALFA OMEGA",
     "artist": "",
