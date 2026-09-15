@@ -332,6 +332,11 @@ Además de todo lo de usuario, puede:
 - Viven en `localStorage` de cada dispositivo.
 - Las crea y edita el usuario desde index.
 - Solo la persona que las crea las ve y edita.
+- Una lista guarda **ids** de canciones, así que puede quedar apuntando a una canción
+  que ya no está: si el admin la borra del repo, acá se saca de la lista sola y se
+  vuelve a guardar, apenas se recarga la página o se borra la canción a mano. Las
+  listas que se resuelven enteras no se tocan. El contador de una lista cuenta las
+  canciones que de verdad se van a ver.
 
 ### Listas globales
 
@@ -503,7 +508,12 @@ La sala se elige desde la configuración. Todos los participantes de la misma sa
 
 ## 🧹 Limpieza de datos del usuario
 
-Si un usuario se quedó con canciones viejas en `localStorage` que ya no están en el repo, la app las conserva solo si son creaciones locales. En caso de ambigüedad, el repo es la fuente de verdad.
+En `localStorage` se guardan **solo las canciones propias del dispositivo**; las del
+repo se leen del repo en cada carga. Así, una canción que el admin borre del repo no
+vuelve a aparecer desde una copia vieja, y una canción que el usuario agregó desde el
+buscador sigue estando cuando recarga. Si el repo ya la tiene (porque el admin aprobó
+la sugerencia), la copia local se descarta y la canción viene del repo: no se duplica.
+Si el repo no carga, no se borra nada de lo guardado.
 
 ---
 

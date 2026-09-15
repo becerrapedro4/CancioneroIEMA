@@ -681,7 +681,10 @@ function updateSettingsBtn(){
 // ============================================================
 // PERSIST
 // ============================================================
-function saveDB(){localStorage.setItem("holyrics_db",JSON.stringify(SONGS));}
+// El dispositivo guarda SOLO las canciones propias: las del repo se leen del repo en
+// cada carga, así una canción que borre el admin no vuelve desde una copia vieja.
+function localSongs(){return SONGS.filter(s=>!repoLyricsById.has(s.id));}
+function saveDB(){localStorage.setItem("holyrics_db",JSON.stringify(localSongs()));}
 function rebuildLists(){LISTS=[...GLOBAL_LISTS,...USER_LISTS];}
 function saveLists(){localStorage.setItem("holyrics_lists",JSON.stringify(USER_LISTS));}
 function loadLists(){try{const s=localStorage.getItem("holyrics_lists");if(s)USER_LISTS=JSON.parse(s);}catch{}if(!Array.isArray(USER_LISTS))USER_LISTS=[];rebuildLists();}
@@ -795,6 +798,21 @@ function initDragDrop() {
 // ============================================================
 // LISTS
 // ============================================================
+// Las canciones de una lista que todavía existen en el cancionero. Es la única forma
+// de leer una lista: guarda ids, y una canción puede faltar (el admin la borró del
+// repo) o todavía no existir acá (la agregó el usuario y el admin no la aprobó).
+function listSongs(lst){return ((lst&&lst.songIds)||[]).map(id=>SONGS.find(s=>s.id===id)).filter(Boolean);}
+// Una canción que ya no está en el cancionero no puede seguir contando en una lista:
+// se saca de las listas propias y se guarda. Las que se resuelven enteras quedan igual.
+function podarListas(){
+  if(!SONGS.length)return;   // sin cancionero cargado no se sabe qué falta
+  let cambio=false;
+  USER_LISTS.forEach(l=>{
+    const ids=listSongs(l).map(s=>s.id);
+    if(ids.length!==(l.songIds||[]).length){l.songIds=ids;cambio=true;}
+  });
+  if(cambio){saveLists();rebuildLists();renderLists();}
+}
 function renderLists(){
   updateBadge();
   const c=document.getElementById("lists-con");
@@ -931,7 +949,7 @@ function presentFromList(lid, sid) {
 // EXPORT LIST
 // ============================================================
 function buildExportHTML(lst, isLive = false) {
-  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  const songs = listSongs(lst);
   return window.ExportHTML.build({
     title: isLive ? (liveConfig.title || lst.name) : lst.name,
     tag: liveConfig.tag || "#Iglesia · Rosario",
@@ -966,7 +984,7 @@ function exportList(lid, type) {
   } else {
     // PDF
     const isMulti = type === "pdf-multi";
-    const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+    const songs = listSongs(lst);
     const indexRows = songs.map((s,i)=>`
       <div class="idx-row">
         <span class="idx-num">${String(i+1).padStart(2,'0')}</span>
@@ -1066,7 +1084,7 @@ function openATL(){
   const mine=USER_LISTS;
   list.innerHTML=!mine.length
     ?`<div style="color:var(--muted);font-size:13px;padding:8px 0">No tenés listas propias todavía.</div>`
-    :mine.map(l=>`<div class="atl-item" data-lid="${l.id}"><span class="atl-name">${esc(l.name)}</span><span class="atl-cnt">${l.songIds.length} canc.</span></div>`).join("");
+    :mine.map(l=>`<div class="atl-item" data-lid="${l.id}"><span class="atl-name">${esc(l.name)}</span><span class="atl-cnt">${listSongs(l).length} canc.</span></div>`).join("");
   list.querySelectorAll(".atl-item").forEach(item=>{
     item.addEventListener("click",()=>{
       addToList(item.dataset.lid,_pendingIds);
@@ -1238,6 +1256,7 @@ document.getElementById("d-delete").addEventListener("click",()=>{
   const antes=repoLyrics(song);
   deletedIds.add(song.id);saveDeletedIds();
   SONGS=SONGS.filter(s=>s.id!==song.id);
+  podarListas();
   saveDB();updateCount();applyFilter();page=1;renderSongList();
   closeDetail();
   _detailSong=null;
@@ -1545,7 +1564,7 @@ let _htmlExportColor=localStorage.getItem("html_export_color")||"#E55A00";
 function shareList(lid) {
   const lst = LISTS.find(l => l.id === lid);
   if (!lst) return;
-  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  const songs = listSongs(lst);
   if (!songs.length) { toast("⚠️ La lista está vacía"); return; }
   const ids = songs.map(s => s.id).join(",");
   const name = encodeURIComponent(lst.name);
@@ -1643,7 +1662,7 @@ document.getElementById("del-confirm").addEventListener("click",()=>{
   if(!confirm(`¿Eliminar ${deleteMarked.size} canción${deleteMarked.size!==1?"es":""}? Esta acción no se puede deshacer.`))return;
   deleteMarked.forEach(id=>deletedIds.add(id));saveDeletedIds();
   SONGS=SONGS.filter(s=>!deleteMarked.has(s.id));
-  deleteMarked.clear();saveDB();updateCount();renderDelList();
+  deleteMarked.clear();podarListas();saveDB();updateCount();renderDelList();
   applyFilter();page=1;renderSongList();
   document.getElementById("db-tag").textContent="(modificada)";
   const st=document.getElementById("del-status");st.textContent=`✓ Canciones eliminadas. Quedan ${SONGS.length} en la base.`;st.className="mstatus ok";
@@ -1847,7 +1866,7 @@ function openPresenter(song) {
 function presentList(lid) {
   const lst = LISTS.find(l => l.id === lid);
   if (!lst) return;
-  const songs = lst.songIds.map(id => SONGS.find(s => s.id === id)).filter(Boolean);
+  const songs = listSongs(lst);
   if (!songs.length) { toast("⚠️ La lista está vacía o no tiene canciones válidas"); return; }
   _presListId = lid;
   openQueue(songs, 0);
@@ -1927,8 +1946,8 @@ _presRoom = localStorage.getItem('pres_room') || _presRoom;   // por si ensureRo
     repoLyricsById=new Map(repoSongs.map(s=>[s.id,s.l||""]));
   }catch(e){console.warn("No se pudo cargar canciones.json:",e);}
 
-  // 2. LocalStorage: solo conservar canciones CREADAS POR EL USUARIO
-  //    (IDs string como "1780267002337_abc" del admin, no IDs numéricos del repo)
+  // 2. LocalStorage: solo las canciones propias, y solo las que el repo todavía no
+  //    tiene (si el admin ya aprobó una, viene del repo y no se repite acá).
   let localOnly=[];
   try{
     const s=localStorage.getItem("holyrics_db");
@@ -1936,7 +1955,7 @@ _presRoom = localStorage.getItem('pres_room') || _presRoom;   // por si ensureRo
       const localData=JSON.parse(s);
       localOnly=localData
         .map(s=>s.title!==undefined?slimSong(s):s)
-        .filter(s=>typeof s.id==="string"&&!deletedIds.has(s.id));
+        .filter(s=>!deletedIds.has(s.id)&&!repoLyricsById.has(s.id));
     }
   }catch(e){}
 
@@ -1944,7 +1963,8 @@ _presRoom = localStorage.getItem('pres_room') || _presRoom;   // por si ensureRo
   SONGS=[...repoSongs,...localOnly];
   SONGS.sort((a,b)=>(a.t||"").localeCompare(b.t||"","es"));
   reindexSongs();
-  saveDB();
+  if(repoSongs.length)saveDB();
+  podarListas();
 
   if(repoSongs.length){
     document.getElementById("db-tag").textContent=localOnly.length
