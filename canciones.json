@@ -4529,7 +4529,7 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "ACLAMAD A DIOS CON ALEGRÍA \nTODA LA TIERRA, TODA LA TIERRA \n\nCANTAD LA GLORIA DE SU NOMBRE \nPONED GLORIA EN SU ALABANZA",
+      "full_text": "ACLAMAD A DIOS CON ALEGRÍA \nTODA LA TIERRA, TODA LA TIERRA \n\nCANTAD LA GLORIA DE SU NOMBRE \nPONED GLORIA EN SU ALABANZA\n\nCUAN ASOMBROSAS SON\nSEÑOR TUS OBRAS\nPOR LA GRANDEZA DE TU PODER\n\nSE SOMETERAN A TÍ TUS ENEMIGOS\nTODA LA TIERRA, TE ADORARÁ\n\nY CANTARAN A TÍ, Y CANTARÁN A TÍ \nY CANTARÁN A TU NOMBRE\n\nY CANTARÁN A TU NOMBRE\nPRECIOSO NOMBRE DE MI SEÑOR",
       "full_text_with_comment": null,
       "paragraphs": [
         {
@@ -4543,6 +4543,34 @@
           "number": 2,
           "description": "",
           "text": "CANTAD LA GLORIA DE SU NOMBRE \nPONED GLORIA EN SU ALABANZA",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "CUAN ASOMBROSAS SON\nSEÑOR TUS OBRAS\nPOR LA GRANDEZA DE TU PODER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "SE SOMETERAN A TÍ TUS ENEMIGOS\nTODA LA TIERRA, TE ADORARÁ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "Y CANTARAN A TÍ, Y CANTARÁN A TÍ \nY CANTARÁN A TU NOMBRE",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "Y CANTARÁN A TU NOMBRE\nPRECIOSO NOMBRE DE MI SEÑOR",
           "text_with_comment": null,
           "translations": null
         }
