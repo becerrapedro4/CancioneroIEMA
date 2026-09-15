@@ -7728,66 +7728,6 @@
     }
   },
   {
-    "id": 1777239884628,
-    "title": "ALELUYA, CRISTO VIVE HOY",
-    "artist": "AUTOR DESCONOCIDO",
-    "author": "",
-    "note": "",
-    "copyright": "",
-    "language": "",
-    "key": "",
-    "bpm": 0,
-    "time_sig": "",
-    "midi": {
-      "code": 0,
-      "velocity": 0
-    },
-    "order": "",
-    "arrangements": [],
-    "lyrics": {
-      "full_text": "ALELUYA CRISTO VIVE HOY\nEL VENCIO A LA MUERTE\nY AL SEPULCRO DERROTO\nCRISTO ESTA VIVO\nVIVE HOY\nVIVE HOY\n\nES EL ALFA Y LA OMEGA\nEL PRINCIPIO Y EL FIN \nEL DIABLO FUE VENCIDO \nHOY HAY LIBERTAD AQUI \nJESUS GLORIFICADO\nVIVE HOY\nVIVE HOY\n\nALELUYA \nCRISTO VIVE HOY",
-      "full_text_with_comment": null,
-      "paragraphs": [
-        {
-          "number": 1,
-          "description": "",
-          "text": "ALELUYA CRISTO VIVE HOY\nEL VENCIO A LA MUERTE\nY AL SEPULCRO DERROTO\nCRISTO ESTA VIVO\nVIVE HOY\nVIVE HOY",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 2,
-          "description": "",
-          "text": "ES EL ALFA Y LA OMEGA\nEL PRINCIPIO Y EL FIN \nEL DIABLO FUE VENCIDO \nHOY HAY LIBERTAD AQUI \nJESUS GLORIFICADO\nVIVE HOY\nVIVE HOY",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 3,
-          "description": "",
-          "text": "ALELUYA \nCRISTO VIVE HOY",
-          "text_with_comment": null,
-          "translations": null
-        }
-      ]
-    },
-    "streaming": {
-      "audio": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      },
-      "backing_track": {
-        "spotify": "",
-        "youtube": "",
-        "deezer": ""
-      }
-    },
-    "extras": {
-      "extra": ""
-    }
-  },
-  {
     "id": 1777239884713,
     "title": "ALFA OMEGA",
     "artist": "",
