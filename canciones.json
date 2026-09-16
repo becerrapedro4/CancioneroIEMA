@@ -7825,67 +7825,60 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA: \n\"ALABAD A NUESTRO DIOS\"\n \n\nTODOS SUS SIERVOS \nY LOS QUE LE TEMEN\n\n \nALABADLE, ALABADLE\n \nALABADLE, ALABADLE \n\n \nPORQUE EL SEÑOR NUESTRO\nDIOS TODOPODEROSO \n SIEMPRE REINA\n\n \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD \n\nCOMO EL ESTRUENDO \nDE MUCHAS AGUAS \n\nCOMO LA VOZ \nDE GRANDES TRUENOS \n\nQUE DECÍAN \n\"ALELUYA\"\n\nPORQUE EL SEÑOR, NUESTRO DIOS\n TODO PODEROSO, SIEMPRE REINA ",
+      "full_text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA:  \"ALABAD A NUESTRO DIOS\"\n\nTODOS SUS SIERVOS \nY LOS QUE LE TEMEN\n \nALABADLE, ALABADLE\nALABADLE, ALABADLE\n\nPORQUE EL SEÑOR NUESTRO DIOS TODOPODEROSO\nSIEMPRE REINA\n \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD\n\nCOMO EL ESTRUENDO \nDE MUCHAS AGUAS \n\nCOMO LA VOZ \nDE GRANDES TRUENOS \n\nQUE DECÍAN: \"ALELUYA\"\n\nALELUYA\n\nPORQUE EL SEÑOR, NUESTRO DIOS\n TODO PODEROSO, SIEMPRE REINA ",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA: \n\"ALABAD A NUESTRO DIOS\"\n ",
+          "text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA:  \"ALABAD A NUESTRO DIOS\"",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "TODOS SUS SIERVOS \nY LOS QUE LE TEMEN",
+          "text": "TODOS SUS SIERVOS \nY LOS QUE LE TEMEN\n \nALABADLE, ALABADLE\nALABADLE, ALABADLE",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": " \nALABADLE, ALABADLE\n \nALABADLE, ALABADLE ",
+          "text": "PORQUE EL SEÑOR NUESTRO DIOS TODOPODEROSO\nSIEMPRE REINA\n \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": " \nPORQUE EL SEÑOR NUESTRO\nDIOS TODOPODEROSO \n SIEMPRE REINA",
+          "text": "COMO EL ESTRUENDO \nDE MUCHAS AGUAS ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": " \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD ",
+          "text": "COMO LA VOZ \nDE GRANDES TRUENOS ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
           "description": "",
-          "text": "COMO EL ESTRUENDO \nDE MUCHAS AGUAS ",
+          "text": "QUE DECÍAN: \"ALELUYA\"",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 7,
           "description": "",
-          "text": "COMO LA VOZ \nDE GRANDES TRUENOS ",
+          "text": "ALELUYA",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 8,
-          "description": "",
-          "text": "QUE DECÍAN \n\"ALELUYA\"",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 9,
           "description": "",
           "text": "PORQUE EL SEÑOR, NUESTRO DIOS\n TODO PODEROSO, SIEMPRE REINA ",
           "text_with_comment": null,
