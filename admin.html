@@ -181,6 +181,38 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
     <div id="admin-msg-history" style="max-height:220px;overflow-y:auto;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:10px;font-size:13px"><div style="color:var(--muted);text-align:center">No hay mensajes todavía</div></div>
   </div>
 
+  <!-- HOLYRICS: LA PC QUE PRESENTA -->
+  <div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
+      <div style="font-size:15px;font-weight:600">🎦 Holyrics</div>
+    </div>
+    <div style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">Conectá la PC que presenta con Holyrics y el <b>stage</b> de una sala muestra lo que Holyrics tiene en pantalla (actual y siguiente, o solo actual, según el preset). Los datos salen de Holyrics → <b>Configuración → API Server</b>: ahí están la IP, el puerto y el <b>token</b> (opción «administrar permisos»).</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px">
+      <input class="field-input" id="hl-host" placeholder="IP de la PC (ej. 192.168.0.100)" style="flex:1;min-width:170px" autocomplete="off">
+      <input class="field-input" id="hl-port" placeholder="8091" style="width:110px" autocomplete="off">
+      <input class="field-input" id="hl-token" placeholder="token del API Server" style="flex:1;min-width:180px" autocomplete="off">
+      <button class="btn sec" id="hl-test">🔌 Probar conexión</button>
+    </div>
+    <div id="hl-status" class="status" style="display:none"></div>
+    <div style="display:flex;gap:8px;margin-bottom:10px;flex-wrap:wrap">
+      <input class="field-input" id="hl-room" placeholder="sala destino" style="flex:1;min-width:180px" autocomplete="off">
+      <button class="btn sec" id="hl-room-local" title="Usar la sala de este dispositivo">📍 Este dispositivo</button>
+    </div>
+    <div id="hl-rooms" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
+    <div id="hl-room-info" style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">—</div>
+    <div id="hl-now" style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">—</div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
+      <button class="btn pri" id="hl-send">📤 Enviar conexión a esa sala</button>
+      <button class="btn danger" id="hl-off">⏻ Quitar de esa sala</button>
+    </div>
+    <div style="font-size:12px;color:var(--muted);line-height:1.6">
+      <b>Cómo llega:</b> el stage de esa sala muestra lo que Holyrics tiene en pantalla, y el que le pregunta a Holyrics es el <b>puente</b>, que corre en la misma PC del programa:<br>
+      <code style="background:var(--surface2);padding:2px 6px;border-radius:6px">node puente-holyrics.js --sala NOMBRE_DE_LA_SALA</code><br>
+      Hace falta siempre que el stage se abra desde la página publicada, porque una página <b>https://</b> no puede llegar al API <b>http://</b> de la PC. Si abrís el stage desde la misma PC en <b>http://</b>, además prueba leerlo directo (depende de que Holyrics permita la conexión del navegador).<br>
+      El token queda en la base (se lee sin login): es el del API Server local, no lo uses para otra cosa.
+    </div>
+  </div>
+
   <!-- CAMBIOS SUGERIDOS EN LAS LETRAS -->
   <div style="margin-top:18px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px">
     <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px">
@@ -335,6 +367,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="js/rooms-index.js"></script>
 <script src="js/texto.js"></script>
 <script src="js/holyrics.js"></script>
+<script src="js/holyrics-api.js"></script>
 <script src="js/duplicadas.js"></script>
 <script src="js/sugerencias.js"></script>
 <script>
@@ -1209,9 +1242,12 @@ function renderMsgRooms() {
 }
 function selectMsgRoom() {
   localStorage.setItem("msg_room", msgRoom());
-  renderMsgRooms();
+  renderSalas();
   loadAdminMessages();
 }
+// Las dos secciones que eligen sala (mensajes y Holyrics) viven del mismo índice de
+// salas, así que se dibujan juntas y ninguna se queda con los chips viejos.
+function renderSalas() { renderMsgRooms(); renderHlRooms(); }
 
 /* ── MENSAJES DEL STAGE (viven solo en el admin) ── */
 function loadAdminMessages() {
@@ -1254,7 +1290,7 @@ function sendMessage(text) {
   const input = document.getElementById("admin-msg-input");
   if (input) input.value = "";
   toast(`📨 Mensaje enviado a la sala “${room}”`);
-  renderMsgRooms();
+  renderSalas();
 }
 
 document.getElementById("admin-msg-send").addEventListener("click", () => {
@@ -1275,8 +1311,129 @@ document.getElementById("admin-msg-input").addEventListener("keydown", (e) => {
   });
   const db = window.db;
   const base = (window.RoomsIndex && window.RoomsIndex.BASE) || "rooms/_salas";
-  if (db) db.ref(base).on("value", (s) => { roomsIndex = s.val() || {}; renderMsgRooms(); });
-  renderMsgRooms();
+  if (db) db.ref(base).on("value", (s) => { roomsIndex = s.val() || {}; renderSalas(); });
+  renderSalas();
+})();
+
+/* ── HOLYRICS: LA PC QUE PRESENTA ──
+   El mapa de todo esto está en js/holyrics-api.js (único dueño de la conexión: la URL,
+   el token, los errores, la lista blanca de acciones). Acá solo se carga el formulario,
+   se prueba y se guarda la conexión en la sala elegida. */
+let hlRef = null, hlNowRef = null;
+
+function hlAPI() { return window.HolyricsAPI || null; }
+function hlRoom() {
+  const el = document.getElementById("hl-room");
+  return ((el && el.value) || "").trim() || localRoom();
+}
+function hlCampos() {
+  return {
+    host: document.getElementById("hl-host").value,
+    puerto: document.getElementById("hl-port").value,
+    token: document.getElementById("hl-token").value
+  };
+}
+function hlStatus(kind, msg) {
+  const st = document.getElementById("hl-status");
+  st.className = "status " + kind;
+  st.textContent = msg;
+  st.style.display = "block";
+}
+function hlGuardarCampos() {
+  try { localStorage.setItem("hl_cfg", JSON.stringify(hlCampos())); } catch (e) {}
+}
+// Las salas de las que se puede elegir son el mismo índice que usan los mensajes.
+function renderHlRooms() {
+  const cont = document.getElementById("hl-rooms");
+  if (!cont) return;
+  const actual = hlRoom();
+  const RI = roomsAPI();
+  cont.innerHTML = roomList().map(r => {
+    const live = !!(RI && RI.isLive(r.entry));
+    const local = r.name === localRoom();
+    return `<button class="spbtn${r.name === actual ? " active" : ""}" data-room="${esc(r.name)}" title="${esc(roomState(r.entry))}">${live ? "🟢" : "⚪"} ${esc(r.name)}${local ? " · este disp." : ""}</button>`;
+  }).join("");
+  cont.querySelectorAll(".spbtn").forEach(b => b.addEventListener("click", () => {
+    document.getElementById("hl-room").value = b.dataset.room;
+    selectHlRoom();
+  }));
+}
+function selectHlRoom() { renderHlRooms(); verHlSala(); }
+
+// Qué hay guardado en la sala elegida y si el puente está vivo.
+function verHlSala() {
+  const db = window.db;
+  const info = document.getElementById("hl-room-info");
+  const now = document.getElementById("hl-now");
+  if (hlRef) { hlRef.off(); hlRef = null; }
+  if (hlNowRef) { hlNowRef.off(); hlNowRef = null; }
+  if (!db || !info) return;
+  const room = hlRoom();
+  info.textContent = `Sala “${room}”: leyendo…`;
+  now.textContent = "—";
+  hlRef = db.ref(`rooms/${room}/holyrics`);
+  hlRef.on("value", (s) => {
+    const cfg = hlAPI() ? hlAPI().deSala(s.val()) : null;
+    info.textContent = (cfg && cfg.activo)
+      ? `Sala “${room}”: ya apunta a ${cfg.host}:${cfg.puerto} (enviado el ${new Date(cfg.actualizado || 0).toLocaleString()}).`
+      : `Sala “${room}”: sin conexión de Holyrics guardada.`;
+  });
+  hlNowRef = db.ref(`rooms/${room}/holyrics/now`);
+  hlNowRef.on("value", (s) => {
+    const n = s.val();
+    if (!n || !n.ts) { now.textContent = "⚪ El puente no está publicando (no está corriendo o no llega a Holyrics)."; return; }
+    const seg = Math.max(0, Math.round((Date.now() - n.ts) / 1000));
+    const que = n.actual ? `“${n.actual}”` : "sin presentación";
+    now.textContent = `🟢 El puente publicó hace ${seg} s: ${que}${n.total ? ` · diapositiva ${(n.indice || 0) + 1} de ${n.total}` : ""}.`;
+  });
+}
+
+document.getElementById("hl-test").addEventListener("click", async () => {
+  const H = hlAPI();
+  if (!H) { hlStatus("err", "✗ Falta cargar js/holyrics-api.js"); return; }
+  hlStatus("info", "Probando…");
+  hlGuardarCampos();
+  const r = await H.probar(hlCampos());
+  if (r.ok) hlStatus("ok", `✓ Holyrics ${r.version || ""}${r.sistema ? " · " + r.sistema : ""} respondió desde este navegador. Ahora enviá la conexión a la sala que uses.`);
+  else hlStatus("err", "✗ " + r.error.mensaje);
+});
+
+document.getElementById("hl-send").addEventListener("click", () => {
+  const db = window.db, H = hlAPI();
+  if (!db || !H) { hlStatus("err", "✗ Firebase no disponible"); return; }
+  const cfg = H.normalizar(hlCampos());
+  if (!cfg.token) { hlStatus("err", "✗ Falta el token del API Server de Holyrics."); return; }
+  const room = hlRoom();
+  hlGuardarCampos();
+  db.ref(`rooms/${room}/holyrics`).set(H.paraSala(cfg))
+    .then(() => { hlStatus("ok", `✓ Conexión enviada a la sala “${room}”. Su stage ya muestra lo de Holyrics.`); verHlSala(); })
+    .catch(e => hlStatus("err", "✗ No se pudo guardar: " + e.message));
+});
+
+document.getElementById("hl-off").addEventListener("click", () => {
+  const db = window.db, room = hlRoom();
+  if (!db) { hlStatus("err", "✗ Firebase no disponible"); return; }
+  if (!confirm(`¿Quitar la conexión de Holyrics de la sala “${room}”? El stage vuelve a mostrar lo que manda el presentador.`)) return;
+  db.ref(`rooms/${room}/holyrics`).remove()
+    .then(() => { hlStatus("ok", `✓ Quitada de la sala “${room}”.`); verHlSala(); })
+    .catch(e => hlStatus("err", "✗ No se pudo quitar: " + e.message));
+});
+
+(function initHolyrics() {
+  try {
+    const c = JSON.parse(localStorage.getItem("hl_cfg") || "null") || {};
+    document.getElementById("hl-host").value = c.host || "";
+    document.getElementById("hl-port").value = c.puerto || "";
+    document.getElementById("hl-token").value = c.token || "";
+  } catch (e) {}
+  const el = document.getElementById("hl-room");
+  el.value = localRoom();
+  el.addEventListener("change", selectHlRoom);
+  el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); selectHlRoom(); } });
+  document.getElementById("hl-room-local").addEventListener("click", () => { el.value = localRoom(); selectHlRoom(); });
+  document.querySelectorAll("#hl-host,#hl-port,#hl-token").forEach(i => i.addEventListener("change", hlGuardarCampos));
+  renderHlRooms();
+  verHlSala();
 })();
 
 /* ── CAMBIOS SUGERIDOS EN LAS LETRAS (los manda el usuario desde el buscador) ── */
