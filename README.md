@@ -34,7 +34,7 @@ Es la página principal. Desde allí se hace todo lo que un usuario normal neces
 #### Accesos rápidos
 
 - **⚙️ Configuración** (click normal en la rueda): cambiar nombre de sala, ver y copiar link del viewer, abrir QR para escanear, abrir lista en vista dividida (`lista.html`), exportar PDF.
-- **Admin** (5 taps rápidos en el título “Buscador de Canciones”): panel de administración dentro del mismo index.
+- **Admin** (5 taps rápidos en el título “Buscador de Canciones”): panel de administración dentro del mismo index, con las pestañas de nueva canción, eliminar canciones, mensajes, sala y **⬇ Exportar `Holyrics_Backup.json`**, que baja la base en el formato de Holyrics.
 
 #### Efectos de la configuración de sala
 
@@ -55,7 +55,6 @@ Sirve para:
 - Editar canciones (título, artista, letra).
 - Crear nuevas canciones.
 - Eliminar canciones.
-- Exportar la base actual como `Holyrics_Backup.json`.
 - Mensajes del stage (ver, enviar, eliminar y elegir a qué sala se mandan).
 - Cambios sugeridos en las letras: ver, aplicar al repo, rechazar o quitar.
 - Configuración global: mostrar/ocultar botón HTML, estilo de portada, color de acento.
@@ -145,6 +144,31 @@ Redirigen a `index.html`. Se mantienen para no romper enlaces viejos.
   “me gozaré, así como David” encuentran lo mismo, y el texto resaltado sigue
   siendo el original.
 - Las dos reglas viven en un solo módulo, `js/texto.js` (ver estructura del repo).
+
+### El formato Holyrics del cancionero
+
+`canciones.json` **es un backup de Holyrics**: así lo exporta y así lo importa el
+programa. La app lo edita (admin, sugerencias) y lo exporta, pero el archivo tiene
+que seguir siendo el mismo formato, o Holyrics deja de poder leerlo. De esa forma
+se ocupa `js/holyrics.js` (ver estructura del repo), que garantiza:
+
+- **Todos los campos de Holyrics en cada canción**, en su orden: `id, title,
+  artist, author, note, copyright, language, key, bpm, time_sig, midi, order,
+  arrangements, lyrics, streaming, extras`. Lo que la canción ya traía va tal cual
+  (`midi`, `bpm`, `key`, los links de `streaming`, `extras`…); lo que le faltaba se
+  completa con el valor vacío de Holyrics, así una canción creada en la app no
+  entra con otra forma.
+- **Nada se pierde al editar**: los comentarios de estrofa (`text_with_comment`),
+  las descripciones, `full_text_with_comment` y los campos extra siguen ahí. Lo
+  único que se canoniza es el texto (mayúsculas, ver arriba); `key`, `time_sig`,
+  `language` y `bpm` no se tocan.
+
+Los tres caminos que escriben el cancionero pasan por ahí: el guardado del admin,
+las canciones que se agregan desde el buscador o desde el admin, y el botón
+**⬇ Exportar Holyrics_Backup.json**. El export toma el archivo del repo tal como
+está (sin reconstruirlo desde la copia liviana que usa el buscador, que perdía
+`streaming`, `extras`, `midi` y los comentarios) y le agrega las canciones propias
+del dispositivo; las borradas en ese dispositivo no salen.
 
 ### Presentación individual
 
@@ -332,6 +356,11 @@ Además de todo lo de usuario, puede:
 - Viven en `localStorage` de cada dispositivo.
 - Las crea y edita el usuario desde index.
 - Solo la persona que las crea las ve y edita.
+- Una lista guarda **ids** de canciones, así que puede quedar apuntando a una canción
+  que ya no está: si el admin la borra del repo, acá se saca de la lista sola y se
+  vuelve a guardar, apenas se recarga la página o se borra la canción a mano. Las
+  listas que se resuelven enteras no se tocan. El contador de una lista cuenta las
+  canciones que de verdad se van a ver.
 
 ### Listas globales
 
@@ -444,6 +473,14 @@ El PAT se guarda en `localStorage` del navegador del admin.
   conviene conservar y por qué, y devuelve la lista nueva y las listas globales
   reapuntadas. No escribe nada: el admin decide desde su panel.
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
+- `/js/holyrics.js` — la forma Holyrics de una canción (la del archivo
+  `canciones.json`): `cancion` deja cualquier canción —del repo o liviana del
+  buscador— con los 16 campos de Holyrics en su orden, los párrafos con sus cinco
+  claves y todo lo que la canción ya tenía intacto (`streaming`, `extras`, `midi`,
+  comentarios de estrofa, descripciones, campos extra), completando lo que falte
+  con el valor vacío de Holyrics. Es el único lugar donde se decide esa forma: lo
+  usan el admin al cargar y guardar, la canción nueva del buscador y del admin, y
+  el export `Holyrics_Backup.json`.
 - `/js/texto.js` — la forma canónica del texto del cancionero: `titulo` / `mayus`
   (mayúsculas y espacios colapsados), `cancion` / `parrafos` / `estrofas` (dejan
   una canción o unas estrofas en esa forma) y las claves de búsqueda
@@ -503,7 +540,12 @@ La sala se elige desde la configuración. Todos los participantes de la misma sa
 
 ## 🧹 Limpieza de datos del usuario
 
-Si un usuario se quedó con canciones viejas en `localStorage` que ya no están en el repo, la app las conserva solo si son creaciones locales. En caso de ambigüedad, el repo es la fuente de verdad.
+En `localStorage` se guardan **solo las canciones propias del dispositivo**; las del
+repo se leen del repo en cada carga. Así, una canción que el admin borre del repo no
+vuelve a aparecer desde una copia vieja, y una canción que el usuario agregó desde el
+buscador sigue estando cuando recarga. Si el repo ya la tiene (porque el admin aprobó
+la sugerencia), la copia local se descarta y la canción viene del repo: no se duplica.
+Si el repo no carga, no se borra nada de lo guardado.
 
 ---
 
