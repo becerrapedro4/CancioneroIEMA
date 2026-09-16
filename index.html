@@ -88,7 +88,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 /* Pantalla chica: mientras la barra de búsqueda está pegada arriba, la ruedita de
    configuración (fija en la esquina) baja para no taparle el botón de seleccionar. */
 @media(max-width:719px){
-  body.search-stuck #btn-settings{top:72px}
+  body.search-stuck #btn-settings{top:calc(var(--barra-alto) + 7px)}
 }
 
 .detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:none;align-items:flex-end}
@@ -1282,13 +1282,17 @@ document.getElementById("search").addEventListener("input",e=>{query=e.target.va
 (function(){
   const barra=document.getElementById("controls");
   if(!barra)return;
-  let pegada=false;
+  let pegada=false,alto=0;
   function revisar(){
     const r=barra.getBoundingClientRect();
-    const ahora=r.height>0&&r.top<=0.5;
-    if(ahora===pegada)return;   // solo escribe cuando cambia
-    pegada=ahora;
+    const altoAhora=Math.round(r.height);
+    const ahora=altoAhora>0&&r.top<=0.5;
+    if(ahora===pegada&&altoAhora===alto)return;   // solo escribe cuando cambia
+    pegada=ahora;alto=altoAhora;
+    // --barra-alto deja la ruedita justo debajo de la barra: la altura la dice la
+    // barra, así sirve también en un teléfono angosto donde la fila se envuelve.
     document.body.classList.toggle("search-stuck",pegada);
+    document.body.style.setProperty("--barra-alto",alto+"px");
   }
   addEventListener("scroll",revisar,{passive:true});
   addEventListener("resize",revisar);
