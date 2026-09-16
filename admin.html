@@ -126,6 +126,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
       <div style="display:flex;gap:8px;margin-bottom:8px">
         <button class="btn pri" id="btn-add">+ Nueva canción</button>
         <button class="btn sec" id="btn-reload" title="Recargar desde el repo">↻</button>
+        <button class="btn sec" id="btn-export-db" title="Bajar el cancionero cargado como backup de Holyrics">⬇ Exportar base</button>
       </div>
       <div class="song-list-wrap">
         <div class="song-search">
@@ -676,6 +677,23 @@ document.getElementById("ed-save").addEventListener("click", async () => {
 
 document.getElementById("search").addEventListener("input", renderList);
 document.getElementById("btn-reload").addEventListener("click", loadSongs);
+
+/* ── EXPORTAR LA BASE (backup de Holyrics) ── */
+// Baja el cancionero cargado con la misma forma con la que se guarda en el repo
+// (js/holyrics.js), así Holyrics lo puede importar. Son las canciones que ves acá: si
+// todavía no guardaste o publicaste un cambio, el archivo lo incluye igual.
+document.getElementById("btn-export-db").addEventListener("click", () => {
+  const st = document.getElementById("status");
+  const show = (kind, msg) => { st.className = "status " + kind; st.textContent = msg; st.style.display = "block"; };
+  if (!songs.length) { show("err", "✗ No hay canciones cargadas: tocá ↻ y volvé a intentar."); return; }
+  const data = JSON.stringify(songs.map(Holyrics.cancion), null, 2);
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+  a.download = "Holyrics_Backup.json";
+  a.click();
+  URL.revokeObjectURL(a.href);
+  show("ok", `⬇ ${songs.length} canciones exportadas como Holyrics_Backup.json`);
+});
 document.getElementById("pat-input").addEventListener("change", () => {
   localStorage.setItem("admin_pat", document.getElementById("pat-input").value.trim());
 });
