@@ -10,6 +10,7 @@
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
 <script src="js/texto.js"></script>
+<script src="js/holyrics.js"></script>
 <script src="js/sugerencias.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
 <style>
@@ -576,7 +577,6 @@ function hlText(text,q){ return (q||"").trim().length<2?esc(text):Texto.resaltar
 // Toda canción que entra (del repo o de localStorage) pasa a su forma canónica:
 // MAYÚSCULAS en título, artista y letra. Es el único lugar donde se decide.
 function slimSong(s){ return{id:s.id,t:Texto.titulo(s.title||s.t||""),a:Texto.titulo(s.artist||s.a||""), l:Texto.mayus(s.lyrics?.full_text||s.l||""), p:Texto.estrofas(s.lyrics?.paragraphs?.map(p=>({d:p.description||p.d||"",x:p.text||p.x||""}))||s.p||[])}; }
-function toHolyricsFormat(s){ return{id:s.id,title:s.t,artist:s.a,author:"",note:"",copyright:"",language:"",key:"",bpm:0.0,time_sig:"",midi:null,order:"",arrangements:[], lyrics:{full_text:s.l,full_text_with_comment:null, paragraphs:s.p.map((par,i)=>({number:i+1,description:par.d,text:par.x,text_with_comment:null,translations:null}))}, streaming:null,extras:null}; }
 function uid(){return Date.now()+"_"+Math.random().toString(36).slice(2,7);}
 
 function getRoom() {
@@ -1550,7 +1550,9 @@ document.getElementById("new-save").addEventListener("click",()=>{
   initNewPanel();
   // La canción nueva también se le propone al admin, que decide si entra al
   // cancionero de todos (recién ahí se escribe en el repo).
-  avisarAlAdmin({tipo:"agregar",songId:newSong.id,title,artist:newSong.a,cancion:toHolyricsFormat(newSong)}, "sumar");
+  // La canción viaja liviana y la pone en la forma del repo js/holyrics.js (la misma
+  // que la de las canciones que ya están): así entra al cancionero sin perder formato.
+  avisarAlAdmin({tipo:"agregar",songId:newSong.id,title,artist:newSong.a,cancion:newSong}, "sumar");
   setTimeout(()=>document.getElementById("new-title").focus(),100);
 });
 
@@ -1669,14 +1671,32 @@ document.getElementById("del-confirm").addEventListener("click",()=>{
 });
 
 // ============================================================
-// EXPORT DB
+// EXPORT DB (backup de Holyrics)
 // ============================================================
-document.getElementById("btn-export-db").addEventListener("click",()=>{
-  const data=JSON.stringify(SONGS.map(toHolyricsFormat),null,2);
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
-  a.download="Holyrics_Backup.json";
-  a.click();URL.revokeObjectURL(a.href);
+// El cancionero del repo YA es un backup de Holyrics, así que se exporta el archivo
+// del repo tal como está —con sus campos técnicos, sus links de streaming, sus
+// comentarios y descripciones intactos— sin las canciones borradas en este
+// dispositivo y con las propias agregadas. Armarlo desde la copia liviana que usa el
+// buscador perdía todo eso (ver js/holyrics.js).
+document.getElementById("btn-export-db").addEventListener("click",async()=>{
+  const btn=document.getElementById("btn-export-db"),antes=btn.textContent;
+  btn.disabled=true;btn.textContent="Preparando…";
+  try{
+    const res=await fetch("canciones.json?v="+Date.now());
+    if(!res.ok)throw new Error("HTTP "+res.status);
+    const delRepo=(await res.json()).filter(s=>!deletedIds.has(s.id));
+    const propias=localSongs();
+    const data=JSON.stringify([...delRepo.map(Holyrics.cancion),...propias.map(Holyrics.cancion)],null,2);
+    const a=document.createElement("a");
+    a.href=URL.createObjectURL(new Blob([data],{type:"application/json"}));
+    a.download="Holyrics_Backup.json";
+    a.click();URL.revokeObjectURL(a.href);
+    toast(`⬇ ${delRepo.length+propias.length} canciones exportadas en formato Holyrics`);
+  }catch(e){
+    toast("⚠️ No se pudo exportar el cancionero: "+(e&&e.message||""),4500);
+  }finally{
+    btn.disabled=false;btn.textContent=antes;
+  }
 });
 
 // ============================================================

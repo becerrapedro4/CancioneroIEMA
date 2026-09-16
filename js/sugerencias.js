@@ -56,34 +56,14 @@
   }
 
   // La canción nueva que propone el buscador, en la forma exacta del repo, así el
-  // admin la agrega tal cual la escribió el usuario.
+  // admin la agrega tal cual la escribió el usuario. La forma es la de Holyrics y la
+  // arma js/holyrics.js: acá solo se le ponen los límites del formulario.
   function cancionNueva(song) {
-    var c = (window.Texto ? window.Texto.cancion(song) : song) || {};
-    var l = c.lyrics || {};
-    var paras = (l.paragraphs || []).map(function (p, i) {
-      return {
-        number: i + 1,
-        description: String((p && p.description) || ''),
-        text: String((p && p.text) || ''),
-        text_with_comment: (p && p.text_with_comment) || null,
-        translations: (p && p.translations) || null
-      };
-    });
-    return {
-      id: c.id,
-      title: String(c.title || '').slice(0, 200),
-      artist: String(c.artist || '').slice(0, 200),
-      author: String(c.author || ''), note: String(c.note || ''),
-      copyright: String(c.copyright || ''), language: String(c.language || ''),
-      key: String(c.key || ''), bpm: c.bpm || 0, time_sig: String(c.time_sig || ''),
-      midi: c.midi == null ? null : c.midi, order: String(c.order || ''),
-      arrangements: c.arrangements || [],
-      lyrics: {
-        full_text: paras.map(function (p) { return p.text; }).join('\n\n'),
-        full_text_with_comment: null,
-        paragraphs: paras
-      }
-    };
+    if (!window.Holyrics) return song;
+    var c = window.Holyrics.cancion(song);
+    c.title = String(c.title || '').slice(0, 200);
+    c.artist = String(c.artist || '').slice(0, 200);
+    return c;
   }
 
   // Mayúsculas: la forma canónica del texto del cancionero (ver js/texto.js).

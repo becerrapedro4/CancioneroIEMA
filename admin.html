@@ -333,6 +333,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="js/export-html.js"></script>
 <script src="js/rooms-index.js"></script>
 <script src="js/texto.js"></script>
+<script src="js/holyrics.js"></script>
 <script src="js/duplicadas.js"></script>
 <script src="js/sugerencias.js"></script>
 <script>
@@ -437,8 +438,10 @@ async function loadSongs() {
     const rawRes = await fetch(rawUrl + "?v=" + Date.now());
     if (!rawRes.ok) throw new Error(`No se pudo cargar ${FILE}: HTTP ${rawRes.status}`);
     const rawText = await rawRes.text();
-    // Forma canónica: MAYÚSCULAS en título, artista y letra (ver js/texto.js)
-    songs = JSON.parse(rawText).map(Texto.cancion);
+    // Forma canónica del cancionero: MAYÚSCULAS en título, artista y letra (ver
+    // js/texto.js) y la forma de Holyrics completa (ver js/holyrics.js), así lo que
+    // se guarda en canciones.json sigue siendo un backup que Holyrics puede importar.
+    songs = JSON.parse(rawText).map(Holyrics.cancion);
     indexSongs();
     lastSavedSongsJson = JSON.stringify(songs, null, 2);
     console.log("Songs loaded:", songs.length);
@@ -623,12 +626,9 @@ function selectSong(idx) {
 /* ── ACTIONS ── */
 document.getElementById("btn-add").addEventListener("click", () => {
   if (isDirty && !confirm("Tenés cambios sin guardar. ¿Descartar?")) return;
-  const newSong = {
-    id: Date.now(),
-    title: "", artist: "", author: "", note: "", copyright: "", language: "", key: "", bpm: 0, time_sig: "",
-    midi: null, order: "", arrangements: [],
-    lyrics: { full_text: "", full_text_with_comment: null, paragraphs: [] }
-  };
+  // Nace con la forma del cancionero (js/holyrics.js), así entra al repo con los
+  // mismos campos que las que ya están, streaming y extras incluidos.
+  const newSong = Holyrics.cancion({ id: Date.now() });
   songs.unshift(newSong);
   selectSong(0);
   document.getElementById("editor-title").textContent = "Nueva canción";
@@ -1399,7 +1399,9 @@ async function agregarSugerida(S, sg, key) {
   const ya = songs.find(s => Texto.clave(s.title) === clave);
   if (ya && !confirm(`Ya hay una canción “${ya.title}” en la base.\n¿Agregar “${nueva.title}” igual?`)) return;
   const usados = new Set(songs.map(s => String(s.id)));
-  const agregada = Texto.cancion(Object.assign({}, nueva, { id: usados.has(String(nueva.id)) ? Date.now() : nueva.id }));
+  // Holyrics.cancion y no Texto.cancion: una sugerencia vieja pudo guardarse sin la
+  // forma completa, y así entra al cancionero con los mismos campos que las demás.
+  const agregada = Holyrics.cancion(Object.assign({}, nueva, { id: usados.has(String(nueva.id)) ? Date.now() : nueva.id }));
   if (!await saveToRepo(songs.concat(agregada), `Agregar sugerido: ${agregada.title}`)) return;
   await S.setEstado(key, 'aplicada', { resueltoPor: 'admin' });
   sgShow('ok', `✓ “${agregada.title}” agregada al cancionero (guardada en ${BRANCH}). Usá 🚀 Publicar en main para que la vean todos.`);
