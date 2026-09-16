@@ -1,5 +1,103 @@
 [
   {
+    "id": 1789523382864,
+    "title": "GRITA",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "ME ENCUENTRO FRENTE\nA UN JERICÓ\n\nTIERRA QUE MI PADRE\nME ENTREGÓ\n\nSI ÉL LO PROMETIÓ LO CREERÉ\nCONTRA EL ENEMIGO ME ENFRENTARÉ\n\nNO ME RENDIRÉ\nHASTA LA VICTORIA VER\n\nGRITA Y LAS MURALLAS CAERÁN\nGRITA Y TODAS CAERÁN\n\nGRITA Y LAS MURALLAS CAERÁN\nGRITA Y TODAS CAERÁN\n\nREVESTIDO ESTOY\nCON SU PODER\n\nA TODO GIGANTE\nYO DERROTARÉ\n\nÉL PELEA POR MÍ NO TEMERÉ\nCON EL ENEMIGO ME ENFRENTARÉ\n\nNO ME RENDIRÉ\nHASTA LA VICTORIA VER\n\nRESCATÉ RESCATÉ RESCATÉ\nLO QUE ME ROBÓ///",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "ME ENCUENTRO FRENTE\nA UN JERICÓ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "TIERRA QUE MI PADRE\nME ENTREGÓ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "SI ÉL LO PROMETIÓ LO CREERÉ\nCONTRA EL ENEMIGO ME ENFRENTARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "NO ME RENDIRÉ\nHASTA LA VICTORIA VER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "GRITA Y LAS MURALLAS CAERÁN\nGRITA Y TODAS CAERÁN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "GRITA Y LAS MURALLAS CAERÁN\nGRITA Y TODAS CAERÁN",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "REVESTIDO ESTOY\nCON SU PODER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "A TODO GIGANTE\nYO DERROTARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "ÉL PELEA POR MÍ NO TEMERÉ\nCON EL ENEMIGO ME ENFRENTARÉ",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "NO ME RENDIRÉ\nHASTA LA VICTORIA VER",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 11,
+          "description": "",
+          "text": "RESCATÉ RESCATÉ RESCATÉ\nLO QUE ME ROBÓ///",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    }
+  },
+  {
     "id": 1789404355624,
     "title": "FIESTA EN EL DESIERTO",
     "artist": "MONTESANTO",
@@ -7727,67 +7825,60 @@
     "order": "",
     "arrangements": [],
     "lyrics": {
-      "full_text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA: \n\"ALABAD A NUESTRO DIOS\"\n \n\nTODOS SUS SIERVOS \nY LOS QUE LE TEMEN\n\n \nALABADLE, ALABADLE\n \nALABADLE, ALABADLE \n\n \nPORQUE EL SEÑOR NUESTRO\nDIOS TODOPODEROSO \n SIEMPRE REINA\n\n \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD \n\nCOMO EL ESTRUENDO \nDE MUCHAS AGUAS \n\nCOMO LA VOZ \nDE GRANDES TRUENOS \n\nQUE DECÍAN \n\"ALELUYA\"\n\nPORQUE EL SEÑOR, NUESTRO DIOS\n TODO PODEROSO, SIEMPRE REINA ",
+      "full_text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA:  \"ALABAD A NUESTRO DIOS\"\n\nTODOS SUS SIERVOS \nY LOS QUE LE TEMEN\n \nALABADLE, ALABADLE\nALABADLE, ALABADLE\n\nPORQUE EL SEÑOR NUESTRO DIOS TODOPODEROSO\nSIEMPRE REINA\n \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD\n\nCOMO EL ESTRUENDO \nDE MUCHAS AGUAS \n\nCOMO LA VOZ \nDE GRANDES TRUENOS \n\nQUE DECÍAN: \"ALELUYA\"\n\nALELUYA\n\nPORQUE EL SEÑOR, NUESTRO DIOS\n TODO PODEROSO, SIEMPRE REINA ",
       "full_text_with_comment": null,
       "paragraphs": [
         {
           "number": 1,
           "description": "",
-          "text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA: \n\"ALABAD A NUESTRO DIOS\"\n ",
+          "text": "Y SALIÓ DEL TRONO UNA VOZ QUE DECÍA:  \"ALABAD A NUESTRO DIOS\"",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 2,
           "description": "",
-          "text": "TODOS SUS SIERVOS \nY LOS QUE LE TEMEN",
+          "text": "TODOS SUS SIERVOS \nY LOS QUE LE TEMEN\n \nALABADLE, ALABADLE\nALABADLE, ALABADLE",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 3,
           "description": "",
-          "text": " \nALABADLE, ALABADLE\n \nALABADLE, ALABADLE ",
+          "text": "PORQUE EL SEÑOR NUESTRO DIOS TODOPODEROSO\nSIEMPRE REINA\n \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 4,
           "description": "",
-          "text": " \nPORQUE EL SEÑOR NUESTRO\nDIOS TODOPODEROSO \n SIEMPRE REINA",
+          "text": "COMO EL ESTRUENDO \nDE MUCHAS AGUAS ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 5,
           "description": "",
-          "text": " \nOÍ COMO LA VOZ \nDE UNA GRAN MULTITUD ",
+          "text": "COMO LA VOZ \nDE GRANDES TRUENOS ",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 6,
           "description": "",
-          "text": "COMO EL ESTRUENDO \nDE MUCHAS AGUAS ",
+          "text": "QUE DECÍAN: \"ALELUYA\"",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 7,
           "description": "",
-          "text": "COMO LA VOZ \nDE GRANDES TRUENOS ",
+          "text": "ALELUYA",
           "text_with_comment": null,
           "translations": null
         },
         {
           "number": 8,
-          "description": "",
-          "text": "QUE DECÍAN \n\"ALELUYA\"",
-          "text_with_comment": null,
-          "translations": null
-        },
-        {
-          "number": 9,
           "description": "",
           "text": "PORQUE EL SEÑOR, NUESTRO DIOS\n TODO PODEROSO, SIEMPRE REINA ",
           "text_with_comment": null,
