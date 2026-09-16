@@ -55,6 +55,8 @@ Sirve para:
 - Editar canciones (título, artista, letra).
 - Crear nuevas canciones.
 - Eliminar canciones.
+- **⬇ Exportar base**: baja el cancionero cargado como `Holyrics_Backup.json`, en el
+  formato de Holyrics. Incluye los cambios que todavía no publicaste.
 - Mensajes del stage (ver, enviar, eliminar y elegir a qué sala se mandan).
 - Cambios sugeridos en las letras: ver, aplicar al repo, rechazar o quitar.
 - Configuración global: mostrar/ocultar botón HTML, estilo de portada, color de acento.
@@ -163,12 +165,17 @@ se ocupa `js/holyrics.js` (ver estructura del repo), que garantiza:
   único que se canoniza es el texto (mayúsculas, ver arriba); `key`, `time_sig`,
   `language` y `bpm` no se tocan.
 
-Los tres caminos que escriben el cancionero pasan por ahí: el guardado del admin,
-las canciones que se agregan desde el buscador o desde el admin, y el botón
-**⬇ Exportar Holyrics_Backup.json**. El export toma el archivo del repo tal como
-está (sin reconstruirlo desde la copia liviana que usa el buscador, que perdía
-`streaming`, `extras`, `midi` y los comentarios) y le agrega las canciones propias
-del dispositivo; las borradas en ese dispositivo no salen.
+Todos los caminos que escriben el cancionero pasan por ahí: el guardado del admin,
+las canciones que se agregan desde el buscador o desde el admin, y los dos botones
+de exportar:
+
+- **⬇ Exportar base** (en admin.html) baja el cancionero cargado, con los cambios
+  sin publicar incluidos.
+- **⬇ Exportar Holyrics_Backup.json** (en el panel escondido de index, 5 taps en el
+  título) baja el archivo del repo tal como está —sin reconstruirlo desde la copia
+  liviana que usa el buscador, que perdía `streaming`, `extras`, `midi` y los
+  comentarios— y le agrega las canciones propias del dispositivo; las borradas en
+  ese dispositivo no salen.
 
 ### Presentación individual
 
