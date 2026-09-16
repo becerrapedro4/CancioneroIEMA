@@ -27,7 +27,7 @@ Es la página principal. Desde allí se hace todo lo que un usuario normal neces
 
 #### Pestañas principales
 
-- **Canciones**: buscador por título o letra, listado paginado, selección múltiple, detalle de canción.
+- **Canciones**: buscador por título o letra (y artista), listado paginado, selección múltiple, detalle de canción. La barra de búsqueda queda pegada arriba mientras se scrollea, así se puede cambiar la búsqueda sin volver al principio; en pantalla chica la ruedita de configuración baja un poco mientras la barra está pegada, para no taparle el botón de seleccionar.
 - **Mis Listas**: listas propias del dispositivo, listas globales de la iglesia, creación, edición local, presentar lista, exportar.
 - **📖 Biblia**: enlace a `biblia.html`.
 

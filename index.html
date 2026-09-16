@@ -43,7 +43,10 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .view{display:none;padding-top:24px}
 .view.active{display:block}
 
-.controls{display:flex;gap:10px;margin-bottom:14px;flex-wrap:wrap;align-items:center}
+/* La barra de búsqueda queda PEGADA arriba al scrollear, con la lista pasando por
+   debajo. El relleno le da aire cuando está pegada y los márgenes negativos lo
+   compensan, así la página se ve igual que antes cuando está en su lugar. */
+.controls{display:flex;gap:10px;flex-wrap:wrap;align-items:center;position:sticky;top:0;z-index:20;background:var(--bg);padding:10px 0 6px;margin:-10px 0 8px}
 .search-wrap{flex:1;min-width:180px;position:relative}
 .si{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--muted);font-style:normal;font-size:15px;pointer-events:none}
 .search-input{width:100%;background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:13px 12px 13px 38px;font-family:'DM Sans',sans-serif;font-size:16px;color:var(--text);outline:none;-webkit-appearance:none;transition:border-color .15s}
@@ -80,6 +83,12 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   .detail-ov.open{display:block}
   .dsheet{border-radius:16px;max-height:calc(100vh - 32px);border:1px solid var(--border)}
   .dhandle{display:none}
+}
+
+/* Pantalla chica: mientras la barra de búsqueda está pegada arriba, la ruedita de
+   configuración (fija en la esquina) baja para no taparle el botón de seleccionar. */
+@media(max-width:719px){
+  body.search-stuck #btn-settings{top:72px}
 }
 
 .detail-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:50;display:none;align-items:flex-end}
@@ -202,7 +211,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
 .song-row{transition:background .1s,transform .1s}
 .song-row.pressing{background:rgba(245,166,35,.08)!important;transform:scale(.985)}
 
-#btn-settings{position:fixed;top:14px;right:14px;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
+#btn-settings{position:fixed;top:14px;right:14px;z-index:200;background:var(--surface2);border:1px solid var(--border);border-radius:50%;width:42px;height:42px;font-size:19px;cursor:pointer;display:flex;align-items:center;justify-content:center;line-height:1;transition:border-color .2s,transform .3s,top .2s;box-shadow:0 2px 12px rgba(0,0,0,.6)}
 #btn-settings:hover{border-color:var(--accent);transform:rotate(60deg)}
 
 .color-pick-wrap{display:flex;align-items:center;gap:6px;padding:8px 12px;border:1px solid var(--border);border-radius:9px;background:transparent;cursor:pointer;transition:border-color .15s}
@@ -270,7 +279,7 @@ html,body{background:var(--bg);color:var(--text);font-family:'DM Sans',sans-seri
   <div class="view active" id="view-search">
     <div class="split">
       <div>
-        <div class="controls">
+        <div class="controls" id="controls">
           <div class="search-wrap">
             <i class="si">🔍</i>
             <input class="search-input" id="search" placeholder="Buscar por título o letra…" type="search" autocomplete="off" autocorrect="off" spellcheck="false">
@@ -1263,6 +1272,28 @@ document.getElementById("d-delete").addEventListener("click",()=>{
   if(enRepo)avisarAlAdmin({tipo:"eliminar",songId:song.id,title:song.t,artist:song.a,antes}, "borrar");
 });
 document.getElementById("search").addEventListener("input",e=>{query=e.target.value;page=1;applyFilter();renderSongList();});
+
+// La barra de búsqueda se queda pegada arriba mientras se scrollea (CSS: .controls).
+// Cuando eso pasa se marca el body, porque en pantalla chica la ruedita de
+// configuración es fija en la esquina y taparía el botón de seleccionar: pegada la
+// barra, la ruedita baja un poco. "Pegada" es que su borde de arriba llegó al tope de
+// la pantalla (mientras es sticky no puede pasar de ahí), y solo cuenta si la vista
+// de canciones está a la vista.
+(function(){
+  const barra=document.getElementById("controls");
+  if(!barra)return;
+  let pegada=false;
+  function revisar(){
+    const r=barra.getBoundingClientRect();
+    const ahora=r.height>0&&r.top<=0.5;
+    if(ahora===pegada)return;   // solo escribe cuando cambia
+    pegada=ahora;
+    document.body.classList.toggle("search-stuck",pegada);
+  }
+  addEventListener("scroll",revisar,{passive:true});
+  addEventListener("resize",revisar);
+  revisar();
+})();
 document.getElementById("lm-btn").addEventListener("click",()=>{page++;renderSongList();});
 
 // ============================================================
