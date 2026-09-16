@@ -85,7 +85,12 @@ Lee `rooms/<sala>/currentSong`.
 
 La pantalla que se conecta a la sala y muestra la letra que va presentando el presentador.
 
-Lee `rooms/<sala>/currentSong`.
+Lee `rooms/<sala>/currentSong`. Si esa sala tiene una **conexión de Holyrics**
+(ver más abajo) y hay una lectura fresca de lo que Holyrics tiene en pantalla, muestra
+**eso**: la presentación en curso, la diapositiva siguiente y la numeración, con los
+mismos tres presets. Un `blank` / `stop` del presentador manda siempre: apaga la pantalla
+igual. Cuando la lectura se pone vieja (se cortó el puente), vuelve sola a lo que manda el
+presentador.
 
 ---
 
@@ -319,6 +324,58 @@ admin lo confirma.
 
 ---
 
+## 🎦 Holyrics: que el stage muestre lo que Holyrics tiene en pantalla
+
+Además de presentar con la app, la sala puede **seguir a Holyrics**: el stage muestra la
+diapositiva que Holyrics está proyectando y la siguiente, con los tres presets de siempre
+(lista + actual y siguiente, solo actual y siguiente, lista + actual). En ese modo la
+lista del costado son las diapositivas de la presentación que Holyrics tiene cargada.
+
+### Cómo se configura (admin → 🎦 Holyrics)
+
+1. En Holyrics: **Configuración → API Server**. Ahí se ve la IP, el puerto (por defecto
+   `8091`) y el **token** de acceso (opción «administrar permisos»).
+2. En el admin se cargan la IP, el puerto y el token, y **🔌 Probar conexión** dice si
+   Holyrics contesta y con qué versión (o el motivo exacto si no).
+3. Se elige la **sala** y se toca **📤 Enviar conexión a esa sala**. Eso escribe
+   `rooms/<sala>/holyrics`; desde ahí el stage de esa sala la usa y el puente la lee.
+   **⏻ Quitar de esa sala** borra la conexión y el stage vuelve a lo del presentador.
+
+### El puente (`puente-holyrics.js`)
+
+```
+node puente-holyrics.js --sala NOMBRE_DE_LA_SALA
+```
+
+Corre en la **misma PC que Holyrics**, sin instalar nada (Node 18+), y hace dos cosas cada
+`--cada` ms (1500 por defecto): le pregunta a Holyrics qué tiene en pantalla y lo publica en
+`rooms/<sala>/holyrics/now`. También acepta `--host`, `--puerto`, `--token` para probar sin
+cargar nada en el admin, `--db` para apuntar a otra base y `--una` para un solo ciclo.
+
+**Hace falta cuando el stage se abre desde la página publicada.** Una página servida por
+HTTPS no puede pedirle nada al API HTTP de la PC (el navegador bloquea el contenido mixto
+antes de intentarlo), y desde GitHub Pages esa es siempre la situación. Si el stage se abre
+desde la misma PC en `http://`, además prueba leerlo directo, siempre que Holyrics permita
+la conexión del navegador.
+
+### Qué se ve cuando algo falta
+
+- Sin conexión cargada: el stage funciona como siempre.
+- Con conexión y sin puente: el stage avisa en el pie (`🎦 Holyrics (esperando al puente)`) y
+  sigue mostrando lo que manda el presentador.
+- Si el puente se corta: la última lectura queda vieja a los 8 s y el stage vuelve solo a lo
+  del presentador.
+
+### Dos cosas a tener en cuenta
+
+- El **token** que se guarda en la sala es el del API Server local (no el `api_key` de
+  internet) y queda en una base que se lee sin login: cualquiera que lea esa rama lo ve.
+- El servicio de internet de Holyrics (`api.holyrics.com.br`) **no se usa**: no manda
+  cabeceras CORS, así que un navegador no puede leer sus respuestas. Es la razón de que el
+  puente corra en la PC.
+
+---
+
 ## 🔐 Admin vs usuario
 
 ### Usuario normal
@@ -479,6 +536,12 @@ El PAT se guarda en `localStorage` del navegador del admin.
   igual —90% o más de las palabras distintas—), dice cuál
   conviene conservar y por qué, y devuelve la lista nueva y las listas globales
   reapuntadas. No escribe nada: el admin decide desde su panel.
+- `/puente-holyrics.js` — el puente entre la página y Holyrics (ver 🎦 Holyrics).
+- `/js/holyrics-api.js` — la conexión con Holyrics: la dirección, el puerto y el token
+  del API Server; qué significa cada error (no llegar, contenido mixto, token inválido,
+  sin permiso); cómo se convierte lo que Holyrics tiene en pantalla en los textos del
+  stage; y qué se guarda en `rooms/<sala>/holyrics`. Es el único lugar donde se decide
+  eso: lo usan el admin, el stage y el puente.
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 - `/js/holyrics.js` — la forma Holyrics de una canción (la del archivo
   `canciones.json`): `cancion` deja cualquier canción —del repo o liviana del
@@ -523,6 +586,10 @@ La app usa Firebase Realtime Database para sincronizar en vivo:
   `letra` y `agregar`, `propuesta` es la letra que quedaría. `estado` va de
   `pendiente` a `aplicada` / `rechazada`. También dentro de `rooms/` por las
   mismas reglas.
+- `rooms/<sala>/holyrics` — la conexión con la PC que presenta en Holyrics
+  (`{ activo, host, puerto, token, actualizado }`), la carga el admin y la usan el stage
+  y el puente. Su hijo `now` es lo último que el puente publicó de lo que Holyrics tiene
+  en pantalla (`{ ok, vacio, tipo, titulo, items, indice, total, ts }`).
 - `rooms/_salas/<sala>` — índice de presencia (quién está activo y dónde). No es
   una sala real: es un "cuarto" reservado donde el `stage` y los presentadores
   publican un latido cada 25 s (`{ ts, online, mode, song }`) y se marcan offline

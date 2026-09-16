@@ -199,12 +199,13 @@ body.split .next{max-width:92%}
 </div>
 
 <div id="messages"></div>
-<div id="info">Sala: <span id="room-name">—</span> <span id="status-dot" class="off"></span> <span id="info-mode"></span></div>
+<div id="info">Sala: <span id="room-name">—</span> <span id="status-dot" class="off"></span> <span id="info-mode"></span> <span id="hl-info"></span></div>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-database-compat.js"></script>
 <script src="js/firebase-init.js"></script>
 <script src="js/rooms-index.js"></script>
+<script src="js/holyrics-api.js"></script>
 
 <script>
 // ============================================================
@@ -233,6 +234,20 @@ let mode = MODES[forcedMode] ? forcedMode : (MODES[localStorage.getItem('stage_m
 let lastData = null;
 let lastQueueKey = '';
 
+// ============================================================
+// HOLYRICS (ver js/holyrics-api.js)
+// La conexión la guarda el admin en `rooms/<sala>/holyrics`. Cuando está activa y hay una
+// lectura fresca, esta pantalla muestra lo que Holyrics tiene puesto en vez de esperar a
+// que el presentador mande la estrofa: la lectura llega del puente
+// (`rooms/<sala>/holyrics/now`) o, si el navegador alcanza la PC, directo del API.
+// ============================================================
+let hlCfg = null;        // la conexión de la sala
+let hlNow = null;        // lo último que publicó el puente
+let hlDirecto = null;    // última lectura directa del API de Holyrics
+let hlPintando = false;  // la pantalla está mostrando Holyrics ahora mismo
+let hlFallos = 0;        // lecturas directas seguidas que fallaron
+let hlAviso = '';        // por qué no se puede leer directo (se avisa una vez)
+
 function currentMode() { return MODES[mode] || MODES['lyrics-next']; }
 
 // ============================================================
@@ -256,6 +271,42 @@ let messageTimer = null;
 function esc(s) { return String(s == null ? '' : s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c])); }
 
 // ============================================================
+// PINTAR LA LETRA (el mismo trabajo para las dos fuentes)
+// La letra que se muestra puede venir del presentador (rooms/<sala>/currentSong) o de
+// Holyrics; el tamaño, la animación y el preset se aplican igual en los dos casos.
+// ============================================================
+function pintarLetra(actual, siguiente, conSiguiente) {
+    actual = actual || '';
+    let fontSize = 'clamp(3rem, 8vw, 8rem)';
+    if (actual.length > 60) fontSize = 'clamp(2.2rem, 5vw, 5rem)';
+    else if (actual.length > 40) fontSize = 'clamp(2.5rem, 6vw, 6rem)';
+    currentEl.style.fontSize = fontSize;
+
+    currentEl.classList.remove('in', 'out');
+    currentEl.classList.add('out');
+    setTimeout(() => {
+        currentEl.textContent = actual || ' ';
+        currentEl.classList.remove('out');
+        void currentEl.offsetWidth;
+        currentEl.classList.add('in');
+    }, 180);
+
+    // La siguiente la pide el preset elegido en el admin (los 3 presets se diferencian
+    // justamente en esto).
+    if (siguiente && conSiguiente) {
+        nextEl.textContent = siguiente;
+        nextEl.classList.remove('empty', 'hidden');
+        let f = 'clamp(2.5rem, 7vw, 7rem)';
+        if (siguiente.length > 60) f = 'clamp(1.8rem, 4.5vw, 4.5rem)';
+        else if (siguiente.length > 40) f = 'clamp(2rem, 5.5vw, 5.5rem)';
+        nextEl.style.fontSize = f;
+    } else {
+        nextEl.textContent = '';
+        nextEl.classList.add('hidden');
+    }
+}
+
+// ============================================================
 // APLICAR EL MODO
 // ============================================================
 function applyMode() {
@@ -263,7 +314,7 @@ function applyMode() {
     document.body.classList.toggle('split', m.layout === 'list');
     panelList.style.display = m.layout === 'list' ? '' : 'none';
     document.getElementById('info-mode').textContent = '· ' + m.label;
-    if (lastData) render(lastData);
+    render(lastData);
 }
 
 // ============================================================
@@ -302,12 +353,40 @@ function renderList(data) {
 // ============================================================
 // MOSTRAR LA CANCIÓN (con corrección de desfase)
 // ============================================================
+// Lo último que se pintó. La pantalla se repasa cada pocos segundos (ver
+// refrescarHolyrics), así que si nada cambió no se repinta: si no, la letra reiniciaría
+// su animación todo el tiempo.
+let firmaPintada = '';
+function sinCambios(firma) {
+    if (firma === firmaPintada) return true;
+    firmaPintada = firma;
+    return false;
+}
+function ocultar() {
+    if (sinCambios('oculto')) return;
+    stageEl.classList.add('hidden');
+    dot.className = 'off';
+}
+
 function render(data) {
-    if (!data || data.blank || data.stop) {
-        stageEl.classList.add('hidden');
-        dot.className = 'off';
+    // Un blanco/stop del presentador manda siempre: es una orden de apagar la pantalla,
+    // también cuando la letra la está mandando Holyrics.
+    if (data && (data.blank || data.stop)) {
+        hlPintando = false;
+        ocultar();
         return;
     }
+
+    // Si la sala tiene una conexión de Holyrics viva, la pantalla muestra ESO. La conexión
+    // la guarda el admin en rooms/<sala>/holyrics (ver js/holyrics-api.js).
+    const hl = hlFuente();
+    if (hl) {
+        pintarHolyrics(hl);
+        return;
+    }
+    hlPintando = false;
+
+    if (!data) { ocultar(); return; }
 
     let estrofas = data.estrofas || [data.estrofa];
     let idx = data.idx || 0;
@@ -337,6 +416,10 @@ function render(data) {
     const currentText = estrofas[idx] || data.estrofa || '';
     const nextText = (idx + 1 < estrofas.length) ? estrofas[idx + 1] : '';
 
+    if (sinCambios(['app', data.titulo || '', currentText, nextText,
+                    data.showTitle !== false, data.showRef !== false,
+                    data.reference || data.citation || '', mode].join('|'))) return;
+
     // ── TÍTULO ──
     const showTitle = data.showTitle !== false && data.titulo && data.titulo.trim();
     if (showTitle) {
@@ -346,41 +429,8 @@ function render(data) {
         titleEl.classList.add('hidden');
     }
 
-    // ── ESTROFA ACTUAL ──
-    let fontSize = 'clamp(3rem, 8vw, 8rem)';
-    if (currentText.length > 60) {
-        fontSize = 'clamp(2.2rem, 5vw, 5rem)';
-    } else if (currentText.length > 40) {
-        fontSize = 'clamp(2.5rem, 6vw, 6rem)';
-    }
-    currentEl.style.fontSize = fontSize;
-
-    currentEl.classList.remove('in', 'out');
-    currentEl.classList.add('out');
-    setTimeout(() => {
-        currentEl.textContent = currentText || ' ';
-        currentEl.classList.remove('out');
-        void currentEl.offsetWidth;
-        currentEl.classList.add('in');
-    }, 180);
-
-    // ── SIGUIENTE ESTROFA ──
-    // Lo decide el preset elegido en el admin (los 3 presets se diferencian justamente en esto).
-    const wantNext = currentMode().next;
-    if (nextText && wantNext) {
-        nextEl.textContent = nextText;
-        nextEl.classList.remove('empty', 'hidden');
-        let nextFontSize = 'clamp(2.5rem, 7vw, 7rem)';
-        if (nextText.length > 60) {
-            nextFontSize = 'clamp(1.8rem, 4.5vw, 4.5rem)';
-        } else if (nextText.length > 40) {
-            nextFontSize = 'clamp(2rem, 5.5vw, 5.5rem)';
-        }
-        nextEl.style.fontSize = nextFontSize;
-    } else {
-        nextEl.textContent = '';
-        nextEl.classList.add('hidden');
-    }
+    // ── LETRA (actual y, según el preset, la siguiente) ──
+    pintarLetra(currentText, nextText, currentMode().next);
 
     // ── REFERENCIA ──
     const showRef = data.showRef !== false;
@@ -450,6 +500,152 @@ if (window.RoomsIndex) {
         song: (lastData && lastData.titulo) || ''
     }));
 }
+
+// ============================================================
+// HOLYRICS: FUNCIONES
+// ============================================================
+function hlAPI() { return window.HolyricsAPI || null; }
+
+// De dónde sale la letra: lo que publicó el puente, o una lectura directa del API. null
+// cuando la sala no tiene conexión o lo que hay ya es viejo.
+function hlFuente() {
+    const H = hlAPI();
+    if (!H || !hlCfg || !hlCfg.activo) return null;
+    if (H.viva(hlNow)) return hlNow;
+    if (H.viva(hlDirecto)) return hlDirecto;
+    return null;
+}
+
+// La pantalla cuando la letra viene de Holyrics: su título, la diapositiva que se está
+// viendo, la siguiente (según el preset) y la numeración abajo.
+function pintarHolyrics(f) {
+    const H = hlAPI();
+    if (!H) return;
+    const conSiguiente = currentMode().next;
+    const t = H.textos(f, conSiguiente);
+    if (sinCambios(['hl', t.titulo, t.actual, t.siguiente, f.indice || 0, f.total || 0, mode].join('|'))) return;
+
+    // El "mostrar título" y "mostrar referencia" los elige el presentador en su panel:
+    // si no dijo nada, se muestran (es lo útil para el equipo arriba del escenario).
+    const verTitulo = !lastData || lastData.showTitle !== false;
+    if (t.titulo && verTitulo) {
+        titleEl.textContent = t.titulo;
+        titleEl.classList.remove('hidden');
+    } else {
+        titleEl.classList.add('hidden');
+    }
+
+    pintarLetra(t.actual, t.siguiente, conSiguiente);
+
+    const verRef = !lastData || lastData.showRef !== false;
+    if (verRef && f.total) {
+        refInfo.textContent = `${(f.indice || 0) + 1} / ${f.total} · Holyrics`;
+        refInfo.classList.remove('hidden');
+    } else {
+        refInfo.classList.add('hidden');
+    }
+
+    if (currentMode().layout === 'list') pintarListaHolyrics(f);
+
+    hlPintando = true;
+    stageEl.classList.remove('hidden');
+    dot.className = 'on';
+}
+
+// La lista del costado, cuando la letra viene de Holyrics: son las diapositivas de lo que
+// Holyrics tiene cargado, con la que se está viendo marcada.
+function pintarListaHolyrics(f) {
+    const items = (f && f.items) || [];
+    const i = (f && f.indice) || 0;
+    const key = 'hl|' + items.length + '|' + i + '|' + ((f && f.titulo) || '');
+    if (key === lastQueueKey) return;
+    lastQueueKey = key;
+
+    document.getElementById('list-label').textContent = 'Presentación en Holyrics';
+    document.getElementById('list-sub').textContent = items.length > 1 ? `Diapositiva ${i + 1} de ${items.length}` : '';
+    listSongsEl.innerHTML = items.length ? items.map((t, k) => {
+        const estado = k < i ? 'st-done' : k === i ? 'st-cur' : 'st-pend';
+        return `<div class="list-item${k === i ? ' active' : ''}">
+            <span class="li-num">${k + 1}</span>
+            <span class="li-title">${esc(t || '—')}</span>
+            <span class="li-dot ${estado}"></span>
+        </div>`;
+    }).join('') : '<div class="list-empty">Holyrics no tiene nada en pantalla</div>';
+
+    const activeEl = listSongsEl.querySelector('.list-item.active');
+    if (activeEl) activeEl.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+}
+
+// El aviso de abajo a la izquierda, al lado de la sala y el modo.
+function barraHolyrics() {
+    const el = document.getElementById('hl-info');
+    if (!el) return;
+    if (!hlCfg || !hlCfg.activo) { el.textContent = ''; return; }
+    const H = hlAPI();
+    if (H && H.viva(hlNow)) { el.textContent = '· 🎦 Holyrics (puente)'; return; }
+    if (H && H.viva(hlDirecto)) { el.textContent = '· 🎦 Holyrics (directo)'; return; }
+    // El motivo largo no va en la pantalla que se proyecta: se ve en el admin, que tiene
+    // el mismo texto (🎦 Holyrics → Probar conexión).
+    el.textContent = hlAviso ? '· 🎦 Holyrics (lo lleva el puente)' : '· 🎦 Holyrics (esperando al puente)';
+}
+
+// Lectura directa del API, solo cuando el puente no está publicando (si está, manda él).
+// Tras unos fallos seguidos se prueba mucho menos seguido: no tiene sentido insistir cada
+// pocos segundos contra una PC que este navegador no alcanza.
+const HL_CADA = 4000, HL_CADA_TRAS_FALLAR = 30000;
+let hlUltimoIntento = 0;
+
+async function leerHolyricsDirecto() {
+    const H = hlAPI();
+    if (!H || !hlCfg || !hlCfg.activo || H.viva(hlNow)) return;
+    // Desde la página publicada (HTTPS) el navegador no puede llegar al API HTTP de la PC:
+    // se avisa una vez y no se intenta (el camino es el puente).
+    if (!H.alcanzableDesdeAca(hlCfg)) {
+        hlAviso = 'desde esta página (HTTPS) la PC no es alcanzable; usá el puente';
+        return;
+    }
+    if (hlFallos > 2 && (Date.now() - hlUltimoIntento) < HL_CADA_TRAS_FALLAR) return;
+    hlUltimoIntento = Date.now();
+    const r = await H.enPantalla(hlCfg);
+    if (r.ok) {
+        hlFallos = 0;
+        hlAviso = '';
+        hlDirecto = Object.assign({ ts: Date.now() }, r);
+    } else {
+        hlFallos++;
+        if (!hlAviso) hlAviso = r.error.mensaje;
+        hlDirecto = null;
+    }
+}
+
+async function refrescarHolyrics() {
+    await leerHolyricsDirecto();
+    barraHolyrics();
+    // Se repasa siempre: si la lectura cambió se ve, y si se puso vieja (se cortó el puente)
+    // la pantalla vuelve a lo que manda el presentador. Si nada cambió, render no repinta.
+    render(lastData);
+}
+
+// ============================================================
+// HOLYRICS: ESCUCHAR LA CONEXIÓN DE LA SALA
+// ============================================================
+db.ref(`rooms/${room}/holyrics`).on('value', (snap) => {
+    const H = hlAPI();
+    hlCfg = H ? H.deSala(snap.val()) : null;
+    hlDirecto = null;
+    hlFallos = 0;
+    hlAviso = '';
+    barraHolyrics();
+    render(lastData);
+});
+db.ref(`rooms/${room}/holyrics/now`).on('value', (snap) => {
+    const n = snap.val();
+    hlNow = (n && n.ts) ? n : null;
+    barraHolyrics();
+    render(lastData);
+});
+setInterval(refrescarHolyrics, HL_CADA);
+barraHolyrics();
 
 // ============================================================
 // ARRANQUE
