@@ -1325,6 +1325,7 @@ document.getElementById("admin-msg-input").addEventListener("keydown", (e) => {
    se prueba y se guarda la conexión en la sala elegida. */
 let hlRef = null, hlNowRef = null;
 let hvUltimo = null;                                     // la sala que este admin está publicando
+let hvPedidoRef = null;                                  // el latido que escribe el stage de esa sala
 let hvEstado = { publicando: false, motivo: "" };
 
 function hlAPI() { return window.HolyricsAPI || null; }
@@ -1414,6 +1415,15 @@ function seguirPublicando(room, cfg) {
     guardar: (paquete) => db.ref(`rooms/${room}/holyrics/now`).set(paquete),
     alCambiar: (e) => { hvEstado = e; pintarHlMio(); }
   });
+  // El stage de la sala (que está a la vista) pide cada 2 s que se publique. Medido: con esta
+  // pestaña de fondo, el navegador frena los temporizadores a uno por minuto y el stage se
+  // quedaba con la letra vieja; un evento de red, en cambio, llega enseguida y despierta el
+  // ciclo (js/holyrics-live.js, `ahora`).
+  if (hvPedidoRef) { hvPedidoRef.off(); hvPedidoRef = null; }
+  if (cfg && cfg.activo) {
+    hvPedidoRef = db.ref(`rooms/${room}/holyrics/pedido`);
+    hvPedidoRef.on("value", () => { if (window.HolyricsLive) window.HolyricsLive.ahora(); });
+  }
   pintarHlMio();
 }
 

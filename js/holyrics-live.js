@@ -11,8 +11,17 @@
 //   Mientras la sala tenga una conexión activa y esta página alcance la PC, lee
 //   `GetCurrentPresentation` cada `cada` ms y llama a `guardar(paquete)` con la forma que
 //   arma js/holyrics-api.js (`paraPublicar`). De Firebase no sabe nada: se lo dan.
-//   Se detiene solo si la sala no tiene conexión, si esta página no alcanza la PC, o si se
-//   lo pide `parar()`. Una lectura a la vez: si Holyrics tarda, la siguiente no se encima.
+//   Se detiene solo si la sala no tiene conexión, si el navegador bloquea la conexión, o si
+//   se lo pide `parar()`. Una lectura a la vez: si Holyrics tarda, la siguiente no se encima.
+//
+// POR QUÉ ADEMÁS SE PUEDE DESPERTAR (`ahora`)
+//   Medido en Chrome: con la pestaña de fondo, un temporizador de 2 s pasa a latir una vez
+//   por minuto (frenado intensivo de pestañas ocultas), y ni el WebSocket de Firebase ni un
+//   Web Lock lo evitan — el stage de esa sala se quedaba con la letra vieja. Un EVENTO de red
+//   en cambio llega al instante en la misma pestaña oculta (medido: 190 ms). Por eso, además
+//   del reloj, quien esté publicando puede ser despertado: `ahora()` corre un ciclo cuando
+//   alguien lo pide (el stage escribe `rooms/<sala>/holyrics/pedido`, ver stage.html), con un
+//   mínimo entre ciclos para que dos stages no disparen de más.
 //
 // QUIÉN LO USA
 //   admin.html — la pestaña del admin, que es la que suele estar abierta en la PC de
@@ -21,7 +30,8 @@
 (function () {
   'use strict';
 
-  var DEF = 2000;   // cada cuánto se le pregunta a Holyrics
+  var DEF = 2000;         // cada cuánto se le pregunta a Holyrics
+  var MINIMO = 800;       // hueco mínimo entre ciclos pedidos por evento (dos stages piden a la vez)
 
   var loop = null;                                  // el ciclo en curso
   var estado = { publicando: false, motivo: '' };   // por qué sí o por qué no
@@ -42,6 +52,20 @@
   }
 
   function parar() { detener(''); }
+
+  // Una vuelta del ciclo: una lectura a la vez, y las pedidas por evento no más seguidas que
+  // `MINIMO` (dos stages en la misma sala piden a la vez). Devuelve si arrancó una vuelta.
+  function disparar(porEvento) {
+    var mio = loop;                       // el ciclo puede terminar mientras este corre
+    if (!mio || mio.ocupado) return false;
+    if (porEvento && (Date.now() - mio.ultimo) < mio.minimo) return false;
+    mio.ocupado = true;
+    mio.ultimo = Date.now();
+    ciclo(mio.opciones).catch(function (e) {
+      decirlo({ publicando: false, motivo: (e && e.message) || String(e) }, mio.opciones.alCambiar);
+    }).then(function () { mio.ocupado = false; });
+    return true;
+  }
 
   // Un ciclo: una lectura y una publicación. Devuelve si publicó.
   async function ciclo(opciones) {
@@ -84,21 +108,28 @@
     }
     // No se supone si esta página alcanza la PC: se prueba. Si el navegador la bloquea, el
     // error lo dice (`noLlego`) y el ciclo se detiene solo.
-    var mio = { ocupado: false };
-    loop = mio;
-    var vuelta = function () {
-      if (mio.ocupado) return;   // una lectura a la vez
-      mio.ocupado = true;
-      ciclo(o).catch(function (e) {
-        decirlo({ publicando: false, motivo: (e && e.message) || String(e) }, o.alCambiar);
-      }).then(function () { mio.ocupado = false; });
+    loop = {
+      opciones: o,
+      ocupado: false,
+      ultimo: 0,
+      minimo: MINIMO,
+      timer: null
     };
-    vuelta();
-    mio.timer = setInterval(function () { if (loop === mio) vuelta(); }, Math.max(600, o.cada || DEF));
+    var mio = loop;
+    disparar(false);
+    mio.timer = setInterval(function () { if (loop === mio) disparar(false); }, Math.max(600, o.cada || DEF));
     return copiado();
   }
 
-  var MODULO = { CADA: DEF, arrancar: arrancar, parar: parar, detener: detener, ciclo: ciclo, estado: copiado };
+  var MODULO = {
+    CADA: DEF,
+    arrancar: arrancar,
+    parar: parar,
+    detener: detener,
+    ciclo: ciclo,
+    estado: copiado,
+    ahora: function () { return disparar(true); }   // un ciclo pedido por evento (el stage)
+  };
 
   if (typeof module === 'object' && module.exports) module.exports = MODULO;   // pruebas en Node
   if (typeof window !== 'undefined') window.HolyricsLive = MODULO;
