@@ -91,7 +91,8 @@ Lee `rooms/<sala>/currentSong`. Si esa sala tiene una **conexión de Holyrics**
 mismos tres presets. Un `blank` / `stop` del presentador manda siempre: apaga la pantalla
 igual. Cuando la lectura se pone vieja (nadie está publicando), vuelve sola a lo que manda
 el presentador. En el pie dice de dónde viene lo que está mostrando: `🎦 Holyrics (admin)`,
-`(puente)` o `(directo)`.
+`(puente)` o `(directo)`. Mientras la conexión esté activa es además la que **pide**: escribe
+`rooms/<sala>/holyrics/pedido` cada 2 s para que el publicador corra un ciclo (ver 🎦 Holyrics).
 
 ---
 
@@ -353,12 +354,31 @@ Mientras el admin esté **abierto en una PC que alcance a Holyrics** (una págin
 incluido el archivo abierto a mano), le pregunta a Holyrics cada 2 s y publica él. No hay que
 hacer nada más: al elegir la sala, el renglón de estado dice *🟢 Este admin está publicando…*
 Es el camino sin terminal, y el que hace falta si el stage se abre desde un celular o un
-proyector.
+proyector. Sigue publicando **con la pestaña de fondo**, que es el caso normal (Holyrics
+tapando todo o el admin en otra ventana).
 
-Limitaciones honestas: si la pestaña se cierra, deja de publicar (y el stage vuelve al
-presentador a los 8 s); y si queda minimizada o tapada mucho rato, el navegador frena sus
-temporizadores (`visibilitychange` lo retoma al volver a verla). Para que ande con el admin
-cerrado, está el puente.
+**Por qué el reloj solo no alcanzaba (medido).** Chrome frena los temporizadores de las
+pestañas ocultas: con la página de fondo, un `setInterval` de 2 s pasa a latir **una vez por
+minuto** (frenado intensivo, a los 5 minutos de estar oculta; en la medición se forzó a los
+10 s con `IntensiveWakeUpThrottling:grace_period_seconds/10`). Se midió con un control sin
+ningún socket, con el módulo real contra Holyrics 2.30.0, y tomando un *Web Lock*: los tres
+cayeron a ~60 s por latido. El WebSocket de Firebase **no** lo evita. Con eso, el stage se
+quedaba con la letra vieja o saltando entre Holyrics y lo que manda el presentador.
+
+**Lo que sí llega al instante es un evento de red.** Medido en la misma pestaña oculta
+(`document.hidden === true`): el ciclo disparado por un evento tardó 190 ms, contra 60 s del
+reloj. Por eso el stage —que está a la vista, es la pantalla que se proyecta— escribe
+`rooms/<sala>/holyrics/pedido` cada 2 s, y el admin corre un ciclo cuando lo ve
+(`HolyricsLive.ahora()`). Medición de punta a punta con el admin **de fondo**: un cambio de
+canción en Holyrics llegó a la sala en **924 ms, 968 ms y 980 ms**, y un cambio de
+diapositiva en **956 ms**; el stage de esa sala mostraba el cambio con el pie
+`🎦 Holyrics (admin)`. Varios stages en la misma sala no disparan de más: hay un mínimo de
+800 ms entre ciclos pedidos.
+
+Limitaciones honestas: si la pestaña del admin se cierra, deja de publicar (y el stage vuelve
+al presentador a los 8 s). Y si **nadie está a la vista** (ni el stage ni el admin), no hay
+pedidos y el reloj oculto del admin vuelve a su minuto; en cuanto una de las dos vuelve a la
+vista, se pide al instante. Para que ande sin ninguna página abierta, está el puente.
 
 ### 2. El puente (`puente-holyrics.js`)
 
@@ -385,6 +405,14 @@ prueba sola.
   y sigue mostrando lo que manda el presentador.
 - Si el publicador se corta: la última lectura queda vieja a los 8 s, el admin la marca
   (*🟡 … Es vieja: el stage ya no la muestra*) y el stage vuelve solo a lo del presentador.
+
+### Qué hay en la sala
+
+| nodo | quién lo escribe | para qué |
+|---|---|---|
+| `rooms/<sala>/holyrics` | el admin (📤) | la conexión: IP, puerto y token |
+| `rooms/<sala>/holyrics/now` | el publicador (admin o puente) | la diapositiva en curso y su hora |
+| `rooms/<sala>/holyrics/pedido` | el stage, cada 2 s | el latido que despierta al publicador |
 
 ### El puente (`puente-holyrics.js`)
 
@@ -594,6 +622,9 @@ El PAT se guarda en `localStorage` del navegador del admin.
   `rooms/<sala>/holyrics/now` (con la forma de `js/holyrics-api.js`). No sabe de Firebase:
   el admin le pasa con qué escribir. Deja de publicar solo si la sala no tiene conexión, si
   la escritura falla, o si el navegador bloquea la conexión —y en cada caso dice por qué—.
+  Además del reloj, `ahora()` corre un ciclo cuando alguien lo pide: es lo que usa el admin
+  al ver el latido del stage, y lo que hace que una pestaña de fondo (cuyos temporizadores
+  el navegador frena a uno por minuto) siga publicando al día.
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 - `/js/holyrics.js` — la forma Holyrics de una canción (la del archivo
   `canciones.json`): `cancion` deja cualquier canción —del repo o liviana del

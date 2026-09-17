@@ -642,6 +642,24 @@ setInterval(refrescarHolyrics, HL_CADA);
 barraHolyrics();
 
 // ============================================================
+// HOLYRICS: EL PEDIDO
+// Esta pantalla está a la vista (es la que se proyecta), así que es la que puede
+// despertar al que publica: cada HL_PEDIDO_CADA ms escribe `rooms/<sala>/holyrics/pedido`,
+// y el publicador (el admin oculto o el puente) corre un ciclo al verlo. Es lo que mantiene
+// la letra al día cuando la pestaña del admin está de fondo: ahí el navegador frena sus
+// temporizadores, pero un evento de red llega igual (ver js/holyrics-live.js).
+// ============================================================
+const HL_PEDIDO_CADA = 2000;
+function pedirHolyrics() {
+    if (!hlCfg || !hlCfg.activo) return;
+    db.ref(`rooms/${room}/holyrics/pedido`).set(Date.now());
+}
+setInterval(pedirHolyrics, HL_PEDIDO_CADA);
+// Al volver a la vista se pide enseguida, sin esperar al próximo latido.
+document.addEventListener('visibilitychange', () => { if (!document.hidden) pedirHolyrics(); });
+pedirHolyrics();
+
+// ============================================================
 // ARRANQUE
 // ============================================================
 applyMode();
