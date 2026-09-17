@@ -200,15 +200,18 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
     </div>
     <div id="hl-rooms" style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px"></div>
     <div id="hl-room-info" style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">—</div>
+    <div id="hl-mine" style="font-size:12px;color:var(--muted);margin-bottom:8px;line-height:1.5">—</div>
     <div id="hl-now" style="font-size:12px;color:var(--muted);margin-bottom:14px;line-height:1.5">—</div>
     <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px">
       <button class="btn pri" id="hl-send">📤 Enviar conexión a esa sala</button>
       <button class="btn danger" id="hl-off">⏻ Quitar de esa sala</button>
     </div>
     <div style="font-size:12px;color:var(--muted);line-height:1.6">
-      <b>Cómo llega:</b> el stage de esa sala muestra lo que Holyrics tiene en pantalla, y el que le pregunta a Holyrics es el <b>puente</b>, que corre en la misma PC del programa:<br>
+      <b>Cómo llega:</b> el stage de esa sala muestra lo que Holyrics tiene en pantalla, y el que le pregunta a Holyrics es el <b>primero</b> de estos dos que esté disponible:<br>
+      <b>1. Este admin</b>, mientras esta pestaña esté abierta en una PC que alcance a Holyrics (una página en <b>http://</b> o abierta desde el archivo). No hace falta nada más: mirá arriba si dice que está publicando.<br>
+      <b>2. El puente</b>, para que siga andando con el admin cerrado — corre en la misma PC del programa:<br>
       <code style="background:var(--surface2);padding:2px 6px;border-radius:6px">node puente-holyrics.js --sala NOMBRE_DE_LA_SALA</code><br>
-      Hace falta siempre que el stage se abra desde la página publicada, porque una página <b>https://</b> no puede llegar al API <b>http://</b> de la PC. Si abrís el stage desde la misma PC en <b>http://</b>, además prueba leerlo directo (depende de que Holyrics permita la conexión del navegador).<br>
+      Una página <b>https://</b> (la publicada) no puede llegar al API <b>http://</b> de la PC: si abrís el admin desde ahí, el que publica es el puente.<br>
       El token queda en la base (se lee sin login): es el del API Server local, no lo uses para otra cosa.
     </div>
   </div>
@@ -368,6 +371,7 @@ textarea.field-input{min-height:200px;resize:vertical;line-height:1.7;font-size:
 <script src="js/texto.js"></script>
 <script src="js/holyrics.js"></script>
 <script src="js/holyrics-api.js"></script>
+<script src="js/holyrics-live.js"></script>
 <script src="js/duplicadas.js"></script>
 <script src="js/sugerencias.js"></script>
 <script>
@@ -1320,6 +1324,8 @@ document.getElementById("admin-msg-input").addEventListener("keydown", (e) => {
    el token, los errores, la lista blanca de acciones). Acá solo se carga el formulario,
    se prueba y se guarda la conexión en la sala elegida. */
 let hlRef = null, hlNowRef = null;
+let hvUltimo = null;                                     // la sala que este admin está publicando
+let hvEstado = { publicando: false, motivo: "" };
 
 function hlAPI() { return window.HolyricsAPI || null; }
 function hlRoom() {
@@ -1377,15 +1383,47 @@ function verHlSala() {
     info.textContent = (cfg && cfg.activo)
       ? `Sala “${room}”: ya apunta a ${cfg.host}:${cfg.puerto} (enviado el ${new Date(cfg.actualizado || 0).toLocaleString()}).`
       : `Sala “${room}”: sin conexión de Holyrics guardada.`;
+    seguirPublicando(room, cfg);
   });
   hlNowRef = db.ref(`rooms/${room}/holyrics/now`);
   hlNowRef.on("value", (s) => {
     const n = s.val();
-    if (!n || !n.ts) { now.textContent = "⚪ El puente no está publicando (no está corriendo o no llega a Holyrics)."; return; }
+    if (!n || !n.ts) { now.textContent = "⚪ Nadie está publicando lo de Holyrics en esa sala."; return; }
     const seg = Math.max(0, Math.round((Date.now() - n.ts) / 1000));
     const que = n.actual ? `“${n.actual}”` : "sin presentación";
-    now.textContent = `🟢 El puente publicó hace ${seg} s: ${que}${n.total ? ` · diapositiva ${(n.indice || 0) + 1} de ${n.total}` : ""}.`;
+    const quien = n.por === "admin" ? "El admin" : n.por === "puente" ? "El puente" : "Alguien";
+    // El stage solo muestra lecturas frescas (js/holyrics-api.js, VIDA): si la última es
+    // vieja, la pantalla ya volvió a lo que manda el presentador y conviene saberlo.
+    const viejo = (Date.now() - n.ts) >= 8000;
+    now.textContent = `${viejo ? "🟡" : "🟢"} ${quien} publicó hace ${seg} s: ${que}${n.total ? ` · diapositiva ${(n.indice || 0) + 1} de ${n.total}` : ""}.`
+      + (viejo ? " Es vieja: el stage ya no la muestra." : "");
   });
+}
+
+/* Quién publica desde acá: este admin, mientras la pestaña esté abierta en una PC que llegue
+   a Holyrics (ver js/holyrics-live.js). Se publica la conexión GUARDADA en la sala, no lo que
+   haya escrito en el formulario: así el stage y el publicador miran lo mismo. */
+function seguirPublicando(room, cfg) {
+  const HV = window.HolyricsLive, db = window.db;
+  if (!HV || !db) return;
+  hvUltimo = (cfg && cfg.activo) ? { room: room, cfg: cfg } : null;
+  HV.arrancar({
+    room,
+    cfg,
+    por: "admin",
+    guardar: (paquete) => db.ref(`rooms/${room}/holyrics/now`).set(paquete),
+    alCambiar: (e) => { hvEstado = e; pintarHlMio(); }
+  });
+  pintarHlMio();
+}
+
+function pintarHlMio() {
+  const el = document.getElementById("hl-mine");
+  if (!el) return;
+  const motivo = hvEstado.motivo || "sin conexión";
+  el.textContent = hvEstado.publicando
+    ? "🟢 Este admin está publicando lo de Holyrics para esa sala: su stage ya lo muestra. Mientras esta pestaña esté abierta alcanza."
+    : "⚪ Este admin no publica: " + motivo + (/[.!?]$/.test(motivo) ? "" : ".");
 }
 
 document.getElementById("hl-test").addEventListener("click", async () => {
@@ -1406,7 +1444,7 @@ document.getElementById("hl-send").addEventListener("click", () => {
   const room = hlRoom();
   hlGuardarCampos();
   db.ref(`rooms/${room}/holyrics`).set(H.paraSala(cfg))
-    .then(() => { hlStatus("ok", `✓ Conexión enviada a la sala “${room}”. Su stage ya muestra lo de Holyrics.`); verHlSala(); })
+    .then(() => { hlStatus("ok", `✓ Conexión enviada a la sala “${room}”. El stage de esa sala ya la usa (mirá abajo quién publica).`); verHlSala(); })
     .catch(e => hlStatus("err", "✗ No se pudo guardar: " + e.message));
 });
 
@@ -1432,6 +1470,11 @@ document.getElementById("hl-off").addEventListener("click", () => {
   el.addEventListener("keydown", (e) => { if (e.key === "Enter") { e.preventDefault(); selectHlRoom(); } });
   document.getElementById("hl-room-local").addEventListener("click", () => { el.value = localRoom(); selectHlRoom(); });
   document.querySelectorAll("#hl-host,#hl-port,#hl-token").forEach(i => i.addEventListener("change", hlGuardarCampos));
+  // Chrome frena los temporizadores de las pestañas tapadas: al volver a verla, se retoma
+  // la publicación enseguida en vez de esperar al próximo latido.
+  document.addEventListener("visibilitychange", () => {
+    if (!document.hidden && hvUltimo) seguirPublicando(hvUltimo.room, hvUltimo.cfg);
+  });
   renderHlRooms();
   verHlSala();
 })();

@@ -15,6 +15,12 @@
 //     `rooms/<sala>/holyrics/now`, que es lo que muestra el stage de esa sala.
 //   No escribe nada más, y no necesita instalar nada: Node 18+ (fetch incluido).
 //
+// CUÁNDO HACE FALTA
+//   El admin abierto en una PC que alcance a Holyrics publica lo mismo mientras la pestaña
+//   esté abierta (ver js/holyrics-live.js). Este puente es para que ande SOLO, sin ninguna
+//   página abierta, y es el único camino cuando el admin está abierto desde la página
+//   publicada (https), que no puede llegar al API http de la PC.
+//
 // CÓMO SE USA
 //   node puente-holyrics.js --sala NOMBRE_DE_LA_SALA
 //
@@ -69,11 +75,11 @@ async function leerConexion() {
   return H.deSala(await r.json());
 }
 
-async function publicar(estado) {
+async function publicar(lectura) {
   const r = await fetch(RAIZ + '/now.json', {
     method: 'PUT',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify(Object.assign({ ts: Date.now() }, estado))
+    body: JSON.stringify(H.paraPublicar(lectura, 'puente'))
   });
   if (!r.ok) throw new Error('la base rechazó la publicación (' + r.status + ')');
 }
@@ -99,7 +105,7 @@ async function ciclo() {
   const r = await H.enPantalla(cfg);
   if (!r.ok) { aviso('✗ ' + r.error.mensaje); return; }
 
-  await publicar({ ok: true, vacio: r.vacio, tipo: r.tipo, titulo: r.titulo, items: r.items, indice: r.indice, total: r.total });
+  await publicar(r);
 
   const que = r.vacio
     ? 'sin presentación'
