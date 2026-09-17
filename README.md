@@ -89,8 +89,9 @@ Lee `rooms/<sala>/currentSong`. Si esa sala tiene una **conexión de Holyrics**
 (ver más abajo) y hay una lectura fresca de lo que Holyrics tiene en pantalla, muestra
 **eso**: la presentación en curso, la diapositiva siguiente y la numeración, con los
 mismos tres presets. Un `blank` / `stop` del presentador manda siempre: apaga la pantalla
-igual. Cuando la lectura se pone vieja (se cortó el puente), vuelve sola a lo que manda el
-presentador.
+igual. Cuando la lectura se pone vieja (nadie está publicando), vuelve sola a lo que manda
+el presentador. En el pie dice de dónde viene lo que está mostrando: `🎦 Holyrics (admin)`,
+`(puente)` o `(directo)`.
 
 ---
 
@@ -338,8 +339,52 @@ lista del costado son las diapositivas de la presentación que Holyrics tiene ca
 2. En el admin se cargan la IP, el puerto y el token, y **🔌 Probar conexión** dice si
    Holyrics contesta y con qué versión (o el motivo exacto si no).
 3. Se elige la **sala** y se toca **📤 Enviar conexión a esa sala**. Eso escribe
-   `rooms/<sala>/holyrics`; desde ahí el stage de esa sala la usa y el puente la lee.
-   **⏻ Quitar de esa sala** borra la conexión y el stage vuelve a lo del presentador.
+   `rooms/<sala>/holyrics`; desde ahí el stage de esa sala la usa, y cualquiera de los dos
+   publicadores (abajo) la lee. **⏻ Quitar de esa sala** borra la conexión y el stage vuelve
+   a lo del presentador.
+
+El stage solo muestra lo que Holyrics tiene en pantalla si alguien lo **publica**: escribe
+`rooms/<sala>/holyrics/now` con la diapositiva en curso. Quien le pregunta a Holyrics puede
+ser una de estas dos cosas, y el admin dice en pantalla cuál está funcionando.
+
+### 1. El propio admin (`js/holyrics-live.js`)
+
+Mientras el admin esté **abierto en una PC que alcance a Holyrics** (una página en `http://`,
+incluido el archivo abierto a mano), le pregunta a Holyrics cada 2 s y publica él. No hay que
+hacer nada más: al elegir la sala, el renglón de estado dice *🟢 Este admin está publicando…*
+Es el camino sin terminal, y el que hace falta si el stage se abre desde un celular o un
+proyector.
+
+Limitaciones honestas: si la pestaña se cierra, deja de publicar (y el stage vuelve al
+presentador a los 8 s); y si queda minimizada o tapada mucho rato, el navegador frena sus
+temporizadores (`visibilitychange` lo retoma al volver a verla). Para que ande con el admin
+cerrado, está el puente.
+
+### 2. El puente (`puente-holyrics.js`)
+
+```
+node puente-holyrics.js --sala NOMBRE_DE_LA_SALA
+```
+
+Corre en la **misma PC que Holyrics**, sin instalar nada (Node 18+), y hace dos cosas cada
+`--cada` ms (1500 por defecto): le pregunta a Holyrics qué tiene en pantalla y lo publica en
+`rooms/<sala>/holyrics/now`. También acepta `--host`, `--puerto`, `--token` para probar sin
+cargar nada en el admin, `--db` para apuntar a otra base y `--una` para un solo ciclo.
+
+**Hace falta cuando ningún admin está abierto que alcance la PC.** Una página servida por
+HTTPS no puede pedirle nada al API HTTP de la PC si no es la misma máquina (el navegador
+bloquea el contenido mixto antes de intentarlo), y desde GitHub Pages esa es siempre la
+situación: en ese caso el admin lo dice (*⚪ Este admin no publica: la página está en HTTPS…*)
+y el que tiene que publicar es el puente. Si la página se abre desde la misma PC, en cambio,
+prueba sola.
+
+### Qué se ve cuando algo falta
+
+- Sin conexión cargada: el stage funciona como siempre.
+- Con conexión y sin nadie publicando: el stage avisa en el pie (`🎦 Holyrics (sin lectura)`)
+  y sigue mostrando lo que manda el presentador.
+- Si el publicador se corta: la última lectura queda vieja a los 8 s, el admin la marca
+  (*🟡 … Es vieja: el stage ya no la muestra*) y el stage vuelve solo a lo del presentador.
 
 ### El puente (`puente-holyrics.js`)
 
@@ -371,8 +416,9 @@ la conexión del navegador.
 - El **token** que se guarda en la sala es el del API Server local (no el `api_key` de
   internet) y queda en una base que se lee sin login: cualquiera que lea esa rama lo ve.
 - El servicio de internet de Holyrics (`api.holyrics.com.br`) **no se usa**: no manda
-  cabeceras CORS, así que un navegador no puede leer sus respuestas. Es la razón de que el
-  puente corra en la PC.
+  cabeceras CORS, así que un navegador no puede leer sus respuestas. El **API Server local
+  sí** las manda (`Access-Control-Allow-Origin: *`, verificado), así que una página en
+  `http://` puede hablarle directo; el límite es el contenido mixto, no CORS.
 
 ---
 
@@ -540,8 +586,14 @@ El PAT se guarda en `localStorage` del navegador del admin.
 - `/js/holyrics-api.js` — la conexión con Holyrics: la dirección, el puerto y el token
   del API Server; qué significa cada error (no llegar, contenido mixto, token inválido,
   sin permiso); cómo se convierte lo que Holyrics tiene en pantalla en los textos del
-  stage; y qué se guarda en `rooms/<sala>/holyrics`. Es el único lugar donde se decide
-  eso: lo usan el admin, el stage y el puente.
+  stage; la forma exacta que se publica en la sala (`paraPublicar`, con `por` para saber
+  quién publicó); y qué se guarda en `rooms/<sala>/holyrics`. Es el único lugar donde se
+  decide eso: lo usan el admin, el stage, el publicador y el puente.
+- `/js/holyrics-live.js` — el publicador: mientras el admin esté abierto en una página que
+  alcance a Holyrics, le pregunta cada 2 s qué tiene en pantalla y escribe
+  `rooms/<sala>/holyrics/now` (con la forma de `js/holyrics-api.js`). No sabe de Firebase:
+  el admin le pasa con qué escribir. Deja de publicar solo si la sala no tiene conexión, si
+  la escritura falla, o si el navegador bloquea la conexión —y en cada caso dice por qué—.
 - `/js/rooms-index.js` — índice de salas activas: publica presencia y la lee el admin.
 - `/js/holyrics.js` — la forma Holyrics de una canción (la del archivo
   `canciones.json`): `cancion` deja cualquier canción —del repo o liviana del

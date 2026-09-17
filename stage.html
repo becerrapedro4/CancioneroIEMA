@@ -238,15 +238,15 @@ let lastQueueKey = '';
 // HOLYRICS (ver js/holyrics-api.js)
 // La conexión la guarda el admin en `rooms/<sala>/holyrics`. Cuando está activa y hay una
 // lectura fresca, esta pantalla muestra lo que Holyrics tiene puesto en vez de esperar a
-// que el presentador mande la estrofa: la lectura llega del puente
-// (`rooms/<sala>/holyrics/now`) o, si el navegador alcanza la PC, directo del API.
+// que el presentador mande la estrofa. La lectura llega publicada en
+// `rooms/<sala>/holyrics/now` —la escribe el admin abierto en la PC (js/holyrics-live.js)
+// o el puente— o, si este navegador alcanza la PC, directo del API.
 // ============================================================
 let hlCfg = null;        // la conexión de la sala
 let hlNow = null;        // lo último que publicó el puente
 let hlDirecto = null;    // última lectura directa del API de Holyrics
 let hlPintando = false;  // la pantalla está mostrando Holyrics ahora mismo
 let hlFallos = 0;        // lecturas directas seguidas que fallaron
-let hlAviso = '';        // por qué no se puede leer directo (se avisa una vez)
 
 function currentMode() { return MODES[mode] || MODES['lyrics-next']; }
 
@@ -582,14 +582,14 @@ function barraHolyrics() {
     if (!el) return;
     if (!hlCfg || !hlCfg.activo) { el.textContent = ''; return; }
     const H = hlAPI();
-    if (H && H.viva(hlNow)) { el.textContent = '· 🎦 Holyrics (puente)'; return; }
+    // Quién lo publicó: el admin abierto en la PC (ver js/holyrics-live.js) o el puente.
+    if (H && H.viva(hlNow)) { el.textContent = '· 🎦 Holyrics (' + (hlNow.por === 'admin' ? 'admin' : 'puente') + ')'; return; }
     if (H && H.viva(hlDirecto)) { el.textContent = '· 🎦 Holyrics (directo)'; return; }
-    // El motivo largo no va en la pantalla que se proyecta: se ve en el admin, que tiene
-    // el mismo texto (🎦 Holyrics → Probar conexión).
-    el.textContent = hlAviso ? '· 🎦 Holyrics (lo lleva el puente)' : '· 🎦 Holyrics (esperando al puente)';
+    // El motivo largo no va en la pantalla que se proyecta: se ve en el admin.
+    el.textContent = '· 🎦 Holyrics (sin lectura)';
 }
 
-// Lectura directa del API, solo cuando el puente no está publicando (si está, manda él).
+// Lectura directa del API, solo cuando nadie publicó (si hay publicación fresca, manda esa).
 // Tras unos fallos seguidos se prueba mucho menos seguido: no tiene sentido insistir cada
 // pocos segundos contra una PC que este navegador no alcanza.
 const HL_CADA = 4000, HL_CADA_TRAS_FALLAR = 30000;
@@ -598,22 +598,17 @@ let hlUltimoIntento = 0;
 async function leerHolyricsDirecto() {
     const H = hlAPI();
     if (!H || !hlCfg || !hlCfg.activo || H.viva(hlNow)) return;
-    // Desde la página publicada (HTTPS) el navegador no puede llegar al API HTTP de la PC:
-    // se avisa una vez y no se intenta (el camino es el puente).
-    if (!H.alcanzableDesdeAca(hlCfg)) {
-        hlAviso = 'desde esta página (HTTPS) la PC no es alcanzable; usá el puente';
-        return;
-    }
+    // Desde una página que no alcanza la PC (la publicada, en https) no se intenta: ahí el
+    // que publica es el admin abierto en la PC o el puente.
+    if (!H.alcanzableDesdeAca(hlCfg)) return;
     if (hlFallos > 2 && (Date.now() - hlUltimoIntento) < HL_CADA_TRAS_FALLAR) return;
     hlUltimoIntento = Date.now();
     const r = await H.enPantalla(hlCfg);
     if (r.ok) {
         hlFallos = 0;
-        hlAviso = '';
         hlDirecto = Object.assign({ ts: Date.now() }, r);
     } else {
         hlFallos++;
-        if (!hlAviso) hlAviso = r.error.mensaje;
         hlDirecto = null;
     }
 }
@@ -634,7 +629,6 @@ db.ref(`rooms/${room}/holyrics`).on('value', (snap) => {
     hlCfg = H ? H.deSala(snap.val()) : null;
     hlDirecto = null;
     hlFallos = 0;
-    hlAviso = '';
     barraHolyrics();
     render(lastData);
 });

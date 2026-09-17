@@ -19,9 +19,9 @@
 //   · cómo se convierte la presentación en curso en los textos que muestra el stage;
 //   · qué se guarda en `rooms/<sala>/holyrics` y qué se lee de ahí.
 //
-// Lo usan admin.html (probar la conexión y guardarla en una sala), stage.html (mostrar lo
-// que Holyrics tiene en pantalla) y puente-holyrics.js (este mismo archivo en Node, para
-// cuando la página no puede llegar hasta la PC).
+// Lo usan admin.html (probar la conexión y guardarla en una sala), js/holyrics-live.js (el
+// admin publicando lo que Holyrics tiene en pantalla), stage.html (mostrarlo) y
+// puente-holyrics.js (este mismo archivo en Node, para cuando ninguna página llega a la PC).
 (function () {
   'use strict';
 
@@ -90,11 +90,11 @@
     var msg = (typeof e === 'string' ? e : (e && (e.message || e.key))) || 'Holyrics rechazó la petición';
     var tipo = /token/i.test(msg) ? 'token' : /permiss/i.test(msg) ? 'permiso' : 'holyrics';
     var ayuda = tipo === 'token'
-      ? ' El token se crea en Holyrics → Configuración → API Server → administrar permisos.'
+      ? 'El token se crea en Holyrics → Configuración → API Server → administrar permisos.'
       : tipo === 'permiso'
-        ? ' Ese token no tiene habilitada esta acción: marcala en Holyrics → API Server.'
+        ? 'Ese token no tiene habilitada esta acción: marcala en Holyrics → API Server.'
         : '';
-    return { tipo: tipo, mensaje: msg + (ayuda ? '.' + ayuda : '') };
+    return { tipo: tipo, mensaje: msg + (ayuda ? (/[.!?]$/.test(msg) ? ' ' : '. ') + ayuda : '') };
   }
 
   // ── UNA PETICIÓN ──
@@ -135,8 +135,8 @@
 
   // ── LO QUE HOLYRICS TIENE EN PANTALLA ──
   // `items` es el texto de cada diapositiva de la presentación en curso (una canción, un
-  // texto, un versículo…), `indice` la que se está viendo. Con `ts` es además la forma en
-  // que el puente lo publica en `rooms/<sala>/holyrics/now`.
+  // texto, un versículo…), `indice` la que se está viendo. Lo que se publica en la sala es
+  // `paraPublicar` de acá abajo.
   async function enPantalla(cfg) {
     var r = await pedir(cfg, 'GetCurrentPresentation', { include_slides: true, include_slide_comment: true });
     if (!r.ok) return r;
@@ -173,6 +173,30 @@
     };
   }
 
+  // ── LO QUE SE PUBLICA EN LA SALA ──
+  // `rooms/<sala>/holyrics/now` lo escriben dos: el puente (puente-holyrics.js, en la PC del
+  // programa) o una página abierta en esa misma PC (el admin, ver js/holyrics-live.js). Los
+  // dos publican con esta misma forma, y `por` dice quién lo hizo para poder verlo en la
+  // pantalla del stage y en el admin.
+  function paraPublicar(lectura, por) {
+    var r = lectura || {};
+    var items = r.items || [];
+    var i = Math.max(0, Math.min(items.length ? items.length - 1 : 0, r.indice || 0));
+    return {
+      ts: Date.now(),
+      por: String(por || ''),
+      ok: true,
+      vacio: !!r.vacio,
+      tipo: String(r.tipo || ''),
+      titulo: String(r.titulo || ''),
+      actual: items[i] || '',
+      siguiente: items[i + 1] || '',
+      items: items,
+      indice: i,
+      total: r.total || items.length
+    };
+  }
+
   // ── LA CONEXIÓN DE UNA SALA ──
   // Lo que el admin escribe en `rooms/<sala>/holyrics` y lo que leen el stage y el puente.
   function deSala(o) {
@@ -200,6 +224,7 @@
     alcanzableDesdeAca: alcanzableDesdeAca,
     viva: viva,
     textos: textos,
+    paraPublicar: paraPublicar,
     deSala: deSala,
     paraSala: paraSala
   };
