@@ -1,5 +1,111 @@
 [
   {
+    "id": 1793541187657,
+    "title": "NADIE PUDO AMARME COMO CRISTO",
+    "artist": "",
+    "author": "",
+    "note": "",
+    "copyright": "",
+    "language": "",
+    "key": "",
+    "bpm": 0,
+    "time_sig": "",
+    "midi": null,
+    "order": "",
+    "arrangements": [],
+    "lyrics": {
+      "full_text": "YO QUISIERA HABLARTE DEL AMOR DE CRISTO,\nPUES EN ÉL HALLÉ UN AMIGO FUERTE Y FIEL.\n\nCON SU GRACIA TRANSFORMÓ MI VIDA ENTERA,\nLO QUE EN ESTA VIDA SOY LO DEBO A ÉL.\n\nNADIE PUDO AMARME COMO CRISTO,\nES INCOMPARABLE SU AMISTAD.\n\nSOLO ÉL PUDO REDIMIRME DEL PECADO,\nPOR SU AMOR Y SU BONDAD.\n\nCADA DÍA VIENE A DARME NUEVO ALIENTO,\nA MI CORAZÓN LE INFUNDE DULCE PAZ.\n\nNO COMPRENDERÉ PORQUE VINO A SALVARME,\nHASTA QUE EN EL CIELO PUEDA VER SU FAZ.\n\nNADIE PUDO AMARME COMO CRISTO,\nES INCOMPARABLE SU AMISTAD.\n\nSOLO ÉL PUDO REDIMIRME DEL PECADO,\nPOR SU AMOR Y SU BONDAD.\n\nNADIE PUDO AMARME COMO CRISTO,\nES INCOMPARABLE SU AMISTAD.\n\nSOLO ÉL PUDO REDIMIRME DEL PECADO,\nPOR SU AMOR Y SU BONDAD.",
+      "full_text_with_comment": null,
+      "paragraphs": [
+        {
+          "number": 1,
+          "description": "",
+          "text": "YO QUISIERA HABLARTE DEL AMOR DE CRISTO,\nPUES EN ÉL HALLÉ UN AMIGO FUERTE Y FIEL.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 2,
+          "description": "",
+          "text": "CON SU GRACIA TRANSFORMÓ MI VIDA ENTERA,\nLO QUE EN ESTA VIDA SOY LO DEBO A ÉL.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 3,
+          "description": "",
+          "text": "NADIE PUDO AMARME COMO CRISTO,\nES INCOMPARABLE SU AMISTAD.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 4,
+          "description": "",
+          "text": "SOLO ÉL PUDO REDIMIRME DEL PECADO,\nPOR SU AMOR Y SU BONDAD.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 5,
+          "description": "",
+          "text": "CADA DÍA VIENE A DARME NUEVO ALIENTO,\nA MI CORAZÓN LE INFUNDE DULCE PAZ.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 6,
+          "description": "",
+          "text": "NO COMPRENDERÉ PORQUE VINO A SALVARME,\nHASTA QUE EN EL CIELO PUEDA VER SU FAZ.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 7,
+          "description": "",
+          "text": "NADIE PUDO AMARME COMO CRISTO,\nES INCOMPARABLE SU AMISTAD.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 8,
+          "description": "",
+          "text": "SOLO ÉL PUDO REDIMIRME DEL PECADO,\nPOR SU AMOR Y SU BONDAD.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 9,
+          "description": "",
+          "text": "NADIE PUDO AMARME COMO CRISTO,\nES INCOMPARABLE SU AMISTAD.",
+          "text_with_comment": null,
+          "translations": null
+        },
+        {
+          "number": 10,
+          "description": "",
+          "text": "SOLO ÉL PUDO REDIMIRME DEL PECADO,\nPOR SU AMOR Y SU BONDAD.",
+          "text_with_comment": null,
+          "translations": null
+        }
+      ]
+    },
+    "streaming": {
+      "audio": {
+        "spotify": "",
+        "youtube": "",
+        "deezer": ""
+      },
+      "backing_track": {
+        "spotify": "",
+        "youtube": "",
+        "deezer": ""
+      }
+    },
+    "extras": {
+      "extra": ""
+    }
+  },
+  {
     "id": 1792280338507,
     "title": "JESÚS EL PLAN PERFECTO",
     "artist": "",
